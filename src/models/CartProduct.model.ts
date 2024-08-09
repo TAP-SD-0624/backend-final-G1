@@ -1,6 +1,7 @@
 import { Table, Column, DataType, ForeignKey } from "sequelize-typescript";
 import ModelBase from "./ModelBase/ModelBase";
-import { Cart, Product } from "../models";
+import { Cart, Product , User } from "../models";
+
 
 @Table({
   tableName: "cartProduct",

@@ -6,7 +6,7 @@ export { Discount } from "./Discount.model";
 export { Order } from "./Order.model";
 export { OrderProduct } from "./OrderProduct.model";
 export { Product } from "./Product.model";
-export { User } from "./User.model";
+export { User } from "./user.model";
 export { UserRating } from "./UserRating.model";
 export { Wishlist } from "./WishList.model";
 export { ProductCategory } from "./ProductCategory.model";
