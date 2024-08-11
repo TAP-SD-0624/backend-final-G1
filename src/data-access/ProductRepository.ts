@@ -62,7 +62,7 @@ export class ProductRepository extends RepositoryBase<Product> implements IProdu
         }
 
     }
-    async findAllByDiscount(discountId: number): Promise<Product[] | number> {
+    async findAllByDiscount(discountId: number): Promise<Product[] | null> {
         try {
             const product = await Product.findAll({
                 include: [
@@ -73,6 +73,7 @@ export class ProductRepository extends RepositoryBase<Product> implements IProdu
                     { model: UserRating }
                 ]
             });
+            
             return product;
         } catch (error: any) {
             throw new Error(`Error retrieving product : ${error.message}`)

@@ -47,11 +47,10 @@ export class RepositoryBase<T extends Model> implements IRepositoryBase<T> {
     return null;
   }
 
-  async delete(entity: T): Promise<boolean> {
+  async delete(id : number): Promise<boolean> {
     try {
-      const deleted = await this.model.destroy<T>({
-        where: { id: entity.id },
-      });
+      const T = await this.model.findByPk(id);
+      const deleted = await this.model.destroy<T>();
       return deleted > 0;
     } catch (ex) {
       console.log(ex);

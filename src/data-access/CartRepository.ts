@@ -21,6 +21,19 @@ export class CartRepository
         }
     }
 
+    // get cart items by cart id
+    async findCartProducts(cartId: number): Promise<Cart | null> {
+        try {
+            return await this.model.findByPk(cartId, {
+                include: { all: true }
+            });
+            
+        } catch (error) {
+            throw new Error(`Error finding cart products: ${error}`);
+            
+        }
+    }
+
     async updateCart(id: number, cartData: Cart): Promise<Cart | null> {
         try {
             const [affectedRows, [updatedCart]] = await this.model.update(cartData, {

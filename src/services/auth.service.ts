@@ -1,14 +1,15 @@
+// authService.ts
+
 import UserService from './user.service';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from '../models';
 import { injectable, inject } from "tsyringe";
-
-const tokenBlacklist: Set<string> = new Set();
+import { addToBlacklist, isTokenBlacklisted } from '../helpers/tokenBlacklist';
 
 @injectable()
 export default class AuthService {
-    constructor(@inject(UserService) private userService: UserService) { }
+    constructor(@inject(UserService) private userService: UserService) {}
 
     public async login(email: string, password: string): Promise<string> {
         const user = await this.userService.getUserByEmail(email);
@@ -44,22 +45,13 @@ export default class AuthService {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = { name, email, password: hashedPassword, address, role, }
+        const newUser = { name, email, password: hashedPassword, address, role };
         return await this.userService.createUser(newUser);
     }
 
-    // Function to logout user
     public async logout(token: string): Promise<void> {
-        tokenBlacklist.add(token);
-    }
-
-    // Function to remove a token from the blacklist
-    public removeFromBlacklist(token: string): void {
-        tokenBlacklist.delete(token);
-    }
-
-    // Middleware to check if token is blacklisted
-    public isTokenBlacklisted(token: string): boolean {
-        return tokenBlacklist.has(token);
+        if (!isTokenBlacklisted(token)) {
+            addToBlacklist(token);
+        }
     }
 }

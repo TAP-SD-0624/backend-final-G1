@@ -1,4 +1,4 @@
-export { default as ModelBase } from './ModelBase/ModelBase'
+export { default as ModelBase } from "./ModelBase/ModelBase";
 export { Cart } from "./Cart.model";
 export { CartProduct } from "./CartProduct.model";
 export { Category } from "./Category.model";

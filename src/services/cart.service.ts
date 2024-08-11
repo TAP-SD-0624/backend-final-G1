@@ -1,12 +1,12 @@
 import { Cart } from "../models";
-import { ICartRepository } from '../data-access/Interfaces/ICartRepository';
+import { CartRepository } from "../data-access/CartRepository";
 import { injectable } from "tsyringe";
 import { CartDTO } from "../DTO/cartDto";
 
 @injectable()
 export default class CartService {
-    private cartRepository: ICartRepository;
-    constructor(cartRepository: ICartRepository) {
+    private cartRepository: CartRepository;
+    constructor(cartRepository: CartRepository) {
         this.cartRepository = cartRepository;
     }
 

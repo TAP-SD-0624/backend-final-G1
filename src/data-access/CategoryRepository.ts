@@ -18,7 +18,7 @@ export class CategoryRepository extends RepositoryBase<Category> implements ICat
         }
 
     }
-    async findByProduct(productId: string): Promise<Category[] | null> {
+    async findByProduct(productId: number): Promise<Category[] | null> {
         try {
             const category = await Category.findAll({
                 include: [{ model: Product }, { through: { attributes: [] }, where: { productId } }],

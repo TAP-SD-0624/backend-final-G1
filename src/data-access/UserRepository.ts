@@ -4,11 +4,11 @@ import { RepositoryBase } from "./RepositoryBase";
 
 export class UserRepository
   extends RepositoryBase<User>
-  implements IUserRepository {
-
+  implements IUserRepository
+{
   async createUser(userData: User): Promise<User> {
     try {
-      return await this.model.create(userData);
+      return await this.model.create(userData.dataValues);
     } catch (error) {
       throw new Error(`Error creating user: ${error}`);
     }

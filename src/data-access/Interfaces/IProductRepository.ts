@@ -9,7 +9,7 @@ export interface IProductRepository extends IRepositoryBase<Product> {
     findByName(name: string): Promise<Product | null>
     findByCategory(categoryId: number): Promise<Product[] | null>
     findAllByRating(ratingId: number): Promise<Product[] | null>
-    findAllByDiscount(discountId: number): Promise<Product[] | number>
+    findAllByDiscount(discountId: number): Promise<Product[] | null>
     //findTopRatedProducts(): Promise<Product[] | null>
     //findProductsByBrand(brandid: number): Promise<Product[] | null>
 
