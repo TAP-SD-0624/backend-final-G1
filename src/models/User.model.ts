@@ -1,55 +1,62 @@
-import { Table, Column, DataType, HasMany, Model } from "sequelize-typescript";
-import { Comment, UserRating } from ".";
-import { UserRoles } from "../enums/UserRolesEnum";
+import { Table, Column, DataType, HasMany, Model } from 'sequelize-typescript'
+import { Cart, Comment, UserRating, Wishlist } from '.'
+import { UserRoles } from '../enums/UserRolesEnum'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
-let userRoles: string[] = [];
+let userRoles: string[] = []
 for (const value in UserRoles) {
-  const key = value as keyof typeof UserRoles;
-  userRoles.push(UserRoles[key]);
+  const key = value as keyof typeof UserRoles
+  userRoles.push(UserRoles[key])
 }
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "users",
+  tableName: 'users',
+  ...defaultTableSettings,
 })
 export class User extends Model<User> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  name!: string;
+  name!: string
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  email!: string;
+  email!: string
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  address!: string;
+  address!: string
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password!: string;
+  password!: string
 
   @Column({
     type: DataType.ENUM(...userRoles),
     allowNull: false,
+    defaultValue: UserRoles.user,
   })
-  role!: string;
+  role!: string
+
+  @HasMany(() => Wishlist)
+  wishlists!: Wishlist[]
+
+  @HasMany(() => Cart)
+  carts!: Cart[]
 
   //user-comment relationship.
   @HasMany(() => Comment)
-  comments!: Comment[];
+  comments!: Comment[]
 
   //user-rating relationship.
 
   @HasMany(() => UserRating)
-  ratings!: UserRating[];
+  ratings!: UserRating[]
 }

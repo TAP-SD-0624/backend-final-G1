@@ -4,31 +4,31 @@ import {
   DataType,
   ForeignKey,
   Model,
-} from "sequelize-typescript";
-import { Product, Order } from "../models";
+} from 'sequelize-typescript'
+import { Product, Order } from '../models'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "orderProduct",
+  tableName: 'orderProduct',
+  ...defaultTableSettings,
 })
 export class OrderProduct extends Model<OrderProduct> {
   @Column({ allowNull: false, type: DataType.INTEGER })
-  quantity!: number;
+  quantity!: number
 
   @Column({ allowNull: false, type: DataType.FLOAT })
-  totalPrice!: number;
+  totalPrice!: number
 
   @ForeignKey(() => Order)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  orderId!: number;
+  orderId!: number
 
   // @HasOne(() => Order)
   // order!: Order;
 
   @ForeignKey(() => Product)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  productId!: number;
+  productId!: number
 
   // @HasOne(() => Product)
   // product!: Product;

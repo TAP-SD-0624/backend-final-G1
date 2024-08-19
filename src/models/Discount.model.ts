@@ -5,28 +5,28 @@ import {
   BelongsTo,
   ForeignKey,
   Model,
-} from "sequelize-typescript";
-import { Product } from "../models";
+} from 'sequelize-typescript'
+import { Product } from '../models'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "discounts",
+  tableName: 'discounts',
+  ...defaultTableSettings,
 })
 export class Discount extends Model<Discount> {
   @Column({
     type: DataType.FLOAT,
     allowNull: false,
   })
-  discountRate!: number;
+  discountRate!: number
 
   @ForeignKey(() => Product)
   @Column({
     allowNull: false,
     type: DataType.INTEGER,
   })
-  productId!: number;
+  productId!: number
 
   @BelongsTo(() => Product)
-  product!: Product;
+  product!: Product
 }

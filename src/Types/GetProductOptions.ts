@@ -1,4 +1,4 @@
 export type GetProductOptions = {
-  categories?: string[];
-  earliestDate: Date;
-};
+  categories?: string[]
+  earliestDate: Date
+}

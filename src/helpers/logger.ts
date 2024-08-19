@@ -1,4 +1,4 @@
-import winston from 'winston';
+import winston from 'winston'
 
 const logger = winston.createLogger({
   level: 'info',
@@ -19,6 +19,6 @@ const logger = winston.createLogger({
       level: 'info',
     }),
   ],
-});
+})
 
-export default logger;
+export default logger

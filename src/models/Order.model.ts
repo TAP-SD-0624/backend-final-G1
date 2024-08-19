@@ -6,35 +6,35 @@ import {
   BelongsTo,
   BelongsToMany,
   Model,
-} from "sequelize-typescript";
-import { Product, OrderProduct, User } from "../models";
-import { OrderStatus } from "../enums/OrderStatusEnum";
+} from 'sequelize-typescript'
+import { Product, OrderProduct, User } from '../models'
+import { OrderStatus } from '../enums/OrderStatusEnum'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
-let orderStatus: string[] = [];
+let orderStatus: string[] = []
 for (const value in OrderStatus) {
-  const key = value as keyof typeof OrderStatus;
-  orderStatus.push(OrderStatus[key]);
+  const key = value as keyof typeof OrderStatus
+  orderStatus.push(OrderStatus[key])
 }
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "orders",
+  tableName: 'orders',
+  ...defaultTableSettings,
 })
 export class Order extends Model<Order> {
   @Column({ allowNull: false, type: DataType.ENUM(...orderStatus) })
-  status!: string;
+  status!: string
 
   @Column({ allowNull: false, type: DataType.BOOLEAN })
-  isPaid!: boolean;
+  isPaid!: boolean
 
   @ForeignKey(() => User)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  userId!: number;
+  userId!: number
 
   @BelongsTo(() => User)
-  user!: User;
+  user!: User
 
   @BelongsToMany(() => Product, () => OrderProduct)
-  products!: Product[];
+  products!: Product[]
 }

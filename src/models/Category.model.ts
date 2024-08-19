@@ -4,21 +4,21 @@ import {
   DataType,
   BelongsToMany,
   Model,
-} from "sequelize-typescript";
-import { Product, ProductCategory } from "../models";
+} from 'sequelize-typescript'
+import { Product, ProductCategory } from '../models'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "categories",
+  tableName: 'categories',
+  ...defaultTableSettings,
 })
 export class Category extends Model<Category> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  name!: string;
+  name!: string
 
   @BelongsToMany(() => Product, () => ProductCategory)
-  products!: Product[];
+  products!: Product[]
 }

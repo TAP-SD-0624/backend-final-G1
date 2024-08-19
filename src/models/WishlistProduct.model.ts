@@ -4,20 +4,20 @@ import {
   DataType,
   ForeignKey,
   Model,
-} from "sequelize-typescript";
-import { Wishlist, Product } from "../models";
+} from 'sequelize-typescript'
+import { Wishlist, Product } from '../models'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
 @Table({
-  paranoid: true,
-  tableName: "wishlistProduct",
-  timestamps: true,
+  tableName: 'wishlistProduct',
+  ...defaultTableSettings,
 })
 export class WishlistProduct extends Model<WishlistProduct> {
   @ForeignKey(() => Wishlist)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  wishlistId!: number;
+  wishlistId!: number
 
   @ForeignKey(() => Product)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  productId!: number;
+  productId!: number
 }

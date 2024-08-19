@@ -1,69 +1,69 @@
-import { User } from "../models";
-import { userRepository } from "../data-access";
-import { UserDTO } from "../Types/DTO/userDto";
-import bcrypt from "bcrypt";
+import { User } from '../models'
+import { userRepository } from '../data-access'
+import { UserDTO } from '../Types/DTO/userDto'
+import bcrypt from 'bcrypt'
 
 export default class UserService {
   async createUser(userData: UserDTO): Promise<User> {
     try {
-      const newUser = new User();
-      newUser.name = userData.name;
-      newUser.email = userData.email;
-      newUser.password = userData.password;
-      newUser.address = userData.address;
-      newUser.role = userData.role;
+      const newUser = new User()
+      newUser.name = userData.name
+      newUser.email = userData.email
+      newUser.password = userData.password
+      newUser.address = userData.address
+      newUser.role = userData.role
 
-      const user = await userRepository.create(newUser);
+      const user = await userRepository.create(newUser)
       if (!user) {
-        throw new Error("Failed to create user");
+        throw new Error('Failed to create user')
       }
-      return user;
+      return user
     } catch (error: any) {
-      throw new Error(`Error creating user: ${error.message}`);
+      throw new Error(`Error creating user: ${error.message}`)
     }
   }
 
   async getUserById(userId: number): Promise<User | null> {
     try {
-      const user = await userRepository.findById(userId);
-      return user;
+      const user = await userRepository.findById(userId)
+      return user
     } catch (error) {
-      throw new Error(`Error retrieving user: ${error}`);
+      throw new Error(`Error retrieving user: ${error}`)
     }
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
     try {
-      const user = await userRepository.findByEmail(email);
+      const user = await userRepository.findByEmail(email)
       if (!user) {
-        console.warn(`No user found with email: ${email}`);
+        console.warn(`No user found with email: ${email}`)
       }
-      return user;
+      return user
     } catch (error: any) {
-      console.error(`Error retrieving user by email: ${email}`, error);
-      throw new Error(`Error retrieving user: ${error.message}`);
+      console.error(`Error retrieving user by email: ${email}`, error)
+      throw new Error(`Error retrieving user: ${error.message}`)
     }
   }
 
   async getAllUsers(): Promise<User[]> {
     try {
-      const users = await userRepository.findAll();
-      return users;
+      const users = await userRepository.findAll()
+      return users
     } catch (error) {
-      throw new Error(`Error retrieving users: ${error}`);
+      throw new Error(`Error retrieving users: ${error}`)
     }
   }
 
   async updateUser(userId: number, userData: UserDTO): Promise<User | null> {
     try {
-      const user = await userRepository.findById(userId);
+      const user = await userRepository.findById(userId)
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found')
       }
 
-      const isDataChanged = this.isUserDataChanged(user, userData);
+      const isDataChanged = this.isUserDataChanged(user, userData)
       if (!isDataChanged) {
-        return user;
+        return user
       }
 
       // Only hash the password if it has changed
@@ -75,12 +75,12 @@ export default class UserService {
           : user.password,
         address: userData.address,
         role: userData.role,
-      };
+      }
 
-      const updatedUser = await userRepository.updateUser(userId, partialUser);
-      return updatedUser;
+      const updatedUser = await userRepository.updateUser(userId, partialUser)
+      return updatedUser
     } catch (error: any) {
-      throw new Error(`Error updating user: ${error.message}`);
+      throw new Error(`Error updating user: ${error.message}`)
     }
   }
 
@@ -93,7 +93,7 @@ export default class UserService {
         !bcrypt.compareSync(newUserData.password, existingUser.password)) ||
       existingUser.address !== newUserData.address ||
       existingUser.role !== newUserData.role
-    );
+    )
   }
 
   // Edit the user password
@@ -103,45 +103,54 @@ export default class UserService {
     newPassword: string
   ): Promise<string> {
     try {
-      const user = await userRepository.findById(userId);
+      const user = await userRepository.findById(userId)
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found')
       }
 
       const isOldPasswordMatch = await bcrypt.compare(
         oldPassword,
         user.password
-      );
+      )
       if (!isOldPasswordMatch) {
-        throw new Error("Old password is incorrect");
+        throw new Error('Old password is incorrect')
       }
 
       if (oldPassword === newPassword) {
-        throw new Error("New password must be different from the old password");
+        throw new Error('New password must be different from the old password')
       }
 
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
       // Check if the new hashed password is actually different
       if (user.password === hashedNewPassword) {
         throw new Error(
-          "New password cannot be the same as the old password after hashing"
-        );
+          'New password cannot be the same as the old password after hashing'
+        )
       }
 
-      user.set("password", hashedNewPassword);
-      await user.save();
-      return "Password updated successfully";
+      user.set('password', hashedNewPassword)
+      await user.save()
+      return 'Password updated successfully'
     } catch (error: any) {
-      throw new Error(`Error editing user password: ${error.message}`);
+      throw new Error(`Error editing user password: ${error.message}`)
     }
   }
 
   async deleteUser(userId: number): Promise<void> {
     try {
-      await userRepository.deleteUser(userId);
+      await userRepository.deleteUser(userId)
     } catch (error) {
-      throw new Error(`Error deleting user: ${error}`);
+      throw new Error(`Error deleting user: ${error}`)
+    }
+  }
+
+  // Function to change the role of a user
+  async changeRole(userId: number, role: string): Promise<User | null> {
+    try {
+      return await userRepository.changeRole(userId, role)
+    } catch (error: any) {
+      throw new Error(`Error changing user role: ${error.message}`)
     }
   }
 }

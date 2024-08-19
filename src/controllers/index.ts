@@ -1,1 +1,1 @@
-export {CommentController} from './commentController';
+export { CommentController } from './commentController'

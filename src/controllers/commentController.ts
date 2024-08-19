@@ -1,70 +1,65 @@
-import { CommentService } from "../services";
-import { CommentDTO } from "../Types/DTO";
-import { Comment } from "../models";
-import { injectable, inject } from "tsyringe";
-import { Request as Req, Request, Response as Res, Response } from "express";
+import { CommentService } from '../services'
+import { CommentDTO } from '../Types/DTO'
+import { injectable, inject } from 'tsyringe'
+import { Request, Response } from 'express'
 
 @injectable()
 export class CommentController {
   constructor(@inject(CommentService) private commentService: CommentService) {}
 
-  public async createComment(
-    req: Request,
-    res: Response
-  ): Promise<CommentDTO | null> {
+  public async createComment(req: Request, res: Response) {
     try {
-      const commentData: CommentDTO = req.body;
-      const userId = (req as any).user.userId;
+      const commentData: CommentDTO = req.body
+
       const comment = await this.commentService.createComment(
-        userId,
+        (req as any).user.id,
         commentData
-      );
+      )
       if (!comment) {
-        res.status(404).send("product not found");
-        return null;
+        return res.status(404).send('product not found')
       }
-      res.status(201).json(comment);
-      return comment;
+      return res.status(201).json(comment)
     } catch (error: any) {
-      throw new Error(error.message);
+      res
+        .status(500)
+        .json({ error: 'Internal server error, please try again alter' })
+      throw new Error(error.message)
     }
   }
 
-  public async updateComment(
-    req: Request,
-    res: Response
-  ): Promise<Comment | null> {
+  public async updateComment(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
-      const commentData: CommentDTO = req.body;
-      const userId = (req as any).user.id;
+      const id = req.params.id as unknown as number
+      const commentData: CommentDTO = req.body
+      const userId = (req as any).user.id
       const comment = await this.commentService.updateComment(
         id,
         userId,
         commentData
-      );
+      )
       if (!comment) {
-        res.status(404);
-        // to be implemented
-        throw new Error("Comment not found");
+        res.status(404).send('comment not found')
+        return comment
       }
-      return comment;
     } catch (error: any) {
-      res.status(500);
-      throw new Error(error.message);
+      res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 
-  public async deleteComment(req: Request, res: Response): Promise<void> {
+  public async deleteComment(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id as unknown as number
 
-      const userId = (req as any).user.id;
-      await this.commentService.deleteComment(id, userId);
-      res.status(204);
+      const userId = (req as any).user.id
+      const isDeleted = await this.commentService.deleteComment(id, userId)
+      if (!isDeleted) {
+        res.status(404).send('comment not found')
+      }
+      res.status(204)
     } catch (error: any) {
-      res.status(500);
-      throw new Error(error.message);
+      res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 }

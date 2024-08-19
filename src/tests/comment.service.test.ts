@@ -1,200 +1,269 @@
-import { CommentService } from "../services/comment.service";
-import { CommentRepository } from "../data-access/CommentRepository";
-import { CommentDTO } from "../Types/DTO/commentDto";
-import { Comment } from "../models";
-import { mock, MockProxy } from "jest-mock-extended";
+import 'reflect-metadata'
+import CommentService from '../services/comment.service'
+import { commentRepository, productRepository } from '../data-access'
+import { CommentDTO } from '../Types/DTO/commentDto'
+import { InternalServerError } from '../Errors/InternalServerError'
+import logger from '../helpers/logger'
+import { Comment } from '../models'
 
-jest.mock("../models/Comment.model.ts");
+jest.mock('../data-access/commentRepository')
+jest.mock('../data-access/productRepository')
+jest.mock('../helpers/logger')
 
-describe("CommentService", () => {
-  let commentService: CommentService;
-  let commentRepository: MockProxy<CommentRepository>;
-  let MockedComment: jest.Mocked<typeof Comment>;
+describe('CommentService', () => {
+  let commentService: CommentService
 
   beforeEach(() => {
-    commentRepository = mock<CommentRepository>();
-    commentService = new CommentService(commentRepository);
-    MockedComment = Comment as jest.Mocked<typeof Comment>;
-  });
+    commentService = new CommentService()
+    jest.clearAllMocks()
+  })
 
-  describe("createComment", () => {
-    it("should create a new comment and return the data", async () => {
-      const userId = 1;
-      const data: CommentDTO = { content: "Test comment", productId: 123 };
-      const result = await commentService.createComment(userId, data);
+  describe('createComment', () => {
+    it('should create and return a comment when the product exists', async () => {
+      const userId = 1
+      const commentData: CommentDTO = {
+        productId: 123,
+        content: 'Great product!',
+      }
 
-      expect(result).toEqual(data);
-    });
+      ;(productRepository.GetProduct as jest.Mock).mockResolvedValue(true)
+      ;(commentRepository.create as jest.Mock).mockResolvedValue(commentData)
 
-    it("should throw an error if the comment cannot be created", async () => {
-      const userId = 1;
-      const data: CommentDTO = { content: "Test comment", productId: 123 };
+      const result = await commentService.createComment(userId, commentData)
 
-      commentRepository.create.mockRejectedValue(new Error("Database error"));
+      expect(productRepository.GetProduct).toHaveBeenCalledWith(
+        commentData.productId
+      )
+      expect(commentRepository.create).toHaveBeenCalledWith(expect.anything())
+      expect(result).toEqual(commentData)
+    })
 
-      await expect(commentService.createComment(userId, data)).rejects.toThrow(
-        "Could not create a new Comment Database error"
-      );
-    });
-  });
+    it('should return null if the product does not exist', async () => {
+      const userId = 1
+      const commentData: CommentDTO = {
+        productId: 123,
+        content: 'Great product!',
+      }
 
-  describe("getCommentsByProductId", () => {
-    it("should return comments for a given productId", async () => {
-      const productId = 123;
-      const comments = [
-        { toJSON: jest.fn().mockReturnValue({}) } as unknown as Comment,
-        { toJSON: jest.fn().mockReturnValue({}) } as unknown as Comment,
-      ];
+      ;(productRepository.GetProduct as jest.Mock).mockResolvedValue(false)
 
-      commentRepository.findByProductId.mockResolvedValue(comments);
+      const result = await commentService.createComment(userId, commentData)
 
-      const result = await commentService.getCommentsByProductId(productId);
+      expect(result).toBeNull()
+    })
 
-      expect(commentRepository.findByProductId).toHaveBeenCalledWith(productId);
-      expect(result).toEqual(comments.map((comment) => comment.toJSON()));
-    });
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const userId = 1
+      const commentData: CommentDTO = {
+        productId: 123,
+        content: 'Great product!',
+      }
 
-    it("should return null if no comments are found", async () => {
-      const productId = 123;
+      ;(productRepository.GetProduct as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      commentRepository.findByProductId.mockResolvedValue(null);
+      await expect(
+        commentService.createComment(userId, commentData)
+      ).rejects.toThrow(InternalServerError)
+      expect(logger.error).toHaveBeenCalled()
+    })
+  })
 
-      const result = await commentService.getCommentsByProductId(productId);
+  describe('getCommentsByProductId', () => {
+    it('should return a list of comments for a product', async () => {
+      const productId = 123
+      const comments: Comment[] = [new Comment()]
+      comments[0].id = 1
+      comments[0].userId = 1
+      comments[0].productId = 123
+      comments[0].content = 'Great product!'
 
-      expect(result).toBeNull();
-    });
+      const resultComments = [
+        { id: 1, userId: 1, productId: 123, content: 'Great product!' },
+      ]
 
-    it("should throw an error if there is an issue retrieving comments", async () => {
-      const productId = 123;
+      ;(commentRepository.findByProductId as jest.Mock).mockResolvedValue(
+        comments
+      )
 
-      commentRepository.findByProductId.mockRejectedValue(
-        new Error("Database error")
-      );
+      const result = await commentService.getCommentsByProductId(productId)
+
+      expect(commentRepository.findByProductId).toHaveBeenCalledWith(productId)
+      expect(result).toEqual(resultComments)
+    })
+
+    it('should return empty array if no comments are found', async () => {
+      const productId = 123
+
+      ;(commentRepository.findByProductId as jest.Mock).mockResolvedValue([])
+
+      const result = await commentService.getCommentsByProductId(productId)
+
+      expect(result).toEqual([])
+    })
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const productId = 123
+
+      ;(commentRepository.findByProductId as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
         commentService.getCommentsByProductId(productId)
-      ).rejects.toThrow(
-        "Could not create a retrieve the Comments Database error"
-      );
-    });
-  });
+      ).rejects.toThrow(InternalServerError)
+    })
+  })
 
-  describe("getCommentById", () => {
-    it("should return a comment by id", async () => {
-      const commentId = 1;
-      const comment = {
-        toJSON: jest.fn().mockReturnValue({}),
-      } as unknown as Comment;
+  describe('getCommentById', () => {
+    it('should return a comment by its ID', async () => {
+      const commentId = 1
+      const comment: CommentDTO = {
+        id: 1,
+        userId: 1,
+        productId: 123,
+        content: 'Great product!',
+      }
 
-      commentRepository.findById.mockResolvedValue(comment);
+      ;(commentRepository.findById as jest.Mock).mockResolvedValue({
+        toJSON: () => comment,
+      })
 
-      const result = await commentService.getCommentById(commentId);
+      const result = await commentService.getCommentById(commentId)
 
-      expect(commentRepository.findById).toHaveBeenCalledWith(commentId);
-      expect(result).toEqual(comment.toJSON());
-    });
+      expect(commentRepository.findById).toHaveBeenCalledWith(commentId)
+      expect(result).toEqual(comment)
+    })
 
-    it("should return null if the comment is not found", async () => {
-      const commentId = 1;
+    it('should return null if the comment is not found', async () => {
+      const commentId = 1
 
-      commentRepository.findById.mockResolvedValue(null);
+      ;(commentRepository.findById as jest.Mock).mockResolvedValue(null)
 
-      const result = await commentService.getCommentById(commentId);
+      const result = await commentService.getCommentById(commentId)
 
-      expect(result).toBeNull();
-    });
+      expect(result).toBeNull()
+    })
 
-    it("should throw an error if there is an issue retrieving the comment", async () => {
-      const commentId = 1;
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const commentId = 1
 
-      commentRepository.findById.mockRejectedValue(new Error("Database error"));
+      ;(commentRepository.findById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(commentService.getCommentById(commentId)).rejects.toThrow(
-        "Could not create a retrieve the Comments Database error"
-      );
-    });
-  });
+        InternalServerError
+      )
+      expect(logger.error).toHaveBeenCalled()
+    })
+  })
 
-  describe("updateComment", () => {
-    it("should update a comment and return the updated comment", async () => {
-      const commentId = 1;
-      const userId = 1;
-      const data: Partial<CommentDTO> = { content: "Updated comment" };
-      const updatedComment = {
-        toJSON: jest.fn().mockReturnValue({}),
-      } as unknown as Comment;
+  describe('updateComment', () => {
+    it('should update and return the updated comment', async () => {
+      const commentId = 1
+      const userId = 1
+      const updateData: Partial<CommentDTO> = { content: 'Updated content' }
+      const updatedComment: CommentDTO = {
+        id: 1,
+        userId: 1,
+        productId: 123,
+        content: 'Updated content',
+      }
 
-      commentRepository.update.mockResolvedValue(updatedComment);
-
-      const result = await commentService.updateComment(
-        commentId,
-        userId,
-        data
-      );
-
-      expect(commentRepository.update).toHaveBeenCalledWith(
-        expect.any(Comment)
-      );
-      expect(result).toEqual(updatedComment.toJSON());
-    });
-
-    it("should return null if the comment cannot be updated", async () => {
-      const commentId = 1;
-      const userId = 1;
-      const data: Partial<CommentDTO> = { content: "Updated comment" };
-
-      commentRepository.update.mockResolvedValue(null);
+      ;(commentRepository.update as jest.Mock).mockResolvedValue({
+        toJSON: () => updatedComment,
+      })
 
       const result = await commentService.updateComment(
         commentId,
         userId,
-        data
-      );
+        updateData
+      )
 
-      expect(result).toBeNull();
-    });
+      expect(commentRepository.update).toHaveBeenCalledWith(expect.anything())
+      expect(result).toEqual(updatedComment)
+    })
 
-    it("should throw an error if there is an issue updating the comment", async () => {
-      const commentId = 1;
-      const userId = 1;
-      const data: Partial<CommentDTO> = { content: "Updated comment" };
+    it('should return null if the comment is not found', async () => {
+      const commentId = 1
+      const userId = 1
+      const updateData: Partial<CommentDTO> = { content: 'Updated content' }
 
-      commentRepository.update.mockRejectedValue(new Error("Database error"));
+      ;(commentRepository.update as jest.Mock).mockResolvedValue(null)
+
+      const result = await commentService.updateComment(
+        commentId,
+        userId,
+        updateData
+      )
+
+      expect(result).toBeNull()
+    })
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const commentId = 1
+      const userId = 1
+      const updateData: Partial<CommentDTO> = { content: 'Updated content' }
+
+      ;(commentRepository.update as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
-        commentService.updateComment(commentId, userId, data)
-      ).rejects.toThrow("Could not create a update the Comment Database error");
-    });
-  });
+        commentService.updateComment(commentId, userId, updateData)
+      ).rejects.toThrow(InternalServerError)
+      expect(logger.error).toHaveBeenCalled()
+    })
+  })
 
-  describe("deleteComment", () => {
-    it("should delete a comment and return true if successful", async () => {
-      const commentId = 1;
-      commentRepository.delete.mockResolvedValue(true);
+  describe('deleteComment', () => {
+    it('should delete the comment and return true', async () => {
+      const commentId = 1
+      const userId = 1
 
-      const result = await commentService.deleteComment(commentId, 1);
+      ;(commentRepository.findByUserIdAndId as jest.Mock).mockResolvedValue({
+        id: commentId,
+        userId,
+      })
+      ;(commentRepository.delete as jest.Mock).mockResolvedValue(true)
 
-      expect(commentRepository.delete).toHaveBeenCalledWith(commentId);
-      expect(result).toBe(true);
-    });
+      const result = await commentService.deleteComment(commentId, userId)
 
-    it("should return false if the comment cannot be deleted", async () => {
-      const commentId = 1;
-      commentRepository.delete.mockResolvedValue(false);
+      expect(commentRepository.findByUserIdAndId).toHaveBeenCalledWith(
+        userId,
+        commentId
+      )
+      expect(commentRepository.delete).toHaveBeenCalledWith(commentId)
+      expect(result).toBe(true)
+    })
 
-      const result = await commentService.deleteComment(commentId, 1);
+    it('should return false if the comment is not found', async () => {
+      const commentId = 1
+      const userId = 1
 
-      expect(result).toBe(false);
-    });
+      ;(commentRepository.findByUserIdAndId as jest.Mock).mockResolvedValue(
+        null
+      )
 
-    it("should throw an error if there is an issue deleting the comment", async () => {
-      const commentId = 1;
+      const result = await commentService.deleteComment(commentId, userId)
 
-      commentRepository.delete.mockRejectedValue(new Error("Database error"));
+      expect(result).toBe(false)
+    })
 
-      await expect(commentService.deleteComment(commentId, 1)).rejects.toThrow(
-        "Could not create a update the Comment Database error"
-      );
-    });
-  });
-});
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const commentId = 1
+      const userId = 1
+
+      ;(commentRepository.findByUserIdAndId as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
+
+      await expect(
+        commentService.deleteComment(commentId, userId)
+      ).rejects.toThrow(InternalServerError)
+      expect(logger.error).toHaveBeenCalled()
+    })
+  })
+})

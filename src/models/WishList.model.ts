@@ -6,22 +6,22 @@ import {
   BelongsTo,
   BelongsToMany,
   Model,
-} from "sequelize-typescript";
-import { User, Product, WishlistProduct } from "../models";
+} from 'sequelize-typescript'
+import { User, Product, WishlistProduct } from '../models'
+import { defaultTableSettings } from '../config/DefaultTableSettings'
 
 @Table({
-  timestamps: true,
-  paranoid: true,
-  tableName: "wishlists",
+  tableName: 'wishlists',
+  ...defaultTableSettings,
 })
 export class Wishlist extends Model<Wishlist> {
   @ForeignKey(() => User)
   @Column({ allowNull: false, type: DataType.INTEGER })
-  userId!: number;
+  userId!: number
 
   @BelongsTo(() => User)
-  user!: User;
+  user!: User
 
   @BelongsToMany(() => Product, () => WishlistProduct)
-  products!: Product[];
+  products!: Product[]
 }

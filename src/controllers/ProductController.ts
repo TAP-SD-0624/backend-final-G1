@@ -1,105 +1,92 @@
-import ProductService from "../services/product.service";
-import { ProductDTO } from "../Types/DTO";
-import { injectable, inject } from "tsyringe";
-import { Request, Response } from "express";
+import ProductService from '../services/product.service'
+import { ProductDTO } from '../Types/DTO'
+import { injectable, inject } from 'tsyringe'
+import { Request, Response } from 'express'
+import { UpdateProductDTO } from '../Types/DTO/productDto'
 @injectable()
 export class ProductController {
   constructor(@inject(ProductService) private productService: ProductService) {}
 
   public async GetProducts(req: Request, res: Response) {
-    const { page, pageSize, options } = req.body;
+    const { page, pageSize, options } = req.body
     try {
       const products = await this.productService.GetProducts(
         page,
         pageSize,
         options
-      );
-      res.status(200).json({ products });
+      )
+      res.status(200).json({ products })
     } catch (ex) {
-      console.log(ex);
+      return res
+        .status(500)
+        .json({ error: 'internal server error, try again later.' })
     }
   }
 
-  public async createProduct(req: Request, res: Response): Promise<void> {
+  public async createProduct(req: Request, res: Response) {
     try {
-      const product: ProductDTO = req.body;
-      if (!product) {
-        res.status(500).json({ error: "Required Data is Unavailable" });
-      }
-      const newProduct = await this.productService.createProduct(product);
-      if (!newProduct) {
-        res.status(400).json({ error: "error while creating new Product" });
-      }
-      res.status(201).json(product);
+      const product: ProductDTO = req.body
+      product.images = req.files as Express.Multer.File[]
+      const newProduct = await this.productService.createProduct(product)
+
+      return res.status(201).json(newProduct)
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
-      throw error;
+      return res
+        .status(500)
+        .json({ error: 'internal server error, try again later.' })
     }
   }
 
-  public async updateProduct(req: Request, res: Response): Promise<void> {
+  public async updateProduct(req: Request, res: Response) {
     try {
-      const newProduct: ProductDTO = req.body;
-      const productId = parseInt(req.params.id);
-      if (!newProduct || !productId) {
-        res.status(500).json({ error: "Required Data is Unavailable" });
-      }
-      const updatedProduct = await this.productService.updateProduct(
-        productId,
-        newProduct
-      );
+      const updatedData: UpdateProductDTO = req.body
+
+      const updatedProduct = await this.productService.FindAndUpdateProduct(
+        updatedData.id,
+        updatedData
+      )
+
       if (!updatedProduct) {
-        res.status(404).json({ error: "Error while updating category" });
+        return res
+          .status(404)
+          .json({ error: 'could not find the product with the specified Id' })
       }
 
-      res.status(201).json(updatedProduct);
+      return res.status(201).json(updatedProduct)
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
-      throw error;
+      return res
+        .status(500)
+        .json({ error: 'internal server error, try again later.' })
     }
   }
 
-  public async deleteProduct(req: Request, res: Response): Promise<void> {
+  public async deleteProduct(req: Request, res: Response) {
     try {
-      const productId = parseInt(req.params.id);
-      if (!productId) {
-        res.status(500).json({ error: "Required Data is Unavailable" });
-      }
-      await this.productService.deleteProduct(productId);
-      res.status(201);
+      const productId = parseInt(req.params.id)
+
+      const status = await this.productService.DeleteProduct(productId)
+      if (status) return res.status(204).json({})
+      return res.status(404).json({})
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res
+        .status(500)
+        .json({ error: 'internal server error, try again later.' })
     }
   }
 
-  public async getProductById(req: Request, res: Response): Promise<void> {
+  public async getProductById(req: Request, res: Response) {
     try {
-      const productId = parseInt(req.params.id, 10);
-      if (!productId) {
-        res.status(500).json({ error: "Required Data is Unavailable" });
-      }
-      const product = await this.productService.GetProduct(productId);
+      const { id } = req.params
+
+      const product = await this.productService.GetProduct(parseInt(id))
       if (!product) {
-        res.status(400).json({ error: "Product not found" });
+        return res.status(404).json({ error: 'Product not found' })
       }
-      res.status(201).json(product);
+      return res.status(200).json({ product })
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  public async getProductByName(req: Request, res: Response): Promise<void> {
-    try {
-      const { name } = req.body;
-      if (!name) {
-        res.status(500).json({ error: "Required Data is Unavailable" });
-      }
-      const product = await this.productService.findByName(name);
-      if (!product) {
-        res.status(404).json(product);
-      }
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res
+        .status(500)
+        .json({ error: 'internal server error, try again later.' })
     }
   }
 }

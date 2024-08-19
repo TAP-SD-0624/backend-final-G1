@@ -1,3 +1,3 @@
 export type ratingDto = {
-  value: number;
-};
+  value: number
+}

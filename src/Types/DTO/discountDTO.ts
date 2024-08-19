@@ -1,4 +1,4 @@
 export type discountDTO = {
-  id?: number;
-  amount: number;
-};
+  id?: number
+  amount: number
+}
