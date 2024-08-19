@@ -103,5 +103,14 @@ export default class CartService {
     } catch (error: any) {
       throw new Error(`Error updating product quantity: ${error.message}`)
     }
+  } 
+  // function that takes userId and return the cart with the products
+  async getCartWithProducts(userId: number): Promise<Cart | null> {
+    try {
+      
+      return await cartRepository.getCartWithProducts(userId)
+    } catch (error: any) {
+      throw new Error(`Error retrieving cart with products: ${error.message}`)
+    }
   }
 }

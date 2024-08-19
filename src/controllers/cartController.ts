@@ -8,32 +8,24 @@ import { Cart } from '../models'
 export class CartController {
   constructor(@inject(CartService) private cartService: CartService) {}
 
-  async createCart(req: Request, res: Response): Promise<Cart> {
+  async createCart(req: Request, res: Response): Promise<Response> {
     try {
-      const userId: number = req.body.userId
-      const productId: number = req.body.products.productId
-      const quantity: number = req.body.products.quantity
-
+      const { userId, products } = req.body;
+  
+      // Ensure products is an array to support multiple products
       const cartData: CartDTO = {
         userId,
         products: [],
-      }
-
-      const cart = await this.cartService.createCart(
-        cartData,
-        productId,
-        quantity
-      )
-
-      res
-        .status(201)
-        .json({ message: 'Cart created and product added successfully', cart })
-      return cart // Add this line to return the 'cart' value
+      };
+  
+      const cart = await this.cartService.createCart(cartData, products.productId, products.quantity);
+  
+      return res.status(201).json({ message: 'Cart created and product added successfully', cart });
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({ error: error.message });
     }
   }
+  
 
   async getCartByUserId(req: Request, res: Response): Promise<Cart[] | null> {
     try {
@@ -148,4 +140,20 @@ export class CartController {
       res.status(500).json({ error: error.message })
     }
   }
+
+  async getCartProductsByUserId(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      const cart = await this.cartService.getCartWithProducts(userId);
+  
+      if (!cart) {
+        res.status(404).json({ error: 'Cart not found' });
+      } else {
+        res.status(200).json(cart);
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
 }

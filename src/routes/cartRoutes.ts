@@ -15,7 +15,7 @@ const cartController = container.resolve(CartController)
 cartRouter.post(
   '/',
   authAndRoleMiddleware(['user', 'admin']),
-  createCartValidator,
+  // createCartValidator,
   cartController.createCart.bind(cartController)
 )
 cartRouter.get(
@@ -55,6 +55,13 @@ cartRouter.delete(
   '/:cartId/product/:productId',
   authAndRoleMiddleware(['user', 'admin']),
   cartController.removeProductFromCart.bind(cartController)
+)
+
+// get cart by user id
+cartRouter.get(
+  '/products/:userId',
+  authAndRoleMiddleware(['user', 'admin']),
+  cartController.getCartProductsByUserId.bind(cartController)
 )
 
 export default cartRouter

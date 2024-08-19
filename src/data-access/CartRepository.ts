@@ -5,8 +5,7 @@ import sequelize from '../config/db'
 
 export class CartRepository
   extends RepositoryBase<Cart>
-  implements ICartRepository
-{
+  implements ICartRepository {
   async findCartByUserId(userId: number): Promise<Cart[]> {
     return await this.model.findAll({ where: { userId } })
   }
@@ -135,5 +134,18 @@ export class CartRepository
       `Successfully updated quantity for productId: ${productId} in cartId: ${cartId} to ${quantity}`
     )
     return true
+  }
+
+  // function that takes userId and return the cart with the products
+  async getCartWithProducts(userId: number): Promise<Cart | null> {
+    return await this.model.findOne({
+      where: { userId },
+      include: [
+        {
+          association: 'products',  
+          through: { attributes: [] },  
+        }
+      ],
+    });
   }
 }
