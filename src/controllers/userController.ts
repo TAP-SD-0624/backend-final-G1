@@ -65,10 +65,6 @@ export class UserController {
     try {
       const userId = parseInt(req.params.id, 10)
       const userData: UserDTO = req.body
-
-      console.log('Request to update user with ID:', userId)
-      console.log('Request body data:', userData)
-
       const updatedUser = await this.userService.updateUser(userId, userData)
       if (!updatedUser) {
         res.status(404).json({ error: 'User not found or no changes made' })
