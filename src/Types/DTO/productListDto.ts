@@ -1,5 +1,5 @@
-import { ProductDTO } from './productDto'
+import { PostProductDTO } from './productDto'
 
 export type productListDto = {
-  products: ProductDTO[]
+  products: PostProductDTO[]
 }
