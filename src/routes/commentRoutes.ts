@@ -17,7 +17,7 @@ commentRouter.post(
   createCommentValidator,
   commentController.createComment.bind(commentController)
 )
-commentRouter.put(
+commentRouter.patch(
   '/:id',
   authAndRoleMiddleware(['user']),
   updateCommentValidator,

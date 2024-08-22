@@ -1,13 +1,54 @@
-import { Product } from "../models"
+import { Order, OrderProduct, Product } from "../models"
 import { IDashboardRepository } from "./Interfaces/IDashboardRepository"
+import { Op, Sequelize } from "sequelize"
 
 
 export class DashboardRepository implements IDashboardRepository {
-  getMostBoughtProductsOverTime(startTime: Date, endTime: Date): Promise<Product[]> {
-    throw new Error('Method not implemented.')
+  async getMostBoughtProductsOverTime(startTime: Date, endTime: Date): Promise<Product[]> {
+    const orders = await OrderProduct.findAll({
+      attributes: ['productId', [Sequelize.fn('COUNT', Sequelize.col('productId')), 'count']],
+      where: {
+        createdAt: {
+          [Op.between]: [startTime, endTime],
+        }
+      },
+      group: ['productId'],
+      include: [
+        {
+          model: Product,
+
+        }
+      ],
+      order: [['count', 'DESC']],
+    })
+    return orders.map((order) => order.get("Product") as Product);
   }
-  getProductsNotBought(): Promise<Product[]> {
-    throw new Error('Method not implemented.')
+  async getProductsNotBought(startTime: Date = new Date(0), endTime: Date = new Date()): Promise<Product[]> {
+    const orders = await Product.findAll(
+      {
+        include: [
+          { model: OrderProduct }
+        ]
+      }
+    )
+
+
+    await OrderProduct.findAll({
+      attributes: ['productId', [Sequelize.fn('COUNT', Sequelize.col('productId')), 'count']],
+      where: {
+        createdAt: {
+          [Op.between]: [startTime, endTime],
+        }
+      },
+      group: ['productId'],
+      include: [
+        {
+          model: Product,
+
+        }
+      ],
+    })
+    return orders.map((order) => order.get("Product") as Product);
   }
   getListOfItemsToDrop(): Promise<Product[]> {
     throw new Error('Method not implemented.')

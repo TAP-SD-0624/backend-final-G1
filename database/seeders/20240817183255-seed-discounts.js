@@ -6,7 +6,7 @@ module.exports = {
     for (let i = 1; i <= 20; i++) {
       discounts.push({
         discountRate: (Math.random() * 50).toFixed(2),
-        productId: Math.floor(Math.random() * 20) + 1,
+        productId: i,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

@@ -11,8 +11,9 @@ import {
 import { RepositoryBase } from './RepositoryBase'
 import { GetProductOptions } from '../Types/GetProductOptions'
 
-import { Op } from 'sequelize'
+import { FindOptions, Includeable, IncludeOptions, Op } from 'sequelize'
 import { UpdateProductDTO } from '../Types/DTO/productDto'
+import sequelize from 'sequelize'
 
 export class ProductRepository
   extends RepositoryBase<Product>
@@ -60,32 +61,90 @@ export class ProductRepository
     // defining the query of selecting the products,
     // first we define the limit by the pageSize, which will limit the number of pages returned.
     // we will also offset it by pageSize * (page - 1), page - 1 since pages starts from 1.
-    const opts: any = {
-      limit: pageSize,
-      offset: pageSize * (page - 1),
+    const opts: FindOptions<Product> = {
+      subQuery: false, // Ensure no nested queries are used
 
+      limit: pageSize,
+
+      offset: pageSize * (page - 1),
+      where: {
+        ...(options?.earliestDate && {
+          createdAt: {
+            [Op.gt]: options.earliestDate,
+          },
+        }),
+        ...(options?.minPrice && {
+          price: {
+            [Op.gte]: options.minPrice,
+          },
+        }),
+        ...(options?.maxPrice && {
+          price: {
+            [Op.lte]: options.maxPrice,
+          },
+        }),
+      },
+      attributes: {
+        include: [
+          [
+            sequelize.fn('AVG', sequelize.col('ratings.rating')), // Average rating
+            'averageRating',
+          ],
+          [
+            sequelize.fn('COUNT', sequelize.col('ratings.id')), // Count of ratings
+            'ratingCount',
+          ],
+        ],
+      },
       include: [
         {
           model: Category,
+          ...(options?.categories && {
+            where: {
+              name: options.categories,
+            },
+          }),
           through: { attributes: [] },
         },
-      ],
-    }
-
-    //this will filter all products added to the database before the specified date.
-    if (options?.earliestDate) {
-      opts.where = {
-        createdAt: {
-          [Op.gt]: options.earliestDate,
+        {
+          model: UserRating,
+          attributes: [], // Optionally exclude direct user rating details
         },
-      }
+        {
+          model: Brand,
+          ...(options?.brand && {
+            where: {
+              name: options.brand,
+            },
+          }),
+        },
+        {
+          model: Image,
+        },
+      ],
+      group: [
+        'Product.id', // Group by Product ID
+        'categories.id', // Group by Category ID
+        'categories->ProductCategory.productId', // Group by productId from ProductCategory
+        'categories->ProductCategory.categoryId', // Group by categoryId from ProductCategory
+        'ratings.id', // Group by UserRating ID
+        'brand.id', // Group by UserRating ID
+        'images.id',
+      ],
+      having: {
+        ...(options?.minRating && {
+          [Op.gte]: sequelize.literal(
+            'AVG(ratings.rating) >= ' + options.minRating
+          ),
+        }), // Minimum average rating filter
+        ...(options?.maxRating && {
+          [Op.lte]: sequelize.literal(
+            'AVG(ratings.rating) <= ' + options.maxRating
+          ),
+        }), // Maximum average rating filter
+      },
     }
 
-    //this filter will return all products that contain one or more category of the specified categories.
-    if (options?.categories) {
-      opts.include[0].where = { name: options.categories }
-    }
-    console.log(opts)
     return await this.model.findAll(opts)
   }
 

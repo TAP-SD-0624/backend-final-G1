@@ -3,7 +3,7 @@ import { CommentDTO } from './commentDto'
 import { discountDTO } from './discountDTO'
 import { ratingDto } from './ratingDto'
 
-export type ProductDTO = {
+export type PostProductDTO = {
   name: string
   price: number
   description?: string
@@ -14,6 +14,30 @@ export type ProductDTO = {
   comments?: CommentDTO[]
   categories?: CategoryDTO[]
   discount?: discountDTO
+}
+
+export type GetProductDTO = {
+  id: number
+  name: string
+  price: number
+  stock: number
+  averageRating?: number
+  ratingCount?: number
+  description?: string
+  discount?: discountDTO
+  categories?: CategoryDTO[]
+  comments?: CommentDTO[]
+  userRatings?: ratingDto[]
+  brand?: GetBrandDTO
+  images?: GetImageDTO[]
+}
+
+export type GetBrandDTO = {
+  icon?: string
+  name: string
+}
+export type GetImageDTO = {
+  publicURL: string
 }
 
 export type UpdateProductDTO = {

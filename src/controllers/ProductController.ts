@@ -3,16 +3,38 @@ import { ProductDTO } from '../Types/DTO'
 import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
 import { UpdateProductDTO } from '../Types/DTO/productDto'
+import { GetProductOptions } from '../Types/GetProductOptions'
 @injectable()
 export class ProductController {
   constructor(@inject(ProductService) private productService: ProductService) {}
 
   public async GetProducts(req: Request, res: Response) {
-    const { page, pageSize, options } = req.body
+    const {
+      page,
+      pageSize,
+      categories,
+      earliestDate,
+      maxPrice,
+      minPrice,
+      brand,
+      minRating,
+      maxRating,
+    } = req.query
+    const options: GetProductOptions = {
+      categories: categories as string[],
+      maxPrice: parseInt(maxPrice as string),
+      minPrice: parseInt(minPrice as string),
+      minRating: parseInt(minRating as string),
+      maxRating: parseInt(maxRating as string),
+      brand: brand as string[],
+    }
+    if (earliestDate) {
+      options.earliestDate = new Date(earliestDate as string)
+    }
     try {
       const products = await this.productService.GetProducts(
-        page,
-        pageSize,
+        parseInt(page as string),
+        parseInt(pageSize as string),
         options
       )
       res.status(200).json({ products })

@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { Category, Image, Product, ProductCategory } from '../models'
-import { ProductDTO } from '../Types/DTO'
+import { CategoryDTO, CommentDTO, ProductDTO } from '../Types/DTO'
 import { GetProductOptions } from '../Types/GetProductOptions'
 import {
   productRepository,
@@ -11,8 +11,9 @@ import {
 import { ValidationError } from '../Errors/ValidationError'
 import { ValidationError as VE } from 'sequelize'
 import { InternalServerError } from '../Errors/InternalServerError'
-import { UpdateProductDTO } from '../Types/DTO/productDto'
+import { GetProductDTO, UpdateProductDTO } from '../Types/DTO/productDto'
 import { WriteAllImages } from '../helpers/Storage/StorageManager'
+import { ratingDto } from '../Types/DTO/ratingDto'
 @injectable()
 export default class ProductService {
   /**
@@ -34,7 +35,7 @@ export default class ProductService {
     page: number = 1,
     pageSize: number = 10,
     options?: GetProductOptions
-  ): Promise<ProductDTO[] | null> {
+  ): Promise<GetProductDTO[] | null> {
     //validate the parameters.
     if (page < 1)
       throw new ValidationError('page should be more than or equal to 1')
@@ -48,21 +49,24 @@ export default class ProductService {
         pageSize,
         options
       )
-
-      const prodcutsDto: ProductDTO[] = []
-
+      const prodcutsDto: GetProductDTO[] = []
       //map each Product with a ProductDTO
       products.forEach((item) => {
         prodcutsDto.push({
+          id: item.id,
+          averageRating: item.toJSON().averageRating,
+          ratingCount: item.toJSON().ratingCount,
           name: item.name,
           price: item.price,
           stock: item.stock,
-          // brand: item.brand,
+          brand: item.brand,
           description: item.description,
           discount: {
-            amount: item.discount?.discountRate ?? 0,
+            discountRate: item.discount?.discountRate ?? 0,
             id: item.discount?.id,
           },
+          images: item.images,
+          categories: item.categories,
         })
       })
 
@@ -81,55 +85,57 @@ export default class ProductService {
    * @returns {null} null when no product is found
    * @throws {InternalServerError} InternalServerError when an error occuers
    */
-  async GetProduct(Id: number): Promise<Product | null> {
+  async GetProduct(Id: number): Promise<GetProductDTO | null> {
     try {
       const product = await productRepository.GetProduct(Id)
       if (!product) return null
 
-      return product.toJSON()
-      //map comments.
-      // const comments: CommentDTO[] = []
-      // product.comments.forEach((item) => {
-      //   const comment: CommentDTO = {
-      //     content: item.content,
-      //     id: item.id,
-      //     productId: item.productId,
-      //     userId: item.userId,
-      //   }
-      //   comments.push(comment)
-      // })
+      // map comments.
+      const comments: CommentDTO[] = []
+      product.comments.forEach((item) => {
+        const comment: CommentDTO = {
+          content: item.content,
+          id: item.id,
+          productId: item.productId,
+          userId: item.userId,
+        }
+        comments.push(comment)
+      })
 
-      // //map categories
-      // const categories: CategoryDTO[] = []
-      // product.categories.forEach((item) => {
-      //   const category: CategoryDTO = {
-      //     name: item.name,
-      //     id: item.id,
-      //   }
-      //   categories.push(category)
-      // })
+      //map categories
+      const categories: CategoryDTO[] = []
+      product.categories.forEach((item) => {
+        const category: CategoryDTO = {
+          name: item.name,
+          id: item.id,
+        }
+        categories.push(category)
+      })
 
-      // //map userRatings.
-      // const ratings: ratingDto[] = []
-      // product.ratings.forEach((item) => {
-      //   const rating: ratingDto = {
-      //     value: item.rating,
-      //   }
-      //   ratings.push(rating)
-      // })
+      //map userRatings.
+      const ratings: ratingDto[] = []
+      product.ratings.forEach((item) => {
+        const rating: ratingDto = {
+          value: item.rating,
+        }
+        ratings.push(rating)
+      })
 
-      // const productDTO: ProductDTO = {
-      //   name: product.name,
-      //   price: product.price,
-      //   stock: product.stock,
-      //   // brand: product.brand,
-      //   description: product.description,
-      //   discount: { amount: product.discount?.discountRate ?? 0 },
-      //   comments,
-      //   categories,
-      //   userRatings: ratings,
-      // }
-      // return productDTO
+      const productDTO: GetProductDTO = {
+        name: product.name,
+        id: product.id,
+        price: product.price,
+        stock: product.stock,
+        brand: product.brand,
+        description: product.description,
+        discount: { discountRate: product.discount?.discountRate ?? 0 },
+        comments,
+        categories,
+        userRatings: ratings,
+        images: product.images,
+      }
+
+      return productDTO
     } catch (ex) {
       console.log(ex)
       throw new InternalServerError()

@@ -68,6 +68,8 @@ export class Product extends Model<Product> {
   @HasMany(() => Image)
   images!: Image[]
 
+  averageRating!: number
+  ratingCount!: number
   //Prodcut-Comment relationshop.
 
   @HasMany(() => Comment)
