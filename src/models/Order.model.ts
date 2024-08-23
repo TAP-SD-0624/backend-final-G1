@@ -7,7 +7,7 @@ import {
   BelongsToMany,
   Model,
 } from 'sequelize-typescript'
-import { Product, OrderProduct, User } from '../models'
+import { Product, OrderProduct, User, Address } from '../models'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import { defaultTableSettings } from '../config/DefaultTableSettings'
 
@@ -32,9 +32,16 @@ export class Order extends Model<Order> {
   @Column({ allowNull: false, type: DataType.INTEGER })
   userId!: number
 
+  @ForeignKey(() => Address)
+  @Column({ allowNull: false, type: DataType.INTEGER })
+  addressId!: number
+
   @BelongsTo(() => User)
   user!: User
 
   @BelongsToMany(() => Product, () => OrderProduct)
   products!: Product[]
+
+  @BelongsTo(() => Address)
+  address!: Address
 }
