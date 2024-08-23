@@ -7,70 +7,70 @@ import { WishlistDTO } from '../Types/DTO'
 export class WishlistController {
   constructor(
     @inject(WishlistService) private wishlistService: WishlistService
-  ) {}
+  ) { }
 
-  async getWishList(req: Request, res: Response): Promise<WishlistDTO | null> {
+  async addOrRemoveProducts(req: Request, res: Response) {
+    const mode = req.body.mode;
+    if (mode === 'add') {
+      return this.addProductToWishlist(req, res);
+    }
+    else {
+      return this.removeProductFromWishlist(req, res);
+    }
+  }
+  async getWishList(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
       const wishlist = await this.wishlistService.getWishlistByUserId(userId)
-      res.json(wishlist)
-      return wishlist
+      return res.json(wishlist)
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({ error: error.message })
     }
   }
 
-  async addProductToWishlist(req: Request, res: Response): Promise<boolean> {
+  private async addProductToWishlist(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
-      const productId: number = req.body.productId
+      const productId = req.body.productId as unknown as number;
       const added = await this.wishlistService.addProductToWishlist(
         userId,
         productId
       )
       if (!added) {
-        res.status(404).json({ error: 'Product not found' })
-        return false
+        return res.status(404).json({ error: 'Product not found' })
       }
-      res.json('Product has been added to wishlist')
-      return added
+      return res.send('Product has been added to wishlist')
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({ error: error.message })
     }
   }
   async removeProductFromWishlist(
     req: Request,
     res: Response
-  ): Promise<boolean> {
+  ) {
     try {
       const userId = (req as any).user.id
-      const productId: number = req.params.productId as unknown as number
+      const productId: number = req.body.productId as unknown as number
       const removed = await this.wishlistService.removeProductFromWishList(
         userId,
         productId
       )
       if (!removed) {
-        res.status(404).json({ error: 'Product not found' })
-        return false
+        return res.status(404).json({ error: 'Product not found' })
+
       }
-      res.json('Product has been removed from the wishlist')
-      return removed
+      return res.send('Product has been removed from the wishlist')
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({ error: error.message })
     }
   }
-  async clearWishList(req: Request, res: Response): Promise<boolean> {
+  async clearWishList(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
       const cleared = await this.wishlistService.clearWishList(userId)
-      res.json('Wishlist has been cleared')
-      return cleared
+      return res.send('Wishlist has been cleared')
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({ error: error.message })
     }
   }
 }

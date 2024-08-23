@@ -5,13 +5,12 @@ import { RepositoryBase } from './RepositoryBase'
 
 export class AddressRepository
   extends RepositoryBase<Address>
-  implements IAddressRepository
-{
+  implements IAddressRepository {
   async getAddressByIdAndUserId(
-    Id: number,
+    id: number,
     userId: number
   ): Promise<Address | null> {
-    return await this.model.findOne({ where: { id: Id, userId } })
+    return await this.model.findOne({ attributes: { exclude: ['userId'] }, where: { id, userId } })
   }
   async deleteAddress(id: number, userId: number): Promise<boolean> {
     const number = await this.model.destroy({ where: { id, userId } })
@@ -31,11 +30,13 @@ export class AddressRepository
       where: { id, userId },
       returning: true,
     })
+
     return updatedEntity
   }
 
   async getAddressesByUserId(userId: number): Promise<Address[]> {
     return await this.model.findAll({
+      attributes: { exclude: ['userId'] },
       where: { userId },
     })
   }

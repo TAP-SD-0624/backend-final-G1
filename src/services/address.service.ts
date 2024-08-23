@@ -10,11 +10,11 @@ import { ValidationError } from '../Errors/ValidationError'
 @injectable()
 export default class AddressService {
   public async getAddressByIdAndUserId(
-    Id: number,
+    id: number,
     userId: number
   ): Promise<AddressDTO | null> {
     try {
-      return await addressRepository.getAddressByIdAndUserId(Id, userId)
+      return await addressRepository.getAddressByIdAndUserId(id, userId)
     } catch (error) {
       logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
@@ -51,6 +51,7 @@ export default class AddressService {
       await addressRepository.create(address)
       return data
     } catch (error) {
+      console.log(error);
       logger.error(error)
       if (error instanceof VE) {
         throw new ValidationError(error.message)
@@ -65,8 +66,17 @@ export default class AddressService {
     data: updateAddressDTO
   ): Promise<AddressDTO | null> {
     delete (data as any).id
+
     try {
-      return await addressRepository.updateAddress(id, userId, data)
+      const updatedAddress = await addressRepository.updateAddress(id, userId, data)
+      if(!updatedAddress) return null;
+      const updatedAddressJSON: AddressDTO = updatedAddress.toJSON();
+      delete updatedAddressJSON.userId;
+      delete updatedAddressJSON.createdAt;
+      delete updatedAddressJSON.updatedAt;
+      delete updatedAddressJSON.deletedAt;
+      return updatedAddressJSON;
+
     } catch (error) {
       logger.error(error)
       if (error instanceof VE) {

@@ -51,6 +51,7 @@ export class WishlistRepository
   }
   async findByUserId(userId: number): Promise<Wishlist | null> {
     return await Wishlist.findOne({
+      attributes:[],
       where: { userId },
       include: [
         {

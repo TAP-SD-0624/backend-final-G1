@@ -13,8 +13,8 @@ export class AddressController {
     const id = req.params.id as unknown as number
     try {
       const address = await this.addressService.getAddressByIdAndUserId(
-        userId,
-        id
+        id,
+        userId
       )
       if (!address) {
         return res.status(404).json({ error: 'Address not found' })

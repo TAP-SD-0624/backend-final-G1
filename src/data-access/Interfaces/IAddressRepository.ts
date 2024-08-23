@@ -9,5 +9,5 @@ export interface IAddressRepository {
     data: updateAddressDTO
   ): Promise<Address | null>
   deleteAddress(id: number, userId: number): Promise<boolean>
-  getAddressByIdAndUserId(Id: number, userId: number): Promise<Address | null>
+  getAddressByIdAndUserId(id: number, userId: number): Promise<Address | null>
 }

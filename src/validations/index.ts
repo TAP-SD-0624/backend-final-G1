@@ -35,3 +35,7 @@ export {
   getProductsNotBoughtValidator,
   getProductsPerStateValidator,
 } from './dashboardValidator'
+
+export{
+addAndRemoveProductToWishlist
+} from './wishlistValidations'

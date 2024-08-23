@@ -5,7 +5,7 @@ import { Request, Response } from 'express'
 
 @injectable()
 export class CommentController {
-  constructor(@inject(CommentService) private commentService: CommentService) {}
+  constructor(@inject(CommentService) private commentService: CommentService) { }
 
   public async createComment(req: Request, res: Response) {
     try {
@@ -23,7 +23,6 @@ export class CommentController {
       res
         .status(500)
         .json({ error: 'Internal server error, please try again alter' })
-      throw new Error(error.message)
     }
   }
 
@@ -38,12 +37,11 @@ export class CommentController {
         commentData
       )
       if (!comment) {
-        res.status(404).send('comment not found')
-        return comment
+        return res.status(404).send('comment not found')
       }
+      return res.status(200).json(commentData);
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 
@@ -54,12 +52,11 @@ export class CommentController {
       const userId = (req as any).user.id
       const isDeleted = await this.commentService.deleteComment(id, userId)
       if (!isDeleted) {
-        res.status(404).send('comment not found')
+        return res.status(404).send('comment not found')
       }
-      res.status(204)
+      return res.status(204).send("comment has been deleted")
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 }
