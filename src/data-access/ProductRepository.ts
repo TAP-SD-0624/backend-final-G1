@@ -71,13 +71,29 @@ export class ProductRepository
 
     let array: any[] = []
 
-    if (options?.minRating || options?.maxRating) {
+    if (options?.minRating && options?.maxRating) {
       array.push(
         literal(`(
           SELECT AVG("rating")
           FROM "userRatings"
           WHERE "userRatings"."productId" = "Product"."id"
-        ) BETWEEN 2 AND 5`)
+        ) BETWEEN ${options.minRating} AND ${options.maxRating}`)
+      )
+    } else if (options?.minRating) {
+      array.push(
+        literal(`(
+        SELECT AVG("rating")
+        FROM "userRatings"
+        WHERE "userRatings"."productId" = "Product"."id"
+      ) > ${options.minRating}`)
+      )
+    } else if (options?.maxRating) {
+      array.push(
+        literal(`(
+        SELECT AVG("rating")
+        FROM "userRatings"
+        WHERE "userRatings"."productId" = "Product"."id"
+      ) < ${options?.maxRating}`)
       )
     }
 
@@ -92,15 +108,16 @@ export class ProductRepository
     if (options?.minPrice || options?.maxPrice) {
       array.push({
         price: {
-          ...(options?.maxPrice && {
+          ...(options?.minPrice && {
             [Op.gte]: options.minPrice,
           }),
-          ...(options?.minPrice && {
+          ...(options?.maxPrice && {
             [Op.lte]: options.maxPrice,
           }),
         },
       })
     }
+    console.log(array)
 
     const opts: FindOptions<Product> = {
       // subQuery: false,
@@ -148,16 +165,6 @@ export class ProductRepository
           model: Image,
         },
       ],
-      // ...((options?.minRating || options?.maxRating) && {
-      //   having: {
-      //     ...(options?.minRating && {
-      //       [Op.gte]: literal('AVG(ratings.rating) >= ' + options.minRating),
-      //     }), // Minimum average rating filter
-      //     ...(options?.maxRating && {
-      //       [Op.lte]: literal('AVG(ratings.rating) <= ' + options.maxRating),
-      //     }), // Maximum average rating filter
-      //   },
-      // }),
     }
     console.log(opts)
     return await this.model.findAll(opts)
