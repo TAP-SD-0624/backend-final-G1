@@ -11,7 +11,7 @@ export class OrderController {
   constructor(
     @inject(OrderService) private orderService: OrderService,
     @inject(CartService) private cartService: CartService
-  ) { }
+  ) {}
 
   async createOrder(req: Request, res: Response) {
     try {
@@ -97,7 +97,6 @@ export class OrderController {
         res.status(404).json({ error: 'Order not found' })
         return null
       }
-
 
       res.json(order)
       return order
