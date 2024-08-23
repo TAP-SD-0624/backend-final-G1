@@ -4,20 +4,17 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-
   Model,
   HasMany,
 } from 'sequelize-typescript'
 import { User, Order } from '.'
 import { defaultTableSettings } from '../config/DefaultTableSettings'
 
-
 @Table({
   tableName: 'addresses',
   ...defaultTableSettings,
 })
 export class Address extends Model<Address> {
-
   @Column({ allowNull: false, type: DataType.STRING })
   state!: string
 
@@ -42,7 +39,6 @@ export class Address extends Model<Address> {
   @ForeignKey(() => User)
   @Column({ allowNull: false, type: DataType.INTEGER })
   userId!: number
-
 
   @BelongsTo(() => User)
   user!: User

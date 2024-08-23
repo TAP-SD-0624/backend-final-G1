@@ -22,5 +22,5 @@ export {
   brandRouter,
   userRatingRouter,
   dashboardRouter,
-  addressRouter
+  addressRouter,
 }

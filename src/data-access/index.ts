@@ -38,4 +38,4 @@ export const userRatingRepository = new UserRatingRepository(UserRating)
 export const imageRepository = new ImageRepository(Image)
 export const dashboardRepository = new DashboardRepository()
 export const orderRepository = new OrderRepository(Order)
-export const addressRepository = new AddressRepository(Address); 
+export const addressRepository = new AddressRepository(Address)

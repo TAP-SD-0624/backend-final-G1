@@ -47,7 +47,7 @@ const sequelize = new Sequelize(
       ProductCategory,
       WishlistProduct,
       Image,
-      Address
+      Address,
     ],
   }
 )

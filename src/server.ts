@@ -15,7 +15,7 @@ import {
   brandRouter,
   userRatingRouter,
   dashboardRouter,
-  addressRouter
+  addressRouter,
 } from './routes'
 import cors from 'cors'
 dotenv.config()

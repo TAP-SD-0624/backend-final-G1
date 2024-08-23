@@ -19,5 +19,3 @@ export type GetProductDashboardDTO = {
   brand?: GetBrandDTO
   images?: GetImageDTO[]
 }
-
-

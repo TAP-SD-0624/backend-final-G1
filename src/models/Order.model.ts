@@ -36,7 +36,6 @@ export class Order extends Model<Order> {
   @Column({ allowNull: false, type: DataType.INTEGER })
   addressId!: number
 
-
   @BelongsTo(() => User)
   user!: User
 

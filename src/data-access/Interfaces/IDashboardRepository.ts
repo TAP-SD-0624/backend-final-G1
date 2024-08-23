@@ -1,8 +1,10 @@
-import { Product } from "../../models";
-
+import { Product } from '../../models'
 
 export interface IDashboardRepository {
-  getMostBoughtProductsOverTime(startTime: Date, endTime: Date): Promise<Product[]>
+  getMostBoughtProductsOverTime(
+    startTime: Date,
+    endTime: Date
+  ): Promise<Product[]>
   getProductsNotBought(startTime: Date, endTime: Date): Promise<Product[]>
   // don't know what is this.
   DropItemsFromList(ids: number[]): Promise<Boolean>
