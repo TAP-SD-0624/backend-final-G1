@@ -65,6 +65,7 @@ export default class ProductService {
             discountRate: item.discount?.discountRate ?? 0,
             id: item.discount?.id,
           },
+          userRatings: item.ratings.map((item) => ({ value: item.rating })),
           images: item.images,
           categories: item.categories,
         })

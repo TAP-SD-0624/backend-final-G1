@@ -16,7 +16,7 @@ export const validateRegister = [
     .withMessage('Password is required')
     .isStrongPassword()
 
-    .matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]*$/) 
+    .matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]*$/)
     .isLength({ min: 6 })
     .withMessage(
       'Password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character'

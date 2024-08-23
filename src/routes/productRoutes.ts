@@ -7,6 +7,7 @@ import {
   createProductValidator,
   updateProductValidator,
   deleteValidator,
+  GetProductsValidator,
 } from '../validations/productValidator'
 /* const productRepository = new ProductRepository();
 const productService = new ProductService();
@@ -14,7 +15,11 @@ const productController = new ProductController(); */
 const productController = container.resolve(ProductController)
 
 const router = Router()
-router.get('/list', productController.GetProducts.bind(productController))
+router.get(
+  '/list',
+  // GetProductsValidator,
+  productController.GetProducts.bind(productController)
+)
 router.get(
   '/:id',
   getProductValidator,

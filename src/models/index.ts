@@ -1,3 +1,5 @@
+export { Address } from './Address.model'
+
 export { Cart } from './Cart.model'
 export { CartProduct } from './CartProduct.model'
 export { Category } from './Category.model'

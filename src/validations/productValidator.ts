@@ -1,6 +1,18 @@
-import { param, body } from 'express-validator'
+import { param, body, query } from 'express-validator'
 import { validateResult } from './validateResult'
+import {
+  FloatQuery,
+  IntQuery,
+  RequiredIntQuery,
+} from './BaseValidations/BaseValidations'
 
+export const GetProductsValidator = [
+  RequiredIntQuery('page', { min: 0 }),
+  RequiredIntQuery('pageSize', { min: 0 }),
+  FloatQuery('minPrice'),
+  FloatQuery('maxPrice'),
+  validateResult,
+]
 export const getProductValidator = [
   param('id').notEmpty().isInt().toInt(),
   validateResult,

@@ -14,7 +14,7 @@ userRatingRouter.post(
   userRatingController.createUserRating.bind(userRatingController)
 )
 userRatingRouter.patch(
-  '/:id',
+  '/',
   authAndRoleMiddleware(['user']),
   createAndUpdateUserRatingValidator,
   userRatingController.updateUserRating.bind(userRatingController)

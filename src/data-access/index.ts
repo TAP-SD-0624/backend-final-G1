@@ -10,6 +10,7 @@ import {
   Order,
   Wishlist,
   UserRating,
+  Address,
 } from '../models'
 import { OrderRepository } from './OrderRepository'
 
@@ -23,7 +24,8 @@ import { DiscountRepository } from './DiscountRepository'
 import { BrandRepository } from './BrandRepository'
 import { UserRatingRepository } from './UserRatingRepository'
 import { ImageRepository } from './ImageRepository'
-
+import { DashboardRepository } from './DashboardRepository'
+import { AddressRepository } from './AddressRepository'
 export const userRepository = new UserRepository(User)
 export const cartRepository = new CartRepository(Cart)
 export const commentRepository = new CommentRepository(Comment)
@@ -34,4 +36,6 @@ export const brandRepository = new BrandRepository(Brand)
 export const wishlistRepository = new WishlistRepository(Wishlist)
 export const userRatingRepository = new UserRatingRepository(UserRating)
 export const imageRepository = new ImageRepository(Image)
+export const dashboardRepository = new DashboardRepository()
 export const orderRepository = new OrderRepository(Order)
+export const addressRepository = new AddressRepository(Address)
