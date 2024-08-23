@@ -1,6 +1,6 @@
-import { Order, OrderProduct, Product } from "../models"
+import { Address, Order, OrderProduct, Product } from "../models"
 import { IDashboardRepository } from "./Interfaces/IDashboardRepository"
-import { Op, Sequelize } from "sequelize"
+import { col, fn, Op, Sequelize } from "sequelize"
 
 
 export class DashboardRepository implements IDashboardRepository {
@@ -42,10 +42,44 @@ export class DashboardRepository implements IDashboardRepository {
     )
     return orders.map((order) => order.get("Product") as Product);
   }
-  getListOfItemsToDrop(): Promise<Product[]> {
-    throw new Error('Method not implemented.')
+  async DropItemsFromList(ids: number[]): Promise<Boolean> {
+    const count = await Product.destroy({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      }
+    })
+    if (!count) {
+      return false;
+    }
+    return true;
   }
-  getProductsPerCountry(country: string): Promise<Product[]> {
-    throw new Error('Method not implemented.')
+  async getProductsPerState(state: string): Promise<Product[]> {
+    const products = await Product.findAll({
+      attributes: {
+        include: [[fn('COUNT', col('productId')), 'productCount']],
+      },
+      include: [
+        {
+          model: Order,
+          attributes: [],
+          through: {
+            attributes: [],
+          },
+          include: [
+            {
+              model: Address,
+              attributes: [],
+              where: {
+                state
+              }
+            }
+          ]
+        },
+      ],
+      order: [['productCount', 'DESC']],
+    })
+    return products;
   }
 }
