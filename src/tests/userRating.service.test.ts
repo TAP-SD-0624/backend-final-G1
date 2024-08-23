@@ -30,7 +30,7 @@ describe('UserRatingService', () => {
       userRating.userId = userId
       userRating.productId = productId
       userRating.rating = 4
-        ; (userRatingRepository.create as jest.Mock).mockResolvedValue(userRating)
+      ;(userRatingRepository.create as jest.Mock).mockResolvedValue(userRating)
 
       const result = await userRatingService.createUserRating(
         userId,
@@ -51,9 +51,9 @@ describe('UserRatingService', () => {
         rating: 4,
       }
 
-        ; (userRatingRepository.create as jest.Mock).mockRejectedValue(
-          new Error('Database error')
-        )
+      ;(userRatingRepository.create as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
         userRatingService.createUserRating(userId, userRatingData)
@@ -68,9 +68,9 @@ describe('UserRatingService', () => {
       const userRatings: UserRating[] = [new UserRating(), new UserRating()]
       userRatings[0].rating = 4
       userRatings[1].rating = 5
-        ; (userRatingRepository.findAllByProductId as jest.Mock).mockResolvedValue(
-          userRatings
-        )
+      ;(userRatingRepository.findAllByProductId as jest.Mock).mockResolvedValue(
+        userRatings
+      )
 
       const result =
         await userRatingService.findUserRatingsByProductId(productId)
@@ -84,9 +84,9 @@ describe('UserRatingService', () => {
     it('should return 0 if no ratings are found', async () => {
       const productId = 123
 
-        ; (userRatingRepository.findAllByProductId as jest.Mock).mockResolvedValue(
-          []
-        )
+      ;(userRatingRepository.findAllByProductId as jest.Mock).mockResolvedValue(
+        []
+      )
 
       const result =
         await userRatingService.findUserRatingsByProductId(productId)
@@ -97,9 +97,9 @@ describe('UserRatingService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const productId = 123
 
-        ; (userRatingRepository.findAllByProductId as jest.Mock).mockRejectedValue(
-          new Error('Database error')
-        )
+      ;(userRatingRepository.findAllByProductId as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
         userRatingService.findUserRatingsByProductId(productId)
@@ -114,9 +114,9 @@ describe('UserRatingService', () => {
       const productId = 123
       const userRating = new UserRating()
       userRating.toJSON = jest.fn().mockReturnValue({ rating: 4, productId })
-        ; (
-          userRatingRepository.findByUserIdAndProductId as jest.Mock
-        ).mockResolvedValue(userRating)
+      ;(
+        userRatingRepository.findByUserIdAndProductId as jest.Mock
+      ).mockResolvedValue(userRating)
 
       const result = await userRatingService.findUserRatingByUserIdAndProductId(
         userId,
@@ -133,9 +133,9 @@ describe('UserRatingService', () => {
       const userId = 1
       const productId = 123
 
-        ; (
-          userRatingRepository.findByUserIdAndProductId as jest.Mock
-        ).mockResolvedValue(null)
+      ;(
+        userRatingRepository.findByUserIdAndProductId as jest.Mock
+      ).mockResolvedValue(null)
 
       const result = await userRatingService.findUserRatingByUserIdAndProductId(
         userId,
@@ -149,9 +149,9 @@ describe('UserRatingService', () => {
       const userId = 1
       const productId = 123
 
-        ; (
-          userRatingRepository.findByUserIdAndProductId as jest.Mock
-        ).mockRejectedValue(new Error('Database error'))
+      ;(
+        userRatingRepository.findByUserIdAndProductId as jest.Mock
+      ).mockRejectedValue(new Error('Database error'))
 
       await expect(
         userRatingService.findUserRatingByUserIdAndProductId(userId, productId)
@@ -168,8 +168,8 @@ describe('UserRatingService', () => {
       const updatedUserRating = new UserRating()
       updatedUserRating.rating = 5
       updatedUserRating.userId = userId
-      updatedUserRating.productId = productId;
-      (userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(
+      updatedUserRating.productId = productId
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(
         updatedUserRating
       )
 
@@ -178,15 +178,16 @@ describe('UserRatingService', () => {
         userRatingData
       )
 
-
       expect(result).toEqual({ rating: 5, productId })
     })
 
     it('should return null if the user rating is not found', async () => {
       const userId = 1
       const productId = 123
-      const userRatingData: UserRatingDTO = { rating: 5, productId };
-      (userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(null)
+      const userRatingData: UserRatingDTO = { rating: 5, productId }
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(
+        null
+      )
 
       const result = await userRatingService.updateUserRating(
         userId,
@@ -201,9 +202,9 @@ describe('UserRatingService', () => {
       const productId = 123
       const userRatingData: UserRatingDTO = { rating: 5, productId }
 
-        ; (userRatingRepository.updateUserRating as jest.Mock).mockRejectedValue(
-          new Error('Database error')
-        )
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
         userRatingService.updateUserRating(userId, userRatingData)

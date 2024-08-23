@@ -95,7 +95,6 @@ export class UserRatingService {
     userRating.rating = rating
     userRating.productId = productId
     try {
-
       const updatedUserRating =
         await userRatingRepository.updateUserRating(userRating)
 
