@@ -11,9 +11,15 @@ import {
 import { RepositoryBase } from './RepositoryBase'
 import { GetProductOptions } from '../Types/GetProductOptions'
 
-import { FindOptions, Includeable, IncludeOptions, Op } from 'sequelize'
+import {
+  FindOptions,
+  fn,
+  col,
+  Op,
+  literal,
+  where as sequelizeWhere,
+} from 'sequelize'
 import { UpdateProductDTO } from '../Types/DTO/productDto'
-import sequelize from 'sequelize'
 
 export class ProductRepository
   extends RepositoryBase<Product>
@@ -61,38 +67,76 @@ export class ProductRepository
     // defining the query of selecting the products,
     // first we define the limit by the pageSize, which will limit the number of pages returned.
     // we will also offset it by pageSize * (page - 1), page - 1 since pages starts from 1.
-    const opts: FindOptions<Product> = {
-      subQuery: false, // Ensure no nested queries are used
+    // we also apply all filters to the query.
 
-      limit: pageSize,
+    let array: any[] = []
 
-      offset: pageSize * (page - 1),
-      where: {
-        ...(options?.earliestDate && {
-          createdAt: {
-            [Op.gt]: options.earliestDate,
-          },
-        }),
-        ...(options?.minPrice && {
-          price: {
+    if (options?.minRating && options?.maxRating) {
+      array.push(
+        literal(`(
+          SELECT AVG("rating")
+          FROM "userRatings"
+          WHERE "userRatings"."productId" = "Product"."id"
+        ) BETWEEN ${options.minRating} AND ${options.maxRating}`)
+      )
+    } else if (options?.minRating) {
+      array.push(
+        literal(`(
+        SELECT AVG("rating")
+        FROM "userRatings"
+        WHERE "userRatings"."productId" = "Product"."id"
+      ) > ${options.minRating}`)
+      )
+    } else if (options?.maxRating) {
+      array.push(
+        literal(`(
+        SELECT AVG("rating")
+        FROM "userRatings"
+        WHERE "userRatings"."productId" = "Product"."id"
+      ) < ${options?.maxRating}`)
+      )
+    }
+
+    if (options?.earliestDate) {
+      array.push({
+        createdAt: {
+          [Op.gt]: options.earliestDate,
+        },
+      })
+    }
+
+    if (options?.minPrice || options?.maxPrice) {
+      array.push({
+        price: {
+          ...(options?.minPrice && {
             [Op.gte]: options.minPrice,
-          },
-        }),
-        ...(options?.maxPrice && {
-          price: {
+          }),
+          ...(options?.maxPrice && {
             [Op.lte]: options.maxPrice,
-          },
-        }),
+          }),
+        },
+      })
+    }
+    console.log(array)
+
+    const opts: FindOptions<Product> = {
+      // subQuery: false,
+      limit: pageSize,
+      offset: pageSize * (page - 1),
+
+      where: {
+        [Op.and]: array, // Filter out any falsey values to avoid errors
       },
+
       attributes: {
         include: [
           [
-            sequelize.fn('AVG', sequelize.col('ratings.rating')), // Average rating
+            literal(`(
+              SELECT AVG("rating")
+              FROM "userRatings"
+              WHERE "userRatings"."productId" = "Product"."id"
+            )`),
             'averageRating',
-          ],
-          [
-            sequelize.fn('COUNT', sequelize.col('ratings.id')), // Count of ratings
-            'ratingCount',
           ],
         ],
       },
@@ -108,7 +152,6 @@ export class ProductRepository
         },
         {
           model: UserRating,
-          attributes: [], // Optionally exclude direct user rating details
         },
         {
           model: Brand,
@@ -122,29 +165,8 @@ export class ProductRepository
           model: Image,
         },
       ],
-      group: [
-        'Product.id', // Group by Product ID
-        'categories.id', // Group by Category ID
-        'categories->ProductCategory.productId', // Group by productId from ProductCategory
-        'categories->ProductCategory.categoryId', // Group by categoryId from ProductCategory
-        'ratings.id', // Group by UserRating ID
-        'brand.id', // Group by UserRating ID
-        'images.id',
-      ],
-      having: {
-        ...(options?.minRating && {
-          [Op.gte]: sequelize.literal(
-            'AVG(ratings.rating) >= ' + options.minRating
-          ),
-        }), // Minimum average rating filter
-        ...(options?.maxRating && {
-          [Op.lte]: sequelize.literal(
-            'AVG(ratings.rating) <= ' + options.maxRating
-          ),
-        }), // Maximum average rating filter
-      },
     }
-
+    console.log(opts)
     return await this.model.findAll(opts)
   }
 
