@@ -14,7 +14,8 @@ import {
   discountRouter,
   brandRouter,
   userRatingRouter,
-  dashboardRouter
+  dashboardRouter,
+  addressRouter
 } from './routes'
 import cors from 'cors'
 dotenv.config()
@@ -36,6 +37,7 @@ app.use('/api/userratings', userRatingRouter)
 app.use('/api/discounts', discountRouter)
 app.use('/api/brands', brandRouter)
 app.use('/api/dashboard', dashboardRouter)
+app.use('/api/address', addressRouter)
 const startServer = async () => {
   try {
     await sequelize.authenticate()

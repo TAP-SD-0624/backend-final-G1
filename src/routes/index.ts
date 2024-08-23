@@ -9,6 +9,7 @@ import discountRouter from './discountRoutes'
 import brandRouter from './brandRoutes'
 import userRatingRouter from './userRatingRoutes'
 import dashboardRouter from './dashboardRoutes'
+import addressRouter from './addressRoutes'
 export {
   productRouter,
   categoryRouter,
@@ -21,4 +22,5 @@ export {
   brandRouter,
   userRatingRouter,
   dashboardRouter,
+  addressRouter
 }

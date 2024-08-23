@@ -4,7 +4,7 @@ import { Op, Sequelize } from "sequelize"
 
 
 export class DashboardRepository implements IDashboardRepository {
-  async getMostBoughtProductsOverTime(startTime: Date, endTime: Date): Promise<Product[]> {
+  async getMostBoughtProductsOverTime(startTime: Date = new Date(0), endTime: Date = new Date()): Promise<Product[]> {
     const orders = await OrderProduct.findAll({
       attributes: ['productId', [Sequelize.fn('COUNT', Sequelize.col('productId')), 'count']],
       where: {
@@ -27,27 +27,19 @@ export class DashboardRepository implements IDashboardRepository {
     const orders = await Product.findAll(
       {
         include: [
-          { model: OrderProduct }
+          {
+            attributes: ['productId', [Sequelize.fn('COUNT', Sequelize.col('productId')), 'count']],
+            model: OrderProduct,
+            where: {
+              createdAt: {
+                [Op.notBetween]: [startTime, endTime],
+              }
+
+            }
+          }
         ]
       }
     )
-
-
-    await OrderProduct.findAll({
-      attributes: ['productId', [Sequelize.fn('COUNT', Sequelize.col('productId')), 'count']],
-      where: {
-        createdAt: {
-          [Op.between]: [startTime, endTime],
-        }
-      },
-      group: ['productId'],
-      include: [
-        {
-          model: Product,
-
-        }
-      ],
-    })
     return orders.map((order) => order.get("Product") as Product);
   }
   getListOfItemsToDrop(): Promise<Product[]> {

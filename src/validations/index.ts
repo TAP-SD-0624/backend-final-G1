@@ -22,3 +22,5 @@ export {
 } from './authValidator'
 
 export { createOrderValidator, updateOrderValidator } from './orderValidator'
+
+export { createAddressValidator, getAndDeleteAddressValidator, updateAddressValidator } from './addressValidator'

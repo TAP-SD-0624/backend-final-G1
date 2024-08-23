@@ -1,5 +1,5 @@
 import { Table, Column, DataType, HasMany, Model } from 'sequelize-typescript'
-import { Cart, Comment, UserRating, Wishlist } from '.'
+import { Cart, Comment, UserRating, Wishlist, Address } from '.'
 import { UserRoles } from '../enums/UserRolesEnum'
 import { defaultTableSettings } from '../config/DefaultTableSettings'
 
@@ -59,4 +59,7 @@ export class User extends Model<User> {
 
   @HasMany(() => UserRating)
   ratings!: UserRating[]
+
+  @HasMany(() => Address)
+  addresses!: Address[]
 }
