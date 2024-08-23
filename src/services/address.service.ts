@@ -51,7 +51,7 @@ export default class AddressService {
       await addressRepository.create(address)
       return data
     } catch (error) {
-      console.log(error);
+      console.log(error)
       logger.error(error)
       if (error instanceof VE) {
         throw new ValidationError(error.message)
@@ -68,15 +68,18 @@ export default class AddressService {
     delete (data as any).id
 
     try {
-      const updatedAddress = await addressRepository.updateAddress(id, userId, data)
-      if(!updatedAddress) return null;
-      const updatedAddressJSON: AddressDTO = updatedAddress.toJSON();
-      delete updatedAddressJSON.userId;
-      delete updatedAddressJSON.createdAt;
-      delete updatedAddressJSON.updatedAt;
-      delete updatedAddressJSON.deletedAt;
-      return updatedAddressJSON;
-
+      const updatedAddress = await addressRepository.updateAddress(
+        id,
+        userId,
+        data
+      )
+      if (!updatedAddress) return null
+      const updatedAddressJSON: AddressDTO = updatedAddress.toJSON()
+      delete updatedAddressJSON.userId
+      delete updatedAddressJSON.createdAt
+      delete updatedAddressJSON.updatedAt
+      delete updatedAddressJSON.deletedAt
+      return updatedAddressJSON
     } catch (error) {
       logger.error(error)
       if (error instanceof VE) {

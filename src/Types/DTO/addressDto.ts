@@ -5,8 +5,8 @@ export type AddressDTO = {
   firstName: string
   lastName: string
   email: string
-  mobileNumber: string,
-  userId?:number,
+  mobileNumber: string
+  userId?: number
   updatedAt?: Date
   createdAt?: Date
   deletedAt?: Date

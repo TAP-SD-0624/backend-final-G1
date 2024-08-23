@@ -11,7 +11,7 @@ import authAndRoleMiddleware from '../middleware/authMiddleware'
 const commentRouter = Router()
 const commentController = container.resolve(CommentController)
 
-commentRouter.use(authAndRoleMiddleware(['user']));
+commentRouter.use(authAndRoleMiddleware(['user']))
 commentRouter.post(
   '/',
   createCommentValidator,

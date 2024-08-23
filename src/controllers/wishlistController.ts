@@ -7,15 +7,14 @@ import { WishlistDTO } from '../Types/DTO'
 export class WishlistController {
   constructor(
     @inject(WishlistService) private wishlistService: WishlistService
-  ) { }
+  ) {}
 
   async addOrRemoveProducts(req: Request, res: Response) {
-    const mode = req.body.mode;
+    const mode = req.body.mode
     if (mode === 'add') {
-      return this.addProductToWishlist(req, res);
-    }
-    else {
-      return this.removeProductFromWishlist(req, res);
+      return this.addProductToWishlist(req, res)
+    } else {
+      return this.removeProductFromWishlist(req, res)
     }
   }
   async getWishList(req: Request, res: Response) {
@@ -31,7 +30,7 @@ export class WishlistController {
   private async addProductToWishlist(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
-      const productId = req.body.productId as unknown as number;
+      const productId = req.body.productId as unknown as number
       const added = await this.wishlistService.addProductToWishlist(
         userId,
         productId
@@ -44,10 +43,7 @@ export class WishlistController {
       return res.status(500).json({ error: error.message })
     }
   }
-  async removeProductFromWishlist(
-    req: Request,
-    res: Response
-  ) {
+  async removeProductFromWishlist(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
       const productId: number = req.body.productId as unknown as number
@@ -57,7 +53,6 @@ export class WishlistController {
       )
       if (!removed) {
         return res.status(404).json({ error: 'Product not found' })
-
       }
       return res.send('Product has been removed from the wishlist')
     } catch (error: any) {

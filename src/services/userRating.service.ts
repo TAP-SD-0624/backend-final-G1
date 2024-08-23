@@ -7,7 +7,6 @@ import { InternalServerError } from '../Errors/InternalServerError'
 
 @injectable()
 export class UserRatingService {
-
   public async createUserRating(
     userId: number,
     data: UserRatingDTO
@@ -15,18 +14,25 @@ export class UserRatingService {
     const { rating, productId } = data
     const userRating = new UserRating()
     userRating.userId = userId
-    userRating.productId = productId;
+    userRating.productId = productId
     userRating.rating = rating
     try {
-      const oldUserRating = await userRatingRepository.findByUserIdAndProductId(userId, productId);
+      const oldUserRating = await userRatingRepository.findByUserIdAndProductId(
+        userId,
+        productId
+      )
       if (oldUserRating) {
-        return oldUserRating;
+        return oldUserRating
       }
-      await userRatingRepository.create(userRating);
+      await userRatingRepository.create(userRating)
 
       return data
     } catch (error: any) {
-      logger.error({ name: error.name, message: error.message, stack: error.stack });
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      })
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -59,15 +65,17 @@ export class UserRatingService {
     productId: number
   ): Promise<UserRatingDTO | null> {
     try {
-      const userRating =
-        await userRatingRepository.findByUserIdAndProductId(
-          userId,
-          productId
-        )
+      const userRating = await userRatingRepository.findByUserIdAndProductId(
+        userId,
+        productId
+      )
       if (!userRating) {
         return null
       }
-      const res: UserRatingDTO = { rating: userRating.toJSON().rating, productId }
+      const res: UserRatingDTO = {
+        rating: userRating.toJSON().rating,
+        productId,
+      }
       return res
     } catch (error: any) {
       logger.error(error)
@@ -87,10 +95,12 @@ export class UserRatingService {
     userRating.rating = rating
     userRating.productId = productId
     try {
-
-      const oldUserRating = await userRatingRepository.findByUserIdAndProductId(userId, productId);
+      const oldUserRating = await userRatingRepository.findByUserIdAndProductId(
+        userId,
+        productId
+      )
       if (!oldUserRating) {
-        return null;
+        return null
       }
       const updatedUserRating =
         await userRatingRepository.updateUserRating(userRating)

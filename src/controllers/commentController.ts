@@ -5,7 +5,7 @@ import { Request, Response } from 'express'
 
 @injectable()
 export class CommentController {
-  constructor(@inject(CommentService) private commentService: CommentService) { }
+  constructor(@inject(CommentService) private commentService: CommentService) {}
 
   public async createComment(req: Request, res: Response) {
     try {
@@ -39,7 +39,7 @@ export class CommentController {
       if (!comment) {
         return res.status(404).send('comment not found')
       }
-      return res.status(200).json(commentData);
+      return res.status(200).json(commentData)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }
@@ -54,7 +54,7 @@ export class CommentController {
       if (!isDeleted) {
         return res.status(404).send('comment not found')
       }
-      return res.status(204).send("comment has been deleted")
+      return res.status(204).send('comment has been deleted')
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }

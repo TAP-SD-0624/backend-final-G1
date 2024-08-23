@@ -6,5 +6,4 @@ export interface IUserRatingRepository extends IRepositoryBase<UserRating> {
     userId: number,
     productId: number
   ): Promise<UserRating | null>
-
 }

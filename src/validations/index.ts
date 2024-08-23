@@ -36,6 +36,4 @@ export {
   getProductsPerStateValidator,
 } from './dashboardValidator'
 
-export{
-addAndRemoveProductToWishlist
-} from './wishlistValidations'
+export { addAndRemoveProductToWishlist } from './wishlistValidations'

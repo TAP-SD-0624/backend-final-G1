@@ -30,8 +30,7 @@ export default class CommentService {
       newComment.productId = productId
 
       await commentRepository.create(newComment)
-      return data;
-
+      return data
     } catch (error: any) {
       logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')

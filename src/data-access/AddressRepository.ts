@@ -5,12 +5,16 @@ import { RepositoryBase } from './RepositoryBase'
 
 export class AddressRepository
   extends RepositoryBase<Address>
-  implements IAddressRepository {
+  implements IAddressRepository
+{
   async getAddressByIdAndUserId(
     id: number,
     userId: number
   ): Promise<Address | null> {
-    return await this.model.findOne({ attributes: { exclude: ['userId'] }, where: { id, userId } })
+    return await this.model.findOne({
+      attributes: { exclude: ['userId'] },
+      where: { id, userId },
+    })
   }
   async deleteAddress(id: number, userId: number): Promise<boolean> {
     const number = await this.model.destroy({ where: { id, userId } })

@@ -4,7 +4,8 @@ import { RepositoryBase } from './RepositoryBase'
 
 export class UserRatingRepository
   extends RepositoryBase<UserRating>
-  implements IUserRatingRepository {
+  implements IUserRatingRepository
+{
   async findAllByProductId(productId: number): Promise<UserRating[] | null> {
     return await this.model.findAll({ where: { productId: productId } })
   }
@@ -18,10 +19,16 @@ export class UserRatingRepository
     })
   }
   async updateUserRating(entity: UserRating): Promise<UserRating | null> {
-    const [_, [updatedEntity]] = await this.model.update({ rating: entity.dataValues.rating }, {
-      where: { userId: entity.dataValues.userId, productId: entity.dataValues.productId },
-      returning: true,
-    })
+    const [_, [updatedEntity]] = await this.model.update(
+      { rating: entity.dataValues.rating },
+      {
+        where: {
+          userId: entity.dataValues.userId,
+          productId: entity.dataValues.productId,
+        },
+        returning: true,
+      }
+    )
     return updatedEntity
   }
 }

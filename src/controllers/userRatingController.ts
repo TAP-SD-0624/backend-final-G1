@@ -7,7 +7,7 @@ import { Request, Response } from 'express'
 export class UserRatingController {
   constructor(
     @inject(UserRatingService) private userRatingService: UserRatingService
-  ) { }
+  ) {}
 
   public async createUserRating(req: Request, res: Response) {
     try {
@@ -17,7 +17,7 @@ export class UserRatingController {
         userId,
         userRatingData
       )
-      res.status(201).json(userRating);
+      res.status(201).json(userRating)
     } catch (error: any) {
       res.status(500).send({ error: error.message })
       throw error
