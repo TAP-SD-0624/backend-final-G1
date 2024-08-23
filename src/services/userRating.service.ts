@@ -95,13 +95,7 @@ export class UserRatingService {
     userRating.rating = rating
     userRating.productId = productId
     try {
-      const oldUserRating = await userRatingRepository.findByUserIdAndProductId(
-        userId,
-        productId
-      )
-      if (!oldUserRating) {
-        return null
-      }
+
       const updatedUserRating =
         await userRatingRepository.updateUserRating(userRating)
 
