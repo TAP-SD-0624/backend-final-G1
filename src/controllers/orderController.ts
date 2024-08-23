@@ -22,6 +22,12 @@ export class OrderController {
         res.status(400).json({ error: 'There is nothing in the cart.' })
         return
       }
+
+      if (isPaid && Math.random() < 0.5) {
+        return res
+          .status(400)
+          .json({ error: 'Payment failed, Not Enough Credit.' })
+      }
       const productIds = cart[0].toJSON().products
       const order: OrderDTO = await this.orderService.createOrder(
         userId,
@@ -75,6 +81,12 @@ export class OrderController {
       const userId = (req as any).user.id
       const newStatus: OrderStatus = req.body.status
       const isPaid = req.body.isPaid
+
+      if (isPaid && Math.random() < 0.5) {
+        return res
+          .status(400)
+          .json({ error: 'Payment failed, Not Enough Credit.' })
+      }
       const order = await this.orderService.updateOrder(
         id,
         userId,
@@ -85,6 +97,7 @@ export class OrderController {
         res.status(404).json({ error: 'Order not found' })
         return null
       }
+
       res.json(order)
       return order
     } catch (error: any) {
