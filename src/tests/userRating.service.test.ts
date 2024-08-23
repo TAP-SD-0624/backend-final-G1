@@ -13,7 +13,7 @@ describe('UserRatingService', () => {
   let userRatingService: UserRatingService
 
   beforeEach(() => {
-    userRatingService = new UserRatingService(userRatingRepository)
+    userRatingService = new UserRatingService()
     jest.clearAllMocks()
   })
 
@@ -22,6 +22,7 @@ describe('UserRatingService', () => {
       const userId = 1
       const productId = 123
       const userRatingData: UserRatingDTO = {
+        productId,
         rating: 4,
       }
 
@@ -33,7 +34,6 @@ describe('UserRatingService', () => {
 
       const result = await userRatingService.createUserRating(
         userId,
-        productId,
         userRatingData
       )
 
@@ -47,6 +47,7 @@ describe('UserRatingService', () => {
       const userId = 1
       const productId = 123
       const userRatingData: UserRatingDTO = {
+        productId,
         rating: 4,
       }
 
@@ -55,7 +56,7 @@ describe('UserRatingService', () => {
       )
 
       await expect(
-        userRatingService.createUserRating(userId, productId, userRatingData)
+        userRatingService.createUserRating(userId, userRatingData)
       ).rejects.toThrow(InternalServerError)
       expect(logger.error).toHaveBeenCalled()
     })
@@ -112,7 +113,7 @@ describe('UserRatingService', () => {
       const userId = 1
       const productId = 123
       const userRating = new UserRating()
-      userRating.toJSON = jest.fn().mockReturnValue({ rating: 4 })
+      userRating.toJSON = jest.fn().mockReturnValue({ rating: 4, productId })
       ;(
         userRatingRepository.findByUserIdAndProductId as jest.Mock
       ).mockResolvedValue(userRating)
@@ -125,7 +126,7 @@ describe('UserRatingService', () => {
       expect(
         userRatingRepository.findByUserIdAndProductId
       ).toHaveBeenCalledWith(userId, productId)
-      expect(result).toEqual({ rating: 4 })
+      expect(result).toEqual({ rating: 4, productId })
     })
 
     it('should return null if no rating is found', async () => {
@@ -163,37 +164,33 @@ describe('UserRatingService', () => {
     it('should update and return the updated user rating', async () => {
       const userId = 1
       const productId = 123
-      const userRatingData: UserRatingDTO = { rating: 5 }
+      const userRatingData: UserRatingDTO = { rating: 5, productId }
       const updatedUserRating = new UserRating()
       updatedUserRating.rating = 5
       updatedUserRating.userId = userId
       updatedUserRating.productId = productId
-      ;(userRatingRepository.update as jest.Mock).mockResolvedValue(
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(
         updatedUserRating
       )
 
       const result = await userRatingService.updateUserRating(
         userId,
-        productId,
         userRatingData
       )
 
-      expect(userRatingRepository.update).toHaveBeenCalledWith(
-        expect.any(UserRating)
-      )
-      expect(result).toEqual({ rating: 5, userId })
+      expect(result).toEqual({ rating: 5, productId })
     })
 
     it('should return null if the user rating is not found', async () => {
       const userId = 1
       const productId = 123
-      const userRatingData: UserRatingDTO = { rating: 5 }
-
-      ;(userRatingRepository.update as jest.Mock).mockResolvedValue(null)
+      const userRatingData: UserRatingDTO = { rating: 5, productId }
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockResolvedValue(
+        null
+      )
 
       const result = await userRatingService.updateUserRating(
         userId,
-        productId,
         userRatingData
       )
 
@@ -203,14 +200,14 @@ describe('UserRatingService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
       const productId = 123
-      const userRatingData: UserRatingDTO = { rating: 5 }
+      const userRatingData: UserRatingDTO = { rating: 5, productId }
 
-      ;(userRatingRepository.update as jest.Mock).mockRejectedValue(
+      ;(userRatingRepository.updateUserRating as jest.Mock).mockRejectedValue(
         new Error('Database error')
       )
 
       await expect(
-        userRatingService.updateUserRating(userId, productId, userRatingData)
+        userRatingService.updateUserRating(userId, userRatingData)
       ).rejects.toThrow(InternalServerError)
       expect(logger.error).toHaveBeenCalled()
     })
