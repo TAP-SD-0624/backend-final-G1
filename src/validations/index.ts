@@ -24,3 +24,5 @@ export {
 export { createOrderValidator, updateOrderValidator } from './orderValidator'
 
 export { createAddressValidator, getAndDeleteAddressValidator, updateAddressValidator } from './addressValidator'
+
+export {dropItemsFromListValidator,getMostBoughtProductsOverTimeValidator,getProductsNotBoughtValidator,getProductsPerStateValidator} from './dashboardValidator'

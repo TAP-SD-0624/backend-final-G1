@@ -1,4 +1,4 @@
-import { Address, Order, OrderProduct, Product } from "../models"
+import { Address, Brand, Category, Discount, Image, Order, OrderProduct, Product } from "../models"
 import { IDashboardRepository } from "./Interfaces/IDashboardRepository"
 import { col, fn, Op, Sequelize } from "sequelize"
 
@@ -16,7 +16,12 @@ export class DashboardRepository implements IDashboardRepository {
       include: [
         {
           model: Product,
-
+          include: [
+            { model: Brand },
+            { model: Category },
+            { model: Image },
+            { model: Discount }
+          ]
         }
       ],
       order: [['count', 'DESC']],
