@@ -11,7 +11,7 @@ export class OrderController {
   constructor(
     @inject(OrderService) private orderService: OrderService,
     @inject(CartService) private cartService: CartService
-  ) {}
+  ) { }
 
   async createOrder(req: Request, res: Response) {
     try {
@@ -21,6 +21,10 @@ export class OrderController {
       if (!cart) {
         res.status(400).json({ error: 'There is nothing in the cart.' })
         return
+      }
+
+      if (isPaid && (Math.random() < 0.5)) {
+        return res.status(400).json({ error: 'Payment failed, Not Enough Credit.' })
       }
       const productIds = cart[0].toJSON().products
       const order: OrderDTO = await this.orderService.createOrder(
