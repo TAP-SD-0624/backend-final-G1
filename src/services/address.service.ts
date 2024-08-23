@@ -47,7 +47,7 @@ export default class AddressService {
     address.userId = userId;
     try {
       await addressRepository.create(address);
-      return address;
+      return data;
     }
     catch (error) {
       logger.error(error);
@@ -60,7 +60,7 @@ export default class AddressService {
     delete (data as any).id;
     try {
       return await addressRepository.updateAddress(id, userId, data);
-      
+
     }
     catch (error) {
       logger.error(error);
@@ -72,9 +72,10 @@ export default class AddressService {
   public async deleteAddress(id: number, userId: number): Promise<boolean> {
 
     try {
-      return addressRepository.deleteAddress(id, userId);
+      return await addressRepository.deleteAddress(id, userId);
     }
     catch (error) {
+      logger.error(error);
       throw new InternalServerError('an error occurred, please try again later');
 
     }

@@ -1,0 +1,237 @@
+import 'reflect-metadata';
+import AddressService from '../services/address.service';
+import { addressRepository } from '../data-access';
+import { AddressDTO, updateAddressDTO } from '../Types/DTO';
+import { InternalServerError } from '../Errors/InternalServerError';
+import logger from '../helpers/logger';
+import { Address } from '../models';
+
+jest.mock('../data-access/addressRepository');
+jest.mock('../helpers/logger');
+
+describe('AddressService', () => {
+  let addressService: AddressService;
+
+  beforeEach(() => {
+    addressService = new AddressService();
+    jest.clearAllMocks();
+  });
+
+  describe('getAddressByIdAndUserId', () => {
+    it('should return the address if found', async () => {
+      const id = 1;
+      const userId = 1;
+      const address: AddressDTO = {
+        state: 'State',
+        city: 'City',
+        street: 'Street',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        mobileNumber: '1234567890',
+      };
+
+      (addressRepository.getAddressByIdAndUserId as jest.Mock).mockResolvedValue(address);
+
+      const result = await addressService.getAddressByIdAndUserId(id, userId);
+
+      expect(addressRepository.getAddressByIdAndUserId).toHaveBeenCalledWith(id, userId);
+      expect(result).toEqual(address);
+    });
+
+    it('should return null if the address is not found', async () => {
+      const id = 1;
+      const userId = 1;
+
+      (addressRepository.getAddressByIdAndUserId as jest.Mock).mockResolvedValue(null);
+
+      const result = await addressService.getAddressByIdAndUserId(id, userId);
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const id = 1;
+      const userId = 1;
+
+      (addressRepository.getAddressByIdAndUserId as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      await expect(addressService.getAddressByIdAndUserId(id, userId)).rejects.toThrow(InternalServerError);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('getAddressesByUserId', () => {
+    it('should return a list of addresses for the user', async () => {
+      const userId = 1;
+      const addresses: AddressDTO[] = [
+        {
+          state: 'State',
+          city: 'City',
+          street: 'Street',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          mobileNumber: '1234567890',
+        },
+      ];
+
+      (addressRepository.getAddressesByUserId as jest.Mock).mockResolvedValue(addresses);
+
+      const result = await addressService.getAddressesByUserId(userId);
+
+      expect(addressRepository.getAddressesByUserId).toHaveBeenCalledWith(userId);
+      expect(result).toEqual(addresses);
+    });
+
+    it('should return an empty array if no addresses are found', async () => {
+      const userId = 1;
+
+      (addressRepository.getAddressesByUserId as jest.Mock).mockResolvedValue([]);
+
+      const result = await addressService.getAddressesByUserId(userId);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const userId = 1;
+
+      (addressRepository.getAddressesByUserId as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      await expect(addressService.getAddressesByUserId(userId)).rejects.toThrow(InternalServerError);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('createAddress', () => {
+    it('should create and return the address', async () => {
+      const userId = 1;
+      const addressData: AddressDTO = {
+        state: 'State',
+        city: 'City',
+        street: 'Street',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        mobileNumber: '1234567890',
+      };
+
+      (addressRepository.create as jest.Mock).mockResolvedValue(addressData);
+
+      const result = await addressService.createAddress(userId, addressData);
+
+      expect(addressRepository.create).toHaveBeenCalledWith(expect.any(Address));
+      expect(result).toEqual(addressData);
+    });
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const userId = 1;
+      const addressData: AddressDTO = {
+        state: 'State',
+        city: 'City',
+        street: 'Street',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        mobileNumber: '1234567890',
+      };
+
+      (addressRepository.create as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      await expect(addressService.createAddress(userId, addressData)).rejects.toThrow(InternalServerError);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('updateAddress', () => {
+    it('should update and return the updated address', async () => {
+      const id = 1;
+      const userId = 1;
+      const updateData: updateAddressDTO = {
+        state: 'New State',
+        city: 'New City',
+      };
+      const updatedAddress: AddressDTO = {
+        state: 'New State',
+        city: 'New City',
+        street: 'Street',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        mobileNumber: '1234567890',
+      };
+
+      (addressRepository.updateAddress as jest.Mock).mockResolvedValue(updatedAddress);
+
+      const result = await addressService.updateAddress(id, userId, updateData);
+
+      expect(addressRepository.updateAddress).toHaveBeenCalledWith(id, userId, updateData);
+      expect(result).toEqual(updatedAddress);
+    });
+
+    it('should return null if the address is not found', async () => {
+      const id = 1;
+      const userId = 1;
+      const updateData: updateAddressDTO = {
+        state: 'New State',
+        city: 'New City',
+      };
+
+      (addressRepository.updateAddress as jest.Mock).mockResolvedValue(null);
+
+      const result = await addressService.updateAddress(id, userId, updateData);
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const id = 1;
+      const userId = 1;
+      const updateData: updateAddressDTO = {
+        state: 'New State',
+        city: 'New City',
+      };
+
+      (addressRepository.updateAddress as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      await expect(addressService.updateAddress(id, userId, updateData)).rejects.toThrow(InternalServerError);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteAddress', () => {
+    it('should delete the address and return true', async () => {
+      const id = 1;
+      const userId = 1;
+
+      (addressRepository.deleteAddress as jest.Mock).mockResolvedValue(true);
+
+      const result = await addressService.deleteAddress(id, userId);
+
+      expect(addressRepository.deleteAddress).toHaveBeenCalledWith(id, userId);
+      expect(result).toBe(true);
+    });
+
+    it('should return false if the address is not found', async () => {
+      const id = 1;
+      const userId = 1;
+
+      (addressRepository.deleteAddress as jest.Mock).mockResolvedValue(false);
+
+      const result = await addressService.deleteAddress(id, userId);
+
+      expect(result).toBe(false);
+    });
+
+    it('should throw an InternalServerError if an error occurs', async () => {
+      const id = 1;
+      const userId = 1;
+
+      (addressRepository.deleteAddress as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      await expect(addressService.deleteAddress(id, userId)).rejects.toThrow(InternalServerError);
+      expect(logger.error).toHaveBeenCalled();
+    });
+  });
+});

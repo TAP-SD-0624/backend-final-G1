@@ -16,6 +16,7 @@ import {
   WishlistProduct,
   Brand,
   Image,
+  Address,
 } from '../models'
 
 dotenv.config()
@@ -46,6 +47,7 @@ const sequelize = new Sequelize(
       ProductCategory,
       WishlistProduct,
       Image,
+      Address
     ],
   }
 )
