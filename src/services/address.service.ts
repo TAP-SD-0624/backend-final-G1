@@ -20,7 +20,7 @@ export default class AddressService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }

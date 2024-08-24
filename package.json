@@ -8,7 +8,7 @@
     "watch": "nodemon src/server.ts",
     "start": "node dist/server.js",
     "test": "jest --coverage",
-    "format": "prettier --write \"src/**/*.{ts}\""
+    "format": "prettier --write \"src/**/*.{ts,js}\""
   },
   "repository": {
     "type": "git",

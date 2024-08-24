@@ -41,7 +41,8 @@ export default class CommentService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError('an error occurred, please try again later')
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -61,7 +62,8 @@ export default class CommentService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError('an error occurred, please try again later')
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -78,7 +80,8 @@ export default class CommentService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError('an error occurred, please try again later')
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -106,7 +109,7 @@ export default class CommentService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -123,7 +126,8 @@ export default class CommentService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError('an error occurred, please try again later')
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 }

@@ -30,13 +30,13 @@ export default class OrderService {
       return orderToOrderDTO(order)
     } catch (error: any) {
       if (error instanceof VE) {
-        throw new ValidationError(error.message);
+        throw new ValidationError(error.message)
       }
       logger.error({
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError()
     }
   }
@@ -56,7 +56,8 @@ export default class OrderService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError()
+      })
+      throw new InternalServerError()
     }
   }
 
@@ -72,7 +73,8 @@ export default class OrderService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError()
+      })
+      throw new InternalServerError()
     }
   }
 
@@ -117,7 +119,7 @@ export default class OrderService {
       return orderToOrderDTO(order!)
     } catch (error: any) {
       if (error instanceof BadRequestError) {
-        throw error;
+        throw error
       }
       if (error instanceof VE) {
         throw new ValidationError(error.message)
@@ -126,7 +128,7 @@ export default class OrderService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError()
     }
   }
@@ -147,7 +149,7 @@ export default class OrderService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError()
     }
   }

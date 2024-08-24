@@ -21,7 +21,8 @@ export default class DashboardService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError(
+      })
+      throw new InternalServerError(
         'An error occurred, please try again later.'
       )
     }
@@ -38,7 +39,7 @@ export default class DashboardService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError(
         'An error occurred, please try again later.'
       )
@@ -53,7 +54,7 @@ export default class DashboardService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
       throw new InternalServerError(
         'An error occurred, please try again later.'
       )
@@ -65,12 +66,13 @@ export default class DashboardService {
   ): Promise<GetProductDashboardDTO[]> {
     try {
       return await dashboardRepository.getProductsPerState(state)
-    } catch (error:any) {
+    } catch (error: any) {
       logger.error({
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      }); throw new InternalServerError(
+      })
+      throw new InternalServerError(
         'An error occurred, please try again later.'
       )
     }

@@ -15,7 +15,7 @@ export default class BrandService {
         name: error.name,
         message: error.message,
         stack: error?.stack,
-      });
+      })
 
       throw new InternalServerError()
     }
