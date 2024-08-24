@@ -16,9 +16,12 @@ export default class DashboardService {
         startTime,
         endTime
       )
-    } catch (error) {
-      logger.error(error)
-      throw new InternalServerError(
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      }); throw new InternalServerError(
         'An error occurred, please try again later.'
       )
     }
@@ -30,9 +33,12 @@ export default class DashboardService {
   ): Promise<GetProductDashboardDTO[]> {
     try {
       return await dashboardRepository.getProductsNotBought(startTime, endTime)
-    } catch (error) {
-      logger.error(error)
-
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      });
       throw new InternalServerError(
         'An error occurred, please try again later.'
       )
@@ -42,9 +48,12 @@ export default class DashboardService {
   public async DropItemsFromList(ids: number[]): Promise<Boolean> {
     try {
       return await dashboardRepository.DropItemsFromList(ids)
-    } catch (error) {
-      logger.error(error)
-
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      });
       throw new InternalServerError(
         'An error occurred, please try again later.'
       )
@@ -56,9 +65,12 @@ export default class DashboardService {
   ): Promise<GetProductDashboardDTO[]> {
     try {
       return await dashboardRepository.getProductsPerState(state)
-    } catch (error) {
-      logger.error(error)
-      throw new InternalServerError(
+    } catch (error:any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      }); throw new InternalServerError(
         'An error occurred, please try again later.'
       )
     }

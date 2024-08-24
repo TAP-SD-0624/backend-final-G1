@@ -15,8 +15,12 @@ export default class AddressService {
   ): Promise<AddressDTO | null> {
     try {
       return await addressRepository.getAddressByIdAndUserId(id, userId)
-    } catch (error) {
-      logger.error(error)
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      });
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -25,11 +29,15 @@ export default class AddressService {
     try {
       const addresses = await addressRepository.getAddressesByUserId(userId)
       return addresses
-    } catch (error) {
-      logger.error(error)
+    } catch (error: any) {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -50,12 +58,15 @@ export default class AddressService {
     try {
       await addressRepository.create(address)
       return data
-    } catch (error) {
-      console.log(error)
-      logger.error(error)
+    } catch (error: any) {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -80,11 +91,15 @@ export default class AddressService {
       delete updatedAddressJSON.updatedAt
       delete updatedAddressJSON.deletedAt
       return updatedAddressJSON
-    } catch (error) {
-      logger.error(error)
+    } catch (error: any) {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -92,8 +107,12 @@ export default class AddressService {
   public async deleteAddress(id: number, userId: number): Promise<boolean> {
     try {
       return await addressRepository.deleteAddress(id, userId)
-    } catch (error) {
-      logger.error(error)
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
