@@ -3,6 +3,7 @@ import { castToEnum } from '../castToEnum'
 import { OrderStatus } from '../../enums/OrderStatusEnum'
 import logger from '../logger'
 import { OrderDTO } from '../../Types/DTO'
+import { BadRequestError } from '../../Errors/BadRequestError'
 
 export function orderToOrderDTO(order: Order): OrderDTO {
   const orderJson = order.toJSON()
@@ -11,7 +12,7 @@ export function orderToOrderDTO(order: Order): OrderDTO {
     logger.error(
       `Order Status of Id ${orderJson.id} is not supported. Please Check It ASAP.`
     )
-    throw new Error('Order Status Is not Supported')
+    throw new BadRequestError('Order Status Is not Supported')
   }
   const orderDTO: OrderDTO = { ...orderJson, status }
   delete (orderDTO as any).userId

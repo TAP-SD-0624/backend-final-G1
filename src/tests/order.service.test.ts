@@ -56,17 +56,17 @@ describe('OrderService', () => {
         { dataValues: { id: 1 } },
         { dataValues: { id: 2 } },
       ] as any
-
-      ;(orderRepository.createOrder as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(orderRepository.createOrder as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.createOrder(userId, isPaid, products)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error retrieving Order: Database error'
-      )
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -114,17 +114,17 @@ describe('OrderService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const id = 1
       const userId = 1
-
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrderById(id, userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error retrieving Order: Database error'
-      )
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -169,16 +169,18 @@ describe('OrderService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
 
-      ;(orderRepository.findByUserId as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+
+      ;(orderRepository.findByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrders(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error retrieving Orders: Database error'
-      )
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -233,17 +235,17 @@ describe('OrderService', () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.outForDelivery
-
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.updateOrder(id, userId, status, true)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error updating Order: Database error'
-      )
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -292,17 +294,17 @@ describe('OrderService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const id = 1
       const userId = 1
-
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.cancelOrder(id, userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith(
-        'Error canceling Order: Database error'
-      )
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 })

@@ -15,7 +15,11 @@ export default class WishlistService {
       const wishlist = await wishlistRepository.findByUserId(userId)
       return wishlist
     } catch (error: any) {
-      logger.error(error.message)
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -29,7 +33,11 @@ export default class WishlistService {
     try {
       return await wishlistRepository.addProductToWishlist(userId, productId)
     } catch (error: any) {
-      logger.error(error)
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -40,8 +48,11 @@ export default class WishlistService {
     try {
       return await wishlistRepository.clearWishList(id)
     } catch (error: any) {
-      logger.error(error.message)
-
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -58,8 +69,11 @@ export default class WishlistService {
         productId
       )
     } catch (error: any) {
-      logger.error(error.message)
-
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )

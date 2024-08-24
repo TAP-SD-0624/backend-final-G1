@@ -43,15 +43,18 @@ describe('WishlistService', () => {
 
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
+      const err = new Error('Database error')
 
-      ;(wishlistRepository.findByUserId as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      ;(wishlistRepository.findByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(wishlistService.getWishlistByUserId(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith('Database error')
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -79,15 +82,19 @@ describe('WishlistService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
       const productId = 123
-
+      const err = new Error('Database error')
       ;(wishlistRepository.addProductToWishlist as jest.Mock).mockRejectedValue(
-        new Error('Database error')
+        err
       )
 
       await expect(
         wishlistService.addProductToWishlist(userId, productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith(new Error('Database error'))
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -105,15 +112,17 @@ describe('WishlistService', () => {
 
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
-
-      ;(wishlistRepository.clearWishList as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(wishlistRepository.clearWishList as jest.Mock).mockRejectedValue(err)
 
       await expect(wishlistService.clearWishList(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith('Database error')
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 
@@ -141,15 +150,19 @@ describe('WishlistService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const userId = 1
       const productId = 123
-
+      const err = new Error('Database error')
       ;(
         wishlistRepository.removeProductFromWishList as jest.Mock
-      ).mockRejectedValue(new Error('Database error'))
+      ).mockRejectedValue(err)
 
       await expect(
         wishlistService.removeProductFromWishList(userId, productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith('Database error')
+      expect(logger.error).toHaveBeenCalledWith({
+        name: err.name,
+        message: err.message,
+        stack: err?.stack,
+      })
     })
   })
 })

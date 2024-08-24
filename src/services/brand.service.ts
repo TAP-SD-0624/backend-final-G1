@@ -2,6 +2,7 @@ import { Brand } from '../models'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { brandRepository } from '../data-access'
 import { injectable } from 'tsyringe'
+import logger from '../helpers/logger'
 
 @injectable()
 export default class BrandService {
@@ -9,8 +10,13 @@ export default class BrandService {
     try {
       const brands = await brandRepository.findAll()
       return brands
-    } catch (ex) {
-      console.log(ex)
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+
       throw new InternalServerError()
     }
   }

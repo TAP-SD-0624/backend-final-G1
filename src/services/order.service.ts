@@ -10,6 +10,8 @@ import {
 import { InternalServerError } from '../Errors/InternalServerError'
 import logger from '../helpers/logger'
 import { BadRequestError } from '../Errors/BadRequestError'
+import { ValidationError as VE } from 'sequelize'
+import { ValidationError } from '../Errors/ValidationError'
 
 @injectable()
 export default class OrderService {
@@ -27,8 +29,14 @@ export default class OrderService {
       const order = await orderRepository.createOrder(newOrder, productIds)
       return orderToOrderDTO(order)
     } catch (error: any) {
-      logger.error(`Error retrieving Order: ${error.message}`)
-
+      if (error instanceof VE) {
+        throw new ValidationError(error.message)
+      }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError()
     }
   }
@@ -44,7 +52,11 @@ export default class OrderService {
       }
       return orderToOrderDTO(order)
     } catch (error: any) {
-      logger.error(`Error retrieving Order: ${error.message}`)
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError()
     }
   }
@@ -57,7 +69,11 @@ export default class OrderService {
       }
       return ordersToOrdersDTO(orders)
     } catch (error: any) {
-      logger.error(`Error retrieving Orders: ${error.message}`)
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError()
     }
   }
@@ -102,10 +118,17 @@ export default class OrderService {
       const order = await orderRepository.update(updateOrder)
       return orderToOrderDTO(order!)
     } catch (error: any) {
-      logger.error(`Error updating Order: ${error.message}`)
       if (error instanceof BadRequestError) {
         throw error
       }
+      if (error instanceof VE) {
+        throw new ValidationError(error.message)
+      }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError()
     }
   }
@@ -122,8 +145,11 @@ export default class OrderService {
       }
       return await orderRepository.delete(id)
     } catch (error: any) {
-      logger.error(`Error canceling Order: ${error.message}`)
-
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
       throw new InternalServerError()
     }
   }

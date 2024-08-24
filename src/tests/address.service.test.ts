@@ -177,7 +177,25 @@ describe('AddressService', () => {
         state: 'New State',
         city: 'New City',
       }
-      const updatedAddress: AddressDTO = {
+      const updatedAddress = {
+        toJSON() {
+          return {
+            state: 'New State',
+            city: 'New City',
+            street: 'Street',
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john.doe@example.com',
+            mobileNumber: '1234567890',
+            userId: 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            deletedAt: new Date(),
+          }
+        },
+      }
+
+      const updatedAddressResult: AddressDTO = {
         state: 'New State',
         city: 'New City',
         street: 'Street',
@@ -198,7 +216,7 @@ describe('AddressService', () => {
         userId,
         updateData
       )
-      expect(result).toEqual(updatedAddress)
+      expect(result).toEqual(updatedAddressResult)
     })
 
     it('should return null if the address is not found', async () => {
@@ -223,10 +241,8 @@ describe('AddressService', () => {
         state: 'New State',
         city: 'New City',
       }
-
-      ;(addressRepository.updateAddress as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(addressRepository.updateAddress as jest.Mock).mockRejectedValue(err)
 
       await expect(
         addressService.updateAddress(id, userId, updateData)
@@ -262,10 +278,8 @@ describe('AddressService', () => {
     it('should throw an InternalServerError if an error occurs', async () => {
       const id = 1
       const userId = 1
-
-      ;(addressRepository.deleteAddress as jest.Mock).mockRejectedValue(
-        new Error('Database error')
-      )
+      const err = new Error('Database error')
+      ;(addressRepository.deleteAddress as jest.Mock).mockRejectedValue(err)
 
       await expect(addressService.deleteAddress(id, userId)).rejects.toThrow(
         InternalServerError
