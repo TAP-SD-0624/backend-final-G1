@@ -3,7 +3,7 @@ import { injectable, inject } from 'tsyringe'
 import CartService from '../services/cart.service'
 import { CartDTO } from '../Types/DTO'
 import { Cart } from '../models'
-import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest '
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 
 @injectable()
 export class CartController {
@@ -13,6 +13,11 @@ export class CartController {
     try {
       const userId = req.user?.id
       const products = req.body.products
+
+      if (!userId) {
+        res.status(400).json({ error: 'User ID is required' })
+        return
+      }
 
       const cartData: CartDTO = {
         userId,
@@ -34,7 +39,7 @@ export class CartController {
     try {
       const userId = parseInt(req.params.id, 10)
       const cart = await this.cartService.getCartByUserId(userId)
-      if (!cart) {
+      if (!cart || cart.length === 0) {
         res.status(404).json({ error: 'Cart not found' })
         return null
       }
@@ -42,7 +47,7 @@ export class CartController {
       return cart
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw error
+      return null
     }
   }
 
@@ -59,7 +64,7 @@ export class CartController {
       return cart
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw error
+      return null
     }
   }
 
@@ -70,7 +75,6 @@ export class CartController {
       res.status(204).send()
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw error
     }
   }
 
@@ -98,7 +102,6 @@ export class CartController {
     }
   }
 
-  // add product to cart
   async addProductToCart(req: Request, res: Response): Promise<void> {
     try {
       const cartId = parseInt(req.params.cartId, 10)
@@ -121,7 +124,6 @@ export class CartController {
     }
   }
 
-  // remove product from cart
   async removeProductFromCart(req: Request, res: Response): Promise<void> {
     try {
       const cartId = parseInt(req.params.cartId, 10)
@@ -144,7 +146,6 @@ export class CartController {
     }
   }
 
-  // get cart products by user id
   async getCartProductsByUserId(
     req: AuthenticatedRequest,
     res: Response
@@ -152,7 +153,6 @@ export class CartController {
     try {
       const userId = parseInt(req.params.userId, 10)
 
-      // Check if the current user is the owner of the cart
       if (req.user?.id !== userId && req.user?.role !== 'admin') {
         res
           .status(403)
@@ -162,7 +162,7 @@ export class CartController {
 
       const cart = await this.cartService.getCartProductByUserId(userId)
 
-      if (!cart) {
+      if (!cart || cart.length === 0) {
         res.status(404).json({ error: 'Cart not found' })
       } else {
         res.status(200).json(cart)
@@ -171,10 +171,11 @@ export class CartController {
       return cart
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw error
+      return null
     }
   }
-  async getCartById(req: AuthenticatedRequest, res: Response): Promise<any> {
+
+  async getCartById(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const cartId = parseInt(req.params.cartId, 10)
       const userId = req.user?.id
@@ -187,9 +188,10 @@ export class CartController {
       }
 
       if (cart.userId !== userId && userRole !== 'admin') {
-        return res
+        res
           .status(403)
           .json({ error: 'Access forbidden: You do not own this cart' })
+        return
       }
 
       res.json(cart)

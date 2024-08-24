@@ -8,50 +8,71 @@ export class CartRepository
   implements ICartRepository
 {
   /**
-   * retrieve a cart with the specified Userid.
-   * @param {number} userId - this is the id of the user we want to retrieve their cart from our Database.
-   * @returns {Cart[] | null} returns the cart identified with the userId, if not found returns null.
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * retrieve a cart with the specified UserId.
+   * @param {number} userId - The id of the user we want to retrieve their cart from our Database.
+   * @returns {Promise<Cart[]>} Returns the cart identified with the userId, if not found returns an empty array.
+   * @throws {Error} Throws an error when it fails to retrieve from or connect with the database.
    */
   async findCartByUserId(userId: number): Promise<Cart[]> {
-    return await this.model.findAll({ where: { userId } })
+    try {
+      return await this.model.findAll({ where: { userId } })
+    } catch (error) {
+      console.error(`Failed to find cart by userId ${userId}:`, error)
+      throw new Error('Error retrieving cart from the database.')
+    }
   }
 
   /**
-   * retrieve products for a specific cart
-   * @param {number} cartId - this is the id of the cart we want to retrieve its products from our Database.
-   * @returns {Cart | null} returns the cart identified with the cartId, if not found returns null.
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * retrieve products for a specific cart.
+   * @param {number} cartId - The id of the cart we want to retrieve its products from our Database.
+   * @returns {Promise<Cart | null>} Returns the cart identified with the cartId, if not found returns null.
+   * @throws {Error} Throws an error when it fails to retrieve from or connect with the database.
    */
   async findCartProducts(cartId: number): Promise<Cart | null> {
-    return await this.model.findByPk(cartId, {
-      include: { all: true },
-    })
+    try {
+      return await this.model.findByPk(cartId, {
+        include: { all: true },
+      })
+    } catch (error) {
+      console.error(`Failed to find cart products for cartId ${cartId}:`, error)
+      throw new Error('Error retrieving cart products from the database.')
+    }
   }
 
   /**
    * Update a cart with the specified cartId.
-   * @param {number} id - this is the id of the cart we want to update
-   * @returns {Cart | null} returns the updated cart identified with the cartId, if not found returns null.
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * @param {number} id - The id of the cart we want to update.
+   * @param {Cart} cartData - The updated cart data.
+   * @returns {Promise<Cart | null>} Returns the updated cart identified with the cartId, if not found returns null.
+   * @throws {Error} Throws an error when it fails to update the cart in the database.
    */
   async updateCart(id: number, cartData: Cart): Promise<Cart | null> {
-    const [affectedRows, [updatedCart]] = await this.model.update(cartData, {
-      where: { id },
-      returning: true,
-    })
-    return affectedRows > 0 ? updatedCart : null
+    try {
+      const [affectedRows, [updatedCart]] = await this.model.update(cartData, {
+        where: { id },
+        returning: true,
+      })
+      return affectedRows > 0 ? updatedCart : null
+    } catch (error) {
+      console.error(`Failed to update cart with ID ${id}:`, error)
+      throw new Error('Error updating the cart in the database.')
+    }
   }
 
   /**
-   * delete a cart with the specified Userid.
-   * @param {number} id - this is the id of the cart we want to delete from our Database.
-   * @returns {boolean} returns true if the cart is deleted otherwise it returns false
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * delete a cart with the specified cartId.
+   * @param {number} id - The id of the cart we want to delete from our Database.
+   * @returns {Promise<boolean>} Returns true if the cart is deleted otherwise it returns false.
+   * @throws {Error} Throws an error when it fails to delete the cart from the database.
    */
   async deleteCart(id: number): Promise<boolean> {
-    const deleted = await this.model.destroy({ where: { id } })
-    return deleted > 0
+    try {
+      const deleted = await this.model.destroy({ where: { id } })
+      return deleted > 0
+    } catch (error) {
+      console.error(`Failed to delete cart with ID ${id}:`, error)
+      throw new Error('Error deleting the cart from the database.')
+    }
   }
 
   /**
@@ -59,8 +80,8 @@ export class CartRepository
    * @param {number} cartId - The ID of the cart.
    * @param {number} productId - The ID of the product.
    * @param {number} quantity - The quantity of the product to add.
-   * @returns {Promise<boolean>} - Returns true if the product is added successfully, otherwise false.
-   * @throws {Error} - Throws an error if the cart or product is not found, if the product is already in the cart, or if the requested quantity exceeds available stock.
+   * @returns {Promise<boolean>} Returns true if the product is added successfully, otherwise false.
+   * @throws {Error} Throws an error if the cart or product is not found, if the product is already in the cart, or if the requested quantity exceeds available stock.
    */
   async addProductToCart(
     cartId: number,
@@ -68,24 +89,13 @@ export class CartRepository
     quantity: number
   ): Promise<boolean> {
     return await sequelize.transaction(async (transaction) => {
-      // Step 1: Find the cart
-      const cart = await this.model.findByPk(cartId, { transaction })
-      if (!cart) {
-        throw new Error(`Cart with ID ${cartId} not found`)
-      }
+      const cart = await this.findCartById(cartId, transaction)
+      const productData = await this.findProductById(productId, transaction)
 
-      // Step 2: Check if the product exists
-      const productData = await Product.findByPk(productId, { transaction })
-      if (!productData) {
-        throw new Error(`Product with ID ${productId} not found`)
-      }
-
-      // check if the product is exist
       if (productData.stock < 1) {
         throw new Error(`Product with ID ${productId} is out of stock`)
       }
 
-      // Step 3: Check if the product is already in the cart
       const productInCart = await cart.$has('products', productId, {
         transaction,
       })
@@ -93,18 +103,15 @@ export class CartRepository
         throw new Error(`Product with ID ${productId} is already in the cart`)
       }
 
-      // Step 4: Check if the requested quantity exceeds the available stock
       if (productData.stock < quantity) {
         throw new Error(
           `Requested quantity ${quantity} exceeds available stock of ${productData.stock}`
         )
       }
 
-      // Step 5: Decrease the stock of the product
       productData.stock -= quantity
       await productData.save({ transaction })
 
-      // Step 6: Add the product to the cart with the specified quantity
       await cart.$add('products', productId, {
         through: { quantity },
         transaction,
@@ -115,104 +122,154 @@ export class CartRepository
   }
 
   /**
-   * remove a product from a cart
-   * @params {number, number} cartId, productId
-   * @returns {boolean} returns true if the product removed successfully, otherwise returns false
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * Remove a product from a cart.
+   * @param {number} cartId - The ID of the cart.
+   * @param {number} productId - The ID of the product to remove.
+   * @returns {Promise<boolean>} Returns true if the product is removed successfully, otherwise false.
+   * @throws {Error} Throws an error if the cart or product is not found.
    */
   async removeProductFromCart(
     cartId: number,
     productId: number
   ): Promise<boolean> {
     return await sequelize.transaction(async (transaction) => {
-      // Step 1: Find the cart
-      const cart = await this.model.findByPk(cartId, { transaction })
-      if (!cart) {
-        throw new Error('Cart not found')
-      }
-      // Step 2: Ensure the product is in the cart
+      const cart = await this.findCartById(cartId, transaction)
       const productInCart = await cart.$has('products', productId, {
         transaction,
       })
       if (!productInCart) {
         throw new Error('Product not found in cart')
       }
-      // Step 3: Remove the product from the cart
+
       await cart.$remove('products', productId, { transaction })
-      // increase the stock of the product
-      const productData = await Product.findByPk(productId, { transaction })
-      if (!productData) {
-        throw new Error('Product not found')
-      }
+
+      const productData = await this.findProductById(productId, transaction)
       productData.stock += 1
       await productData.save({ transaction })
+
       return true
     })
   }
 
   /**
-   * update the quantity of the product
-   * @params {number,number,number} cartId, productId, quantity - cartId is the id of the cart, productId is the product we want to update it's quantity
-   * @returns {boolean} returns true if the quantity is updated successfully otherwise, false
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * Update the quantity of a product in the cart.
+   * @param {number} cartId - The ID of the cart.
+   * @param {number} productId - The ID of the product.
+   * @param {number} quantity - The new quantity of the product.
+   * @returns {Promise<boolean>} Returns true if the quantity is updated successfully, otherwise false.
+   * @throws {Error} Throws an error if the cart or product is not found.
    */
   async updateProductQuantity(
     cartId: number,
     productId: number,
     quantity: number
   ): Promise<boolean> {
-    console.log(
-      `Updating product quantity for cartId: ${cartId}, productId: ${productId}, quantity: ${quantity}`
-    )
-    // Step 1: Find the cart by its primary key
-    const cart = await this.model.findByPk(cartId)
-    if (!cart) {
-      console.log(`Cart with ID ${cartId} not found`)
-      throw new Error('Cart not found')
-    }
-    // Step 2: Find the CartProduct entry
-    const cartProduct = await CartProduct.findOne({
-      where: {
-        cartId: cartId,
-        productId: productId,
-      },
-    })
-    if (!cartProduct) {
-      console.log(
-        `Product with ID ${productId} not found in cart with ID ${cartId}`
+    try {
+      const cart = await this.findCartById(cartId)
+      const cartProduct = await CartProduct.findOne({
+        where: {
+          cartId: cartId,
+          productId: productId,
+        },
+      })
+      if (!cartProduct) {
+        throw new Error('Product not found in cart')
+      }
+
+      cartProduct.quantity = quantity
+      await cartProduct.save()
+
+      return true
+    } catch (error) {
+      console.error(
+        `Failed to update quantity for productId: ${productId} in cartId: ${cartId}:`,
+        error
       )
-      throw new Error('Product not found in cart')
+      throw new Error('Error updating product quantity in the cart.')
     }
-    // Step 3: Update the quantity of the product in the cart
-    cartProduct.quantity = quantity
-    await cartProduct.save()
-    console.log(
-      `Successfully updated quantity for productId: ${productId} in cartId: ${cartId} to ${quantity}`
-    )
-    return true
   }
 
+  /**
+   * Find all products in a user's cart.
+   * @param {number} userId - The ID of the user.
+   * @returns {Promise<Cart[]> | null} Returns the cart identified with the userId, if not found returns null.
+   * @throws {Error} Throws an error if it fails to retrieve from the database.
+   */
   async findCartProductByUserId(userId: number): Promise<Cart[] | null> {
-    return await this.model.findAll({
-      where: { userId },
-      include: [
-        {
-          association: 'products',
-          through: { attributes: [] },
-        },
-      ],
-    })
+    try {
+      return await this.model.findAll({
+        where: { userId },
+        include: [
+          {
+            association: 'products',
+            through: { attributes: [] },
+          },
+        ],
+      })
+    } catch (error) {
+      console.error(
+        `Failed to find products in cart for userId: ${userId}:`,
+        error
+      )
+      throw new Error('Error retrieving products in cart from the database.')
+    }
   }
 
-  // get cart product by cart id
+  /**
+   * Get cart products by cart ID.
+   * @param {number} cartId - The ID of the cart.
+   * @returns {Promise<Cart | null>} Returns the cart identified with the cartId, if not found returns null.
+   * @throws {Error} Throws an error if it fails to retrieve from the database.
+   */
   async findCartProductById(cartId: number): Promise<Cart | null> {
-    return await this.model.findByPk(cartId, {
-      include: [
-        {
-          association: 'products',
-          through: { attributes: [] },
-        },
-      ],
-    })
+    try {
+      return await this.model.findByPk(cartId, {
+        include: [
+          {
+            association: 'products',
+            through: { attributes: [] },
+          },
+        ],
+      })
+    } catch (error) {
+      console.error(
+        `Failed to find products in cart with ID: ${cartId}:`,
+        error
+      )
+      throw new Error('Error retrieving products in cart from the database.')
+    }
+  }
+
+  /**
+   * Helper method to find a cart by ID.
+   * @param {number} cartId - The ID of the cart.
+   * @param {Transaction} [transaction] - Optional transaction object.
+   * @returns {Promise<Cart>} Returns the cart found by ID.
+   * @throws {Error} Throws an error if the cart is not found.
+   */
+  private async findCartById(cartId: number, transaction?: any): Promise<Cart> {
+    const cart = await this.model.findByPk(cartId, { transaction })
+    if (!cart) {
+      throw new Error(`Cart with ID ${cartId} not found`)
+    }
+    return cart
+  }
+
+  /**
+   * Helper method to find a product by ID.
+   * @param {number} productId - The ID of the product.
+   * @param {Transaction} [transaction] - Optional transaction object.
+   * @returns {Promise<Product>} Returns the product found by ID.
+   * @throws {Error} Throws an error if the product is not found.
+   */
+  private async findProductById(
+    productId: number,
+    transaction?: any
+  ): Promise<Product> {
+    const product = await Product.findByPk(productId, { transaction })
+    if (!product) {
+      throw new Error(`Product with ID ${productId} not found`)
+    }
+    return product
   }
 }

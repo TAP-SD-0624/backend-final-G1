@@ -23,14 +23,11 @@ export const updateProductQuantityValidator = [
     .isInt({ gt: 0 })
     .withMessage('Cart ID must be a positive integer')
     .toInt(),
-  body('products')
-    .isArray({ min: 1 })
-    .withMessage('Products should be a non-empty array'),
-  body('products.*.productId')
+  param('productId')
     .isInt({ gt: 0 })
     .withMessage('Product ID must be a positive integer')
     .toInt(),
-  body('products.*.quantity')
+  body('quantity')
     .isInt({ gt: 0 })
     .withMessage('Quantity must be a positive integer')
     .toInt(),
@@ -43,14 +40,11 @@ export const addProductToCartValidator = [
     .isInt({ gt: 0 })
     .withMessage('Cart ID must be a positive integer')
     .toInt(),
-  body('products')
-    .isArray({ min: 1 })
-    .withMessage('Products should be a non-empty array'),
-  body('products.*.productId')
+  param('productId')
     .isInt({ gt: 0 })
     .withMessage('Product ID must be a positive integer')
     .toInt(),
-  body('products.*.quantity')
+  body('quantity')
     .isInt({ gt: 0 })
     .withMessage('Quantity must be a positive integer')
     .toInt(),
