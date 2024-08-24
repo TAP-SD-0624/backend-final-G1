@@ -22,10 +22,10 @@ export class ProductController {
     } = req.query
     const options: GetProductOptions = {
       categories: categories as string[],
-      maxPrice: parseInt(maxPrice as string),
-      minPrice: parseInt(minPrice as string),
-      minRating: parseInt(minRating as string),
-      maxRating: parseInt(maxRating as string),
+      maxPrice: parseFloat(maxPrice as string),
+      minPrice: parseFloat(minPrice as string),
+      minRating: parseFloat(minRating as string),
+      maxRating: parseFloat(maxRating as string),
       brand: brand as string[],
     }
     if (earliestDate) {
