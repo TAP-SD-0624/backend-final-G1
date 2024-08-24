@@ -12,7 +12,7 @@ export async function checkWishlistExists(
     if (!exists) {
       const wishlist = new Wishlist()
       wishlist.userId = userId
-      wishlistRepository.create(wishlist)
+      await wishlistRepository.create(wishlist)
     }
   } catch (error: any) {
     throw error
