@@ -16,6 +16,10 @@ export class RepositoryBase<T extends Model> implements IRepositoryBase<T> {
     return await this.model.findAll<T>()
   }
 
+  async findOne(options: any): Promise<T | null> {
+    return await this.model.findOne<T>(options)
+  }
+
   async create(entity: T): Promise<T> {
     return await this.model.create(entity.dataValues, { returning: true })
   }

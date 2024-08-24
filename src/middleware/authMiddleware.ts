@@ -2,20 +2,23 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { User } from '../models'
 import { isTokenBlacklisted } from '../helpers/tokenBlacklist'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest '
+import { CustomError } from '../Errors/CustomError '
 
 const authAndRoleMiddleware = (allowedRoles: string[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const authHeader = req.headers.authorization
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Authorization header missing' })
-    }
+    const token = authHeader?.split(' ')[1] || req.cookies?.token
 
-    const token = authHeader.split(' ')[1]
     if (!token) {
-      return res.status(401).json({ error: 'Token missing from header' })
+      return res.status(401).json({ error: 'Authorization token missing' })
     }
 
-    if (isTokenBlacklisted(token)) {
+    if (await isTokenBlacklisted(token)) {
       return res.status(401).json({ error: 'Token has been invalidated' })
     }
 
@@ -27,23 +30,24 @@ const authAndRoleMiddleware = (allowedRoles: string[]) => {
       const user = await User.findByPk(decoded.id)
 
       if (!user) {
-        return res.status(401).json({ error: 'User not found' })
+        throw new CustomError('User not found', 401)
       }
 
-      if (!allowedRoles.includes(user.role)) {
-        return res
-          .status(403)
-          .json({ error: 'Access forbidden: insufficient role' })
+      if (user.role === 'admin' || allowedRoles.includes(user.role)) {
+        req.user = user
+        return next()
+      } else {
+        throw new CustomError('Access forbidden: insufficient role', 403)
       }
-
-      ;(req as any).user = user
-      next()
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         return res.status(401).json({ error: 'Token has expired' })
       }
       if (error instanceof jwt.JsonWebTokenError) {
         return res.status(401).json({ error: 'Invalid token' })
+      }
+      if (error instanceof CustomError) {
+        return res.status(error.status).json({ error: error.message })
       }
       console.error('Authorization error:', error)
       return res.status(500).json({ error: 'Internal server error' })

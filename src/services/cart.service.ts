@@ -1,12 +1,11 @@
 import { Cart } from '../models'
-import { cartRepository } from '../data-access'
+import { cartRepository, productRepository } from '../data-access'
 import { CartDTO } from '../Types/DTO/cartDto'
 
 export default class CartService {
   async createCart(
     cartData: CartDTO,
-    productId: number,
-    quantity: number
+    products: { productId: number; quantity: number }[]
   ): Promise<Cart> {
     try {
       // Step 1: Create a new cart
@@ -18,20 +17,30 @@ export default class CartService {
         throw new Error('Failed to create cart')
       }
 
-      const productAdded = await this.addProductToCart(
-        cart.id,
-        productId,
-        quantity
-      )
+      // Step 2: Loop through products and add them to the cart
+      for (const { productId, quantity } of products) {
+        // Check if the product exists
+        const productData = await productRepository.GetProduct(productId)
+        if (!productData) {
+          throw new Error(`Product with ID ${productId} not found`)
+        }
 
-      if (!productAdded) {
-        throw new Error('Failed to add product to cart')
+        // Add the product to the cart
+        const productAdded = await this.addProductToCart(
+          cart.id,
+          productId,
+          quantity
+        )
+
+        if (!productAdded) {
+          throw new Error(`Failed to add product with ID ${productId} to cart`)
+        }
       }
 
       return cart
     } catch (error: any) {
       throw new Error(
-        `Error creating cart and adding product: ${error.message}`
+        `Error creating cart and adding products: ${error.message}`
       )
     }
   }
@@ -106,12 +115,34 @@ export default class CartService {
   }
 
   // get cart product by user id
-  async getCartProductByUserId(userId: number): Promise<Cart[] | null> {
+  async getCartProductByUserId(userId: number): Promise<Cart[]> {
     try {
       const cart = await cartRepository.findCartProductByUserId(userId)
-      return cart ? [cart] : null
+      if (!cart) {
+        throw new Error('Cart not found')
+      }
+      return cart as Cart[]
     } catch (error: any) {
       throw new Error(`Error retrieving cart product: ${error.message}`)
+    }
+  }
+
+  async getCartByID(cartId: number): Promise<Cart> {
+    try {
+      const cart = await cartRepository.findById(cartId)
+
+      if (!cart) {
+        throw new Error('Cart not found')
+      }
+
+      // Ensure the products are included with the cart
+      const CartProduct = (await cartRepository.findCartProductById(
+        cartId
+      )) as Cart
+
+      return CartProduct
+    } catch (error: any) {
+      throw new Error(`Error retrieving cart: ${error.message}`)
     }
   }
 }

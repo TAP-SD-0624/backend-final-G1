@@ -153,4 +153,11 @@ export default class UserService {
       throw new Error(`Error changing user role: ${error.message}`)
     }
   }
+  async getUser(id: number): Promise<User> {
+    const user = await userRepository.findOne({ where: { id } })
+    if (!user) {
+      throw new Error(`User not found with id: ${id}`)
+    }
+    return user
+  }
 }
