@@ -17,7 +17,7 @@ const productController = container.resolve(ProductController)
 const router = Router()
 router.get(
   '/list',
-  // GetProductsValidator,
+  GetProductsValidator,
   productController.GetProducts.bind(productController)
 )
 router.get(

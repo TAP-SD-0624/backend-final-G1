@@ -4,13 +4,18 @@ import {
   FloatQuery,
   IntQuery,
   RequiredIntQuery,
+  StringQuery,
 } from './BaseValidations/BaseValidations'
 
 export const GetProductsValidator = [
   RequiredIntQuery('page', { min: 0 }),
   RequiredIntQuery('pageSize', { min: 0 }),
-  FloatQuery('minPrice'),
-  FloatQuery('maxPrice'),
+  FloatQuery('minPrice', { min: 0 }),
+  FloatQuery('maxPrice', { min: 0 }),
+  FloatQuery('minRating', { min: 0, max: 5 }),
+  FloatQuery('maxRating', { min: 0, max: 5 }),
+  query('categories').optional().isString(),
+  query('brand').optional().isString(),
   validateResult,
 ]
 export const getProductValidator = [
