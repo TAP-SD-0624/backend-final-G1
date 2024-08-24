@@ -8,36 +8,30 @@ export default class CartService {
     products: { productId: number; quantity: number }[]
   ): Promise<Cart> {
     try {
-      // Step 1: Create a new cart
+      // Step 1: Create a new cart instance and set the userId
       const newCart = new Cart()
       newCart.userId = cartData.userId
-      const cart = await cartRepository.create(newCart)
 
-      if (!cart) {
+      // Step 2: Save the cart to the database
+      const savedCart = await cartRepository.create(newCart)
+      if (!savedCart) {
         throw new Error('Failed to create cart')
       }
 
-      // Step 2: Loop through products and add them to the cart
+      // Step 3: Loop through products and add them to the cart
       for (const { productId, quantity } of products) {
-        // Check if the product exists
-        const productData = await productRepository.GetProduct(productId)
-        if (!productData) {
-          throw new Error(`Product with ID ${productId} not found`)
-        }
-
-        // Add the product to the cart
+        await this.ensureProductExists(productId)
         const productAdded = await this.addProductToCart(
-          cart.id,
+          savedCart.id,
           productId,
           quantity
         )
-
         if (!productAdded) {
           throw new Error(`Failed to add product with ID ${productId} to cart`)
         }
       }
 
-      return cart
+      return savedCart
     } catch (error: any) {
       throw new Error(
         `Error creating cart and adding products: ${error.message}`
@@ -45,9 +39,13 @@ export default class CartService {
     }
   }
 
-  async getCartByUserId(userId: number): Promise<Cart[] | null> {
+  async getCartByUserId(userId: number): Promise<Cart[]> {
     try {
-      return await cartRepository.findCartByUserId(userId)
+      const cart = await cartRepository.findCartByUserId(userId)
+      if (!cart) {
+        throw new Error(`No cart found for user ID ${userId}`)
+      }
+      return cart
     } catch (error: any) {
       throw new Error(`Error retrieving cart: ${error.message}`)
     }
@@ -69,7 +67,10 @@ export default class CartService {
 
   async deleteCart(cartId: number): Promise<void> {
     try {
-      await cartRepository.deleteCart(cartId)
+      const deleted = await cartRepository.deleteCart(cartId)
+      if (!deleted) {
+        throw new Error('Failed to delete cart')
+      }
     } catch (error: any) {
       throw new Error(`Error deleting cart: ${error.message}`)
     }
@@ -114,14 +115,13 @@ export default class CartService {
     }
   }
 
-  // get cart product by user id
   async getCartProductByUserId(userId: number): Promise<Cart[]> {
     try {
       const cart = await cartRepository.findCartProductByUserId(userId)
-      if (!cart) {
+      if (!cart || cart.length === 0) {
         throw new Error('Cart not found')
       }
-      return cart as Cart[]
+      return cart
     } catch (error: any) {
       throw new Error(`Error retrieving cart product: ${error.message}`)
     }
@@ -130,19 +130,30 @@ export default class CartService {
   async getCartByID(cartId: number): Promise<Cart> {
     try {
       const cart = await cartRepository.findById(cartId)
-
       if (!cart) {
         throw new Error('Cart not found')
       }
 
-      // Ensure the products are included with the cart
-      const CartProduct = (await cartRepository.findCartProductById(
-        cartId
-      )) as Cart
+      const cartWithProducts = await cartRepository.findCartProductById(cartId)
+      if (!cartWithProducts) {
+        throw new Error('Failed to retrieve cart products')
+      }
 
-      return CartProduct
+      return cartWithProducts
     } catch (error: any) {
       throw new Error(`Error retrieving cart: ${error.message}`)
+    }
+  }
+
+  /**
+   * Helper method to ensure a product exists by ID.
+   * @param {number} productId - The ID of the product.
+   * @throws {Error} If the product does not exist.
+   */
+  private async ensureProductExists(productId: number): Promise<void> {
+    const productData = await productRepository.GetProduct(productId)
+    if (!productData) {
+      throw new Error(`Product with ID ${productId} not found`)
     }
   }
 }

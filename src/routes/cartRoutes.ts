@@ -21,18 +21,21 @@ cartRouter.post(
   createCartValidator,
   cartController.createCart.bind(cartController)
 )
+
 cartRouter.get(
   '/:id',
   authAndRoleMiddleware(['admin']),
   getCartValidator,
   cartController.getCartByUserId.bind(cartController)
 )
+
 cartRouter.put(
   '/:id',
   authAndRoleMiddleware(['user', 'admin']),
   updateCartValidator,
   cartController.updateCart.bind(cartController)
 )
+
 cartRouter.delete(
   '/:id',
   authAndRoleMiddleware(['user', 'admin']),
@@ -47,7 +50,6 @@ cartRouter.put(
   cartController.updateProductQuantity.bind(cartController)
 )
 
-// add product to cart
 cartRouter.post(
   '/:cartId/product/:productId',
   authAndRoleMiddleware(['user', 'admin']),
@@ -55,7 +57,6 @@ cartRouter.post(
   cartController.addProductToCart.bind(cartController)
 )
 
-// remove product from cart
 cartRouter.delete(
   '/:cartId/product/:productId',
   authAndRoleMiddleware(['user', 'admin']),
@@ -63,7 +64,6 @@ cartRouter.delete(
   cartController.removeProductFromCart.bind(cartController)
 )
 
-// get cart products by user id
 cartRouter.get(
   '/products/:userId',
   authAndRoleMiddleware(['user', 'admin']),
@@ -71,10 +71,10 @@ cartRouter.get(
   cartController.getCartProductsByUserId.bind(cartController)
 )
 
-// get cart by id
 cartRouter.get(
   '/cart/:cartId',
   authAndRoleMiddleware(['user', 'admin']),
+  getCartValidator,
   cartController.getCartById.bind(cartController)
 )
 

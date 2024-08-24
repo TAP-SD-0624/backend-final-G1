@@ -3,7 +3,7 @@ import { injectable, inject } from 'tsyringe'
 import UserService from '../services/user.service'
 import { UserDTO } from '../Types/DTO'
 import { User } from '../models'
-import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest '
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 
 @injectable()
 export class UserController {
