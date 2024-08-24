@@ -23,7 +23,7 @@ cartRouter.post(
 )
 cartRouter.get(
   '/:id',
-  authAndRoleMiddleware(['user', 'admin']),
+  authAndRoleMiddleware(['admin']),
   getCartValidator,
   cartController.getCartByUserId.bind(cartController)
 )
@@ -69,6 +69,13 @@ cartRouter.get(
   authAndRoleMiddleware(['user', 'admin']),
   getCartValidator,
   cartController.getCartProductsByUserId.bind(cartController)
+)
+
+// get cart by id
+cartRouter.get(
+  '/cart/:cartId',
+  authAndRoleMiddleware(['user', 'admin']),
+  cartController.getCartById.bind(cartController)
 )
 
 export default cartRouter

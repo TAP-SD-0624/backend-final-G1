@@ -55,10 +55,12 @@ export class CartRepository
   }
 
   /**
-   * adding a product to cart
-   * @params {number,number,number} cartId,productId,quantity
-   * @returns {Cart[] | null} returns true if the product is added successfully otherwise returns false
-   * @throws {Error} when it fails to retrieve from or connect with the database.
+   * Adds a product to the cart.
+   * @param {number} cartId - The ID of the cart.
+   * @param {number} productId - The ID of the product.
+   * @param {number} quantity - The quantity of the product to add.
+   * @returns {Promise<boolean>} - Returns true if the product is added successfully, otherwise false.
+   * @throws {Error} - Throws an error if the cart or product is not found, if the product is already in the cart, or if the requested quantity exceeds available stock.
    */
   async addProductToCart(
     cartId: number,
@@ -69,32 +71,45 @@ export class CartRepository
       // Step 1: Find the cart
       const cart = await this.model.findByPk(cartId, { transaction })
       if (!cart) {
-        throw new Error('Cart not found')
+        throw new Error(`Cart with ID ${cartId} not found`)
       }
+
       // Step 2: Check if the product exists
       const productData = await Product.findByPk(productId, { transaction })
       if (!productData) {
-        throw new Error('Product not found')
+        throw new Error(`Product with ID ${productId} not found`)
       }
+
+      // check if the product is exist
+      if (productData.stock < 1) {
+        throw new Error(`Product with ID ${productId} is out of stock`)
+      }
+
       // Step 3: Check if the product is already in the cart
       const productInCart = await cart.$has('products', productId, {
         transaction,
       })
       if (productInCart) {
-        throw new Error('Product already in cart')
+        throw new Error(`Product with ID ${productId} is already in the cart`)
       }
+
       // Step 4: Check if the requested quantity exceeds the available stock
       if (productData.stock < quantity) {
-        throw new Error('Quantity exceeds available stock')
+        throw new Error(
+          `Requested quantity ${quantity} exceeds available stock of ${productData.stock}`
+        )
       }
+
       // Step 5: Decrease the stock of the product
       productData.stock -= quantity
       await productData.save({ transaction })
+
       // Step 6: Add the product to the cart with the specified quantity
       await cart.$add('products', productId, {
         through: { quantity },
         transaction,
       })
+
       return true
     })
   }
@@ -177,9 +192,21 @@ export class CartRepository
     return true
   }
 
-  async findCartProductByUserId(userId: number): Promise<Cart | null> {
-    return await this.model.findOne({
+  async findCartProductByUserId(userId: number): Promise<Cart[] | null> {
+    return await this.model.findAll({
       where: { userId },
+      include: [
+        {
+          association: 'products',
+          through: { attributes: [] },
+        },
+      ],
+    })
+  }
+
+  // get cart product by cart id
+  async findCartProductById(cartId: number): Promise<Cart | null> {
+    return await this.model.findByPk(cartId, {
       include: [
         {
           association: 'products',

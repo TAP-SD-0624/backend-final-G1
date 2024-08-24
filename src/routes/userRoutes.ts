@@ -47,4 +47,11 @@ userRouter.patch(
   authAndRoleMiddleware(['admin']),
   userController.changeRole.bind(userController)
 )
+
+userRouter.get(
+  '/current',
+  authAndRoleMiddleware(['user', 'admin']),
+  userController.getCurrentUser.bind(userController)
+)
+
 export default userRouter

@@ -3,35 +3,30 @@ import { injectable, inject } from 'tsyringe'
 import CartService from '../services/cart.service'
 import { CartDTO } from '../Types/DTO'
 import { Cart } from '../models'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest '
 
 @injectable()
 export class CartController {
   constructor(@inject(CartService) private cartService: CartService) {}
 
-  async createCart(req: Request, res: Response): Promise<Cart> {
+  async createCart(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const userId: number = req.body.userId
-      const productId: number = req.body.products.productId
-      const quantity: number = req.body.products.quantity
+      const userId = req.user?.id
+      const products = req.body.products
 
       const cartData: CartDTO = {
         userId,
         products: [],
       }
 
-      const cart = await this.cartService.createCart(
-        cartData,
-        productId,
-        quantity
-      )
+      const cart = await this.cartService.createCart(cartData, products)
 
-      res
-        .status(201)
-        .json({ message: 'Cart created and product added successfully', cart })
-      return cart // Add this line to return the 'cart' value
+      res.status(201).json({
+        message: 'Cart created and products added successfully',
+        cart,
+      })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      res.status(500).json({ error: `Error creating cart: ${error.message}` })
     }
   }
 
@@ -151,11 +146,20 @@ export class CartController {
 
   // get cart products by user id
   async getCartProductsByUserId(
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response
   ): Promise<Cart[] | null> {
     try {
       const userId = parseInt(req.params.userId, 10)
+
+      // Check if the current user is the owner of the cart
+      if (req.user?.id !== userId && req.user?.role !== 'admin') {
+        res
+          .status(403)
+          .json({ error: 'Access forbidden: You do not own this cart' })
+        return null
+      }
+
       const cart = await this.cartService.getCartProductByUserId(userId)
 
       if (!cart) {
@@ -163,10 +167,34 @@ export class CartController {
       } else {
         res.status(200).json(cart)
       }
-      return cart // Add this line to return the 'cart' value
+
+      return cart
     } catch (error: any) {
       res.status(500).json({ error: error.message })
       throw error
+    }
+  }
+  async getCartById(req: AuthenticatedRequest, res: Response): Promise<any> {
+    try {
+      const cartId = parseInt(req.params.cartId, 10)
+      const userId = req.user?.id
+      const userRole = req.user?.role
+
+      const cart = await this.cartService.getCartByID(cartId)
+      if (!cart) {
+        res.status(404).json({ error: 'Cart not found' })
+        return
+      }
+
+      if (cart.userId !== userId && userRole !== 'admin') {
+        return res
+          .status(403)
+          .json({ error: 'Access forbidden: You do not own this cart' })
+      }
+
+      res.json(cart)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
     }
   }
 }

@@ -3,6 +3,7 @@ import { injectable, inject } from 'tsyringe'
 import UserService from '../services/user.service'
 import { UserDTO } from '../Types/DTO'
 import { User } from '../models'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest '
 
 @injectable()
 export class UserController {
@@ -145,6 +146,24 @@ export class UserController {
       console.error('Error in changeRole controller:', error)
       res.status(400).json({ error: error.message })
       return null // Ensure the function completes
+    }
+  }
+
+  async getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<any> {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'User not authenticated' })
+      }
+
+      const user = await this.userService.getUserById(req.user.id)
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+
+      return res.status(200).json(user)
+    } catch (error: any) {
+      console.error('Error in getCurrentUser controller:', error)
+      return res.status(400).json({ error: error.message })
     }
   }
 }
