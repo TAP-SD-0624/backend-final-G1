@@ -19,8 +19,10 @@ export class CategoryController {
       res.json(Categories)
       return Categories
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw new Error(`Error retrieving categories`)
+      res
+        .status(500)
+        .json({ error: 'Internal server error, please try again alter' })
+      throw new Error(error.message)
     }
   }
 
@@ -53,6 +55,7 @@ export class CategoryController {
       res.status(201).json(newCategory)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 
@@ -73,6 +76,7 @@ export class CategoryController {
       res.status(201).json(updatedCategory)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 
@@ -87,6 +91,7 @@ export class CategoryController {
       res.status(201)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 
@@ -104,6 +109,7 @@ export class CategoryController {
       res.status(201).json(category)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
+      throw new Error(error.message)
     }
   }
 }

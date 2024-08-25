@@ -1,6 +1,10 @@
 import { categoryRepository } from '../data-access'
 import { Category } from '../models'
 import { CategoryDTO } from '../Types/DTO'
+import { InternalServerError } from '../Errors/InternalServerError'
+import logger from '../helpers/logger'
+import { ValidationError as VE } from 'sequelize'
+import { ValidationError } from '../Errors/ValidationError'
 
 export default class CategoryService {
   async createCategory(categoryData: CategoryDTO): Promise<Category> {
@@ -13,8 +17,16 @@ export default class CategoryService {
         throw new Error('Failed to create category  `')
       }
       return category
-    } catch (error) {
-      throw new Error('Error creating category')
+    } catch (error: any) {
+      if (error instanceof VE) {
+        throw new ValidationError(error.message)
+      }
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -34,8 +46,13 @@ export default class CategoryService {
         throw new Error('Failed to update category')
       }
       return category
-    } catch (error) {
-      throw new Error(`Error while updating category`)
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -44,8 +61,13 @@ export default class CategoryService {
     try {
       const category = await categoryRepository.findById(id)
       return category
-    } catch (error) {
-      throw new Error('Error retrieving category')
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -53,16 +75,26 @@ export default class CategoryService {
     try {
       const categories = await categoryRepository.findAll()
       return categories
-    } catch (error) {
-      throw new Error('Error retrieving Categories')
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
   async findByName(name: string): Promise<Category | null> {
     try {
       const category = await categoryRepository.findByName(name)
       return category
-    } catch (error) {
-      throw new Error('Error retrieving Category')
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
   }
 
@@ -71,8 +103,13 @@ export default class CategoryService {
       const deletedCategory = await categoryRepository.delete(CategoryId)
 
       return deletedCategory
-    } catch (error) {
-      throw new Error(`Error while deleting category`)
+    } catch (error: any) {
+      logger.error({
+        name: error.name,
+        message: error.message,
+        stack: error?.stack,
+      })
+      throw new InternalServerError('an error occurred, please try again later')
     }
 
     return false
