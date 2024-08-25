@@ -1,14 +1,16 @@
+import { GetBrandDTO, GetProductDTO } from './productDto'
+
 export type CartDTO = {
   id: number
   userId: number
-  products: CartProductDTO[]
+  products: GetProductDTO[]
 }
 
 export type CartProductDTO = {
   id: number
   name: string
   price: number
-  brand: string
+  brand: GetBrandDTO
   stock: number
   description?: string
   quantity: number

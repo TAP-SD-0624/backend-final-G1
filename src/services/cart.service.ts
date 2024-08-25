@@ -4,6 +4,8 @@ import { CartDTO, CartProductDTO } from '../Types/DTO/cartDto'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { NotFoundError } from '../Errors/NotFoundError'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { GetProductDTO } from '../Types/DTO/productDto'
+import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 
 export default class CartService {
   async GetCartByUserId(userId: number): Promise<CartDTO | null> {
@@ -15,20 +17,10 @@ export default class CartService {
         cart = await cartRepository.create(newCart)
       }
 
-      let products: CartProductDTO[] = []
+      let products: GetProductDTO[] = []
 
       cart.products.forEach((item) => {
-        let product: CartProductDTO = {
-          brand: item.brand.name,
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: (item as any).CartProduct.quantity,
-          stock: item.stock,
-          description: item.description,
-        }
-
-        products.push(product)
+        products.push(ProductToProductDTO(item))
       })
       const cartDto: CartDTO = { id: cart.id, products, userId: cart.userId }
       return cartDto

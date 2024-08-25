@@ -21,6 +21,7 @@ export type GetProductDTO = {
   name: string
   price: number
   stock: number
+  quantity?: number
   averageRating?: number
   ratingCount?: number
   description?: string

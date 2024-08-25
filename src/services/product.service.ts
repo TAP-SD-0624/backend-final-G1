@@ -14,6 +14,7 @@ import { InternalServerError } from '../Errors/InternalServerError'
 import { GetProductDTO, UpdateProductDTO } from '../Types/DTO/productDto'
 import { WriteAllImages } from '../helpers/Storage/StorageManager'
 import { ratingDto } from '../Types/DTO/ratingDto'
+import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 @injectable()
 export default class ProductService {
   /**
@@ -91,52 +92,7 @@ export default class ProductService {
       const product = await productRepository.GetProduct(Id)
       if (!product) return null
 
-      // map comments.
-      const comments: CommentDTO[] = []
-      product.comments.forEach((item) => {
-        const comment: CommentDTO = {
-          content: item.content,
-          id: item.id,
-          productId: item.productId,
-          userId: item.userId,
-        }
-        comments.push(comment)
-      })
-
-      //map categories
-      const categories: CategoryDTO[] = []
-      product.categories.forEach((item) => {
-        const category: CategoryDTO = {
-          name: item.name,
-          id: item.id,
-        }
-        categories.push(category)
-      })
-
-      //map userRatings.
-      const ratings: ratingDto[] = []
-      product.ratings.forEach((item) => {
-        const rating: ratingDto = {
-          value: item.rating,
-        }
-        ratings.push(rating)
-      })
-
-      const productDTO: GetProductDTO = {
-        name: product.name,
-        id: product.id,
-        price: product.price,
-        stock: product.stock,
-        brand: product.brand,
-        description: product.description,
-        discount: { discountRate: product.discount?.discountRate ?? 0 },
-        comments,
-        categories,
-        userRatings: ratings,
-        images: product.images,
-      }
-
-      return productDTO
+      return ProductToProductDTO(product)
     } catch (ex) {
       console.log(ex)
       throw new InternalServerError()

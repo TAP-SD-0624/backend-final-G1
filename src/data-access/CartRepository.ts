@@ -1,7 +1,16 @@
-import { Brand, Cart, CartProduct, Product, ProductCategory } from '../models'
+import {
+  Brand,
+  Cart,
+  CartProduct,
+  Category,
+  Discount,
+  Comment,
+  Product,
+  UserRating,
+  Image,
+} from '../models'
 import { ICartRepository } from './Interfaces/ICartRepository'
 import { RepositoryBase } from './RepositoryBase'
-import sequelize from '../config/db'
 
 export class CartRepository
   extends RepositoryBase<Cart>
@@ -17,7 +26,19 @@ export class CartRepository
   async findCartByUserId(userId: number): Promise<Cart | null> {
     return await this.model.findOne({
       where: { userId },
-      include: [{ model: Product, include: [{ model: Brand }] }],
+      include: [
+        {
+          model: Product,
+          include: [
+            { model: Category, through: { attributes: [] } },
+            { model: Discount },
+            { model: Comment },
+            { model: UserRating },
+            { model: Brand },
+            { model: Image },
+          ],
+        },
+      ],
     })
   }
 
