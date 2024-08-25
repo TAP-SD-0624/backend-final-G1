@@ -40,9 +40,8 @@ app.use('/api/dashboard', dashboardRouter)
 app.use('/api/address', addressRouter)
 
 app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
+  res.status(200).send('OK')
+})
 
 const startServer = async () => {
   try {
