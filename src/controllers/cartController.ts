@@ -14,7 +14,6 @@ export class CartController {
   async GetCartByUserId(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id
-
       const cart = await this.cartService.GetCartByUserId(userId)
       return res.status(200).json({
         ResponseCode: ResponseCodes.Success,

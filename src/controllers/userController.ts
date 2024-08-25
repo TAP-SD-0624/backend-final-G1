@@ -2,168 +2,241 @@ import { Request, Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import UserService from '../services/user.service'
 import { UserDTO } from '../Types/DTO'
-import { User } from '../models'
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
 
 @injectable()
 export class UserController {
   constructor(@inject(UserService) private userService: UserService) {}
 
-  async createUser(req: Request, res: Response): Promise<User> {
+  async createUser(req: Request, res: Response) {
     try {
       const userData: UserDTO = req.body
       const user = await this.userService.createUser(userData)
-      res.status(201).json(user)
-      return user
+      return res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User Created successfully',
+        user,
+      })
     } catch (error: any) {
-      res.status(400).json({ error: error.message })
-      throw error
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async getUserById(req: Request, res: Response): Promise<User | null> {
+  async getUserById(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10)
       const user = await this.userService.getUserById(userId)
+
       if (!user) {
-        res.status(404).json({ error: 'User not found' })
-        return null
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
       }
-      res.json(user)
+      user.password = '****************'
+
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User Retrieved successfully',
+        user,
+      })
       return user
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async getUserByEmail(req: Request, res: Response): Promise<User | null> {
+  async getUserByEmail(req: Request, res: Response) {
     try {
       const email = String(req.params.email)
-      console.log(`Fetching user with email: ${email}`)
 
       const user = await this.userService.getUserByEmail(email)
-      if (!user) {
-        console.warn(`User not found with email: ${email}`)
-        res.status(404).json({ error: `User not found: ${email}` })
-        return null
-      }
 
-      console.log(`User found: ${email}`)
-      res.json(user)
+      if (!user) {
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
+      }
+      user.password = '****************'
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User Retrieved successfully',
+        user,
+      })
       return user
     } catch (error: any) {
-      console.error(
-        `Error retrieving user with email: ${req.params.email}`,
-        error
-      )
-      res.status(500).json({ error: 'Internal Server Error' })
-      throw error
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async updateUser(req: Request, res: Response): Promise<User | null> {
+  async updateUser(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10)
       const userData: UserDTO = req.body
       const updatedUser = await this.userService.updateUser(userId, userData)
       if (!updatedUser) {
-        res.status(404).json({ error: 'User not found or no changes made' })
-        return null
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
       }
-
-      res.json(updatedUser)
-      return updatedUser
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User Updated successfully',
+        updatedUser,
+      })
     } catch (error: any) {
-      console.error('Error in updateUser controller:', error)
-      res.status(400).json({ error: error.message })
-      return null // Ensure the function completes
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async deleteUser(req: Request, res: Response): Promise<void> {
+  async deleteUser(req: Request, res: Response) {
     try {
       const userId = parseInt(req.params.id, 10)
+      //check if user exists
+      const user = await this.userService.getUserById(userId)
+      if (!user) {
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
+      }
       await this.userService.deleteUser(userId)
       res.status(204).send()
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async getAllUsers(req: Request, res: Response): Promise<User[]> {
+  async getAllUsers(req: Request, res: Response) {
     try {
       const users = await this.userService.getAllUsers()
-      res.json(users)
-      return users
+      users.forEach((user) => {
+        user.password = '****************'
+      })
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Users Retrieved successfully',
+        users,
+      })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async editUserPassword(req: Request, res: Response): Promise<Response> {
+  async editUserPassword(req: Request, res: Response) {
     const userId = parseInt(req.params.id, 10)
     const { oldPassword, newPassword } = req.body
 
     try {
+      const user = await this.userService.getUserById(userId)
+      if (!user) {
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
+      }
       const result = await this.userService.editUserPassword(
         Number(userId),
         oldPassword,
         newPassword
       )
-      return res.status(200).json({ message: result })
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User Password updated successfully',
+        result,
+      })
     } catch (error: any) {
-      return res
-        .status(400)
-        .json({ error: error.message || 'An error occurred' })
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
   // controller function to change the role of a user
-  async changeRole(req: Request, res: Response): Promise<User | null> {
+  async changeRole(req: Request, res: Response) {
     try {
-      console.log(`Changing role of user with ID: ${req.params.id}`)
-
       const userId = parseInt(req.params.id, 10)
       const role = req.body.role
 
-      console.log('Request to change role of user with ID:', userId)
-      console.log('Request body data:', role)
+      const user = await this.userService.getUserById(userId)
+      if (!user) {
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
+      }
 
       const updatedUser = await this.userService.changeRole(userId, role)
       if (!updatedUser) {
-        res.status(404).json({ error: 'User not found or no changes made' })
-        return null
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
       }
 
-      // remove the password from the response
       updatedUser.password = '****************'
-
-      res.json(updatedUser)
-      return updatedUser
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Role changed successfully',
+        updatedUser,
+      })
     } catch (error: any) {
-      console.error('Error in changeRole controller:', error)
-      res.status(400).json({ error: error.message })
-      return null // Ensure the function completes
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
   async getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<any> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'User not authenticated' })
+        return res.status(403).json({
+          ResponseCode: ResponseCodes.Forbidden,
+          Message: 'User Not Found',
+        })
       }
 
       const user = await this.userService.getUserById(req.user.id)
       if (!user) {
-        return res.status(404).json({ error: 'User not found' })
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'User Not Found',
+        })
       }
 
-      return res.status(200).json(user)
+      res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'User  Retrieved successfully',
+        user,
+      })
     } catch (error: any) {
-      console.error('Error in getCurrentUser controller:', error)
-      return res.status(400).json({ error: error.message })
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 }
