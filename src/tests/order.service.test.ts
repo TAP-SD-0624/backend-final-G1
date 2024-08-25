@@ -9,7 +9,26 @@ import logger from '../helpers/logger'
 
 jest.mock('../data-access/orderRepository')
 jest.mock('../helpers/logger')
-
+jest.mock('../models/Order.model.ts', () => {
+  return {
+    Order: jest.fn().mockImplementation(() => {
+      return {
+        status: "processed",
+        isPaid: false,
+        userId: 1,
+        addressId: 1,
+        toJSON() {
+          return {
+            status: "processed",
+            isPaid: false,
+            userId: 1,
+            addressId: 1,
+          }
+        }
+      };
+    }),
+  };
+});
 describe('OrderService', () => {
   let orderService: OrderService
 
@@ -19,7 +38,7 @@ describe('OrderService', () => {
   })
 
   describe('createOrder', () => {
-    it('should create a new order and return the order DTO', async () => {
+    it('should create a new order and return the order DTO P0', async () => {
       const userId = 1
       const isPaid = true
       const products = [
@@ -38,7 +57,7 @@ describe('OrderService', () => {
         products,
       }
 
-      ;(orderRepository.createOrder as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.createOrder as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.createOrder(userId, isPaid, products)
 
@@ -49,7 +68,7 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P0', async () => {
       const userId = 1
       const isPaid = true
       const products = [
@@ -57,7 +76,7 @@ describe('OrderService', () => {
         { dataValues: { id: 2 } },
       ] as any
       const err = new Error('Database error')
-      ;(orderRepository.createOrder as jest.Mock).mockRejectedValue(err)
+        ; (orderRepository.createOrder as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.createOrder(userId, isPaid, products)
@@ -71,7 +90,7 @@ describe('OrderService', () => {
   })
 
   describe('getOrderById', () => {
-    it('should return the order DTO for a given order ID and user ID', async () => {
+    it('should return the order DTO for a given order ID and user ID P0', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -92,7 +111,7 @@ describe('OrderService', () => {
         products: [],
       }
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.getOrderById(id, userId)
 
@@ -100,22 +119,22 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should return null if no order is found', async () => {
+    it('should return null if no order is found P1', async () => {
       const id = 1
       const userId = 1
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(null)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(null)
 
       const result = await orderService.getOrderById(id, userId)
 
       expect(result).toBeNull()
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const err = new Error('Database error')
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrderById(id, userId)).rejects.toThrow(
         InternalServerError
@@ -129,7 +148,7 @@ describe('OrderService', () => {
   })
 
   describe('getOrders', () => {
-    it('should return all orders for a given user ID', async () => {
+    it('should return all orders for a given user ID P0', async () => {
       const userId = 1
       const orders = [
         {
@@ -148,7 +167,7 @@ describe('OrderService', () => {
         { id: 1, status: OrderStatus.processed, isPaid: true, products: [] },
       ]
 
-      ;(orderRepository.findByUserId as jest.Mock).mockResolvedValue(orders)
+        ; (orderRepository.findByUserId as jest.Mock).mockResolvedValue(orders)
 
       const result = await orderService.getOrders(userId)
 
@@ -156,22 +175,22 @@ describe('OrderService', () => {
       expect(result).toEqual(ordersDTO)
     })
 
-    it('should return null if no orders are found', async () => {
+    it('should return null if no orders are found P1', async () => {
       const userId = 1
 
-      ;(orderRepository.findByUserId as jest.Mock).mockResolvedValue(null)
+        ; (orderRepository.findByUserId as jest.Mock).mockResolvedValue(null)
 
       const result = await orderService.getOrders(userId)
 
       expect(result).toBeNull()
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
 
       const err = new Error('Database error')
 
-      ;(orderRepository.findByUserId as jest.Mock).mockRejectedValue(err)
+        ; (orderRepository.findByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrders(userId)).rejects.toThrow(
         InternalServerError
@@ -185,7 +204,7 @@ describe('OrderService', () => {
   })
 
   describe('updateOrder', () => {
-    it('should update the order status and return the updated order DTO', async () => {
+    it('should update the order status and return the updated order DTO P0', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.outForDelivery
@@ -196,8 +215,8 @@ describe('OrderService', () => {
       } as any
       const orderDTO: OrderDTO = { id, status, isPaid: true, products: [] }
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
-      ;(orderRepository.update as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.update as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.updateOrder(id, userId, status, true)
 
@@ -206,7 +225,7 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should throw a BadRequestError if the order status cannot be changed', async () => {
+    it('should throw a BadRequestError if the order status cannot be changed P1', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.delivered
@@ -222,21 +241,21 @@ describe('OrderService', () => {
         },
       } as any
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(
-        oldOrder
-      )
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(
+          oldOrder
+        )
 
       await expect(
         orderService.updateOrder(id, userId, status, true)
       ).rejects.toThrow(BadRequestError)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.outForDelivery
       const err = new Error('Database error')
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.updateOrder(id, userId, status, true)
@@ -250,7 +269,7 @@ describe('OrderService', () => {
   })
 
   describe('cancelOrder', () => {
-    it('should cancel the order and return true if the order is processed', async () => {
+    it('should cancel the order and return true if the order is processed P0', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -262,8 +281,8 @@ describe('OrderService', () => {
         },
       } as any
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
-      ;(orderRepository.delete as jest.Mock).mockResolvedValue(true)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.delete as jest.Mock).mockResolvedValue(true)
 
       const result = await orderService.cancelOrder(id, userId)
 
@@ -272,7 +291,7 @@ describe('OrderService', () => {
       expect(result).toBe(true)
     })
 
-    it('should return false if the order is not processed', async () => {
+    it('should return false if the order is not processed P1', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -284,18 +303,19 @@ describe('OrderService', () => {
         },
       } as any
 
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.cancelOrder(id, userId)
 
       expect(result).toBe(false)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const err = new Error('Database error')
-      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+
+        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.cancelOrder(id, userId)).rejects.toThrow(
         InternalServerError
