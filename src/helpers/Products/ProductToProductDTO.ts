@@ -41,7 +41,7 @@ export const ProductToProductDTO = (p: Product) => {
     stock: product.stock,
     brand: { name: product.brand.name, icon: product.brand.icon },
     description: product.description,
-    quantity: (product as any).CartProduct.quantity,
+    quantity: (product as any).CartProduct?.quantity,
     discount: { discountRate: product.discount?.discountRate },
     averageRating: product.averageRating,
     categories,
