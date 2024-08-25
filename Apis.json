@@ -1,0 +1,110 @@
+{
+  "auth": {
+    "Login": {
+      "email": "yousef@gmail.com",
+      "password": "ajskdhalskd"
+    },
+    "Register": {
+      "firstName": "yousef",
+      "lastName": "kmail",
+      "email": "yousef@gmail.com",
+      "password": "ajskdhalskd",
+      "dateOfbirth": "7/22/2000"
+    },
+    "Logout": {}
+  },
+  "user": {
+    "GetProfile": {},
+    "EditProfile": {
+      "firstName": "yousef",
+      "lastName": "kmail",
+      "country": "palestine",
+      "mobile": "+970568550124",
+      "email": "yousef@gmail.com",
+      "dateOfbirth": "7/22/2000",
+      "address": "main- street"
+    },
+    "EditPassword": {
+      "password": "password"
+    }
+  },
+  "product": {
+    "GetProducts": {
+      "page": 1,
+      "pageSize": 20,
+      "categories": ["electonics", "luxury"]
+    },
+    "GetProduct": { "productId": 1 },
+    "NewArrivals": {
+      "page": 1,
+      "pageSize": 20,
+      "categories": ["electonics", "luxury"]
+    },
+    "AddProduct": {
+      "Name": "watch",
+      "Description": "this is a very good watch that is not expensive and very good quality",
+      "quantity": 10,
+      "previewImages": "images"
+    },
+    "deleteProduct": {
+      "productId": 1
+    },
+    "UpdateProduct": {
+      "productId": 1,
+      "quantity": 1,
+      "name": "bag",
+      "Description": "this is a very good watch that is not expensive and very good quality"
+    }
+  },
+  "Cart": {
+    "GetCart": {},
+    "DeleteCart": {},
+    "RemoveItem": {
+      "itemId": 1
+    },
+    "AddItem": {
+      "itemId": 1,
+      "quantity": 1
+    },
+    "IncreaseItem": {
+      "itemId": 1,
+      "amount": 1
+    },
+    "decreaseItem": {
+      "itemId": 1,
+      "amount": 1
+    }
+  },
+  "UserRatings": {
+    "SetRating": {
+      "productId": 1,
+      "RatingValue": 2
+    },
+    "RemoveRating": {
+      "productId": 1
+    }
+  },
+  "Comments": {
+    "AddComment": {
+      "textContent": "good product",
+      "productId": 1
+    },
+    "DeleteComment": {
+      "CommentId": 1
+    }
+  },
+
+  "Order": {
+    "GetOrders": {},
+    "PlaceOrder": {
+      "cartId": 1
+    },
+    "UpdateOrder": {
+      "OrderStatus": "delivered"
+    },
+
+    "DeleteOrder": {
+      "orderId": 1
+    }
+  }
+}

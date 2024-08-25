@@ -1,11 +1,47 @@
-import { Router } from 'express';
+import { Router } from 'express'
+import { ProductController } from '../controllers/ProductController'
+import { container } from 'tsyringe'
+import { uploadMiddleware } from '../middleware/UploadMiddleware'
+import {
+  getProductValidator,
+  createProductValidator,
+  updateProductValidator,
+  deleteValidator,
+  GetProductsValidator,
+} from '../validations/productValidator'
+/* const productRepository = new ProductRepository();
+const productService = new ProductService();
+const productController = new ProductController(); */
+const productController = container.resolve(ProductController)
 
-const router = Router();
+const router = Router()
+router.get(
+  '/list',
+  GetProductsValidator,
+  productController.GetProducts.bind(productController)
+)
+router.get(
+  '/:id',
+  getProductValidator,
+  productController.getProductById.bind(productController)
+)
 
-router.get('/products');
-router.get('/products/:id');
-router.post('/products',);
-router.put('/products/:id',);
-router.delete('/products/:id');
+router.post(
+  '/create',
+  uploadMiddleware.array('photos'),
+  createProductValidator,
+  productController.createProduct.bind(productController)
+)
 
-export default router;
+router.patch(
+  '/:id',
+  updateProductValidator,
+  productController.updateProduct.bind(productController)
+)
+router.delete(
+  '/:id',
+  deleteValidator,
+  productController.deleteProduct.bind(productController)
+)
+
+export default router
