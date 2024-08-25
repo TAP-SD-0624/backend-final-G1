@@ -34,7 +34,7 @@ describe('UserRatingService', () => {
     jest.clearAllMocks()
   })
 
-  describe('createUserRating_P0', () => {
+  describe('createUserRating', () => {
     it('should create and return a user rating_P0', async () => {
       const userId = 1
       const productId = 123
@@ -76,7 +76,7 @@ describe('UserRatingService', () => {
     })
   })
 
-  describe('findUserRatingsByProductId_P0', () => {
+  describe('findUserRatingsByProductId', () => {
     it('should return the average rating for a product_P0', async () => {
       const productId = 123
       const userRatings: UserRating[] = [new UserRating(), new UserRating()]
@@ -122,7 +122,7 @@ describe('UserRatingService', () => {
     })
   })
 
-  describe('findUserRatingByUserIdAndProductId_P0', () => {
+  describe('findUserRatingByUserIdAndProductId', () => {
     it('should return a user rating for the given user and product_P0', async () => {
       const userId = 1
       const productId = 123
@@ -174,7 +174,7 @@ describe('UserRatingService', () => {
     })
   })
 
-  describe('updateUserRating_P0', () => {
+  describe('updateUserRating', () => {
     it('should update and return the updated user rating_P0', async () => {
       const userId = 1
       const productId = 123

@@ -16,7 +16,7 @@ describe('WishlistService', () => {
     jest.clearAllMocks()
   })
 
-  describe('getWishlistByUserId_P0', () => {
+  describe('getWishlistByUserId', () => {
     it('should return the wishlist for a given user ID_P0', async () => {
       const userId = 1
       const wishlist: WishlistDTO = { products: [] }
@@ -58,7 +58,7 @@ describe('WishlistService', () => {
     })
   })
 
-  describe('addProductToWishlist_P0', () => {
+  describe('addProductToWishlist', () => {
     it('should add a product to the wishlist and return true_P0', async () => {
       const userId = 1
       const productId = 123
@@ -98,7 +98,7 @@ describe('WishlistService', () => {
     })
   })
 
-  describe('clearWishList_P0', () => {
+  describe('clearWishList', () => {
     it('should clear the wishlist and return true_P0', async () => {
       const userId = 1
 
@@ -126,7 +126,7 @@ describe('WishlistService', () => {
     })
   })
 
-  describe('removeProductFromWishList_P0', () => {
+  describe('removeProductFromWishList', () => {
     it('should remove a product from the wishlist and return true_P0', async () => {
       const userId = 1
       const productId = 123
