@@ -1,9 +1,15 @@
 export type CartDTO = {
+  id: number
   userId: number
-  products: {
-    productId: number
-    quantity: number
-  }[]
+  products: CartProductDTO[]
 }
 
-// wait until the product dto is created
+export type CartProductDTO = {
+  id: number
+  name: string
+  price: number
+  brand: string
+  stock: number
+  description?: string
+  quantity: number
+}
