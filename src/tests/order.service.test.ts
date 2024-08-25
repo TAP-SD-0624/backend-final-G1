@@ -9,7 +9,26 @@ import logger from '../helpers/logger'
 
 jest.mock('../data-access/orderRepository')
 jest.mock('../helpers/logger')
-
+jest.mock('../models/Order.model.ts', () => {
+  return {
+    Order: jest.fn().mockImplementation(() => {
+      return {
+        status: 'processed',
+        isPaid: false,
+        userId: 1,
+        addressId: 1,
+        toJSON() {
+          return {
+            status: 'processed',
+            isPaid: false,
+            userId: 1,
+            addressId: 1,
+          }
+        },
+      }
+    }),
+  }
+})
 describe('OrderService', () => {
   let orderService: OrderService
 
@@ -19,7 +38,7 @@ describe('OrderService', () => {
   })
 
   describe('createOrder', () => {
-    it('should create a new order and return the order DTO', async () => {
+    it('should create a new order and return the order DTO P0', async () => {
       const userId = 1
       const isPaid = true
       const products = [
@@ -49,7 +68,7 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P0', async () => {
       const userId = 1
       const isPaid = true
       const products = [
@@ -71,7 +90,7 @@ describe('OrderService', () => {
   })
 
   describe('getOrderById', () => {
-    it('should return the order DTO for a given order ID and user ID', async () => {
+    it('should return the order DTO for a given order ID and user ID P0', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -100,7 +119,7 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should return null if no order is found', async () => {
+    it('should return null if no order is found P1', async () => {
       const id = 1
       const userId = 1
 
@@ -111,7 +130,7 @@ describe('OrderService', () => {
       expect(result).toBeNull()
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const err = new Error('Database error')
@@ -129,7 +148,7 @@ describe('OrderService', () => {
   })
 
   describe('getOrders', () => {
-    it('should return all orders for a given user ID', async () => {
+    it('should return all orders for a given user ID P0', async () => {
       const userId = 1
       const orders = [
         {
@@ -156,7 +175,7 @@ describe('OrderService', () => {
       expect(result).toEqual(ordersDTO)
     })
 
-    it('should return null if no orders are found', async () => {
+    it('should return null if no orders are found P1', async () => {
       const userId = 1
 
       ;(orderRepository.findByUserId as jest.Mock).mockResolvedValue(null)
@@ -166,7 +185,7 @@ describe('OrderService', () => {
       expect(result).toBeNull()
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
 
       const err = new Error('Database error')
@@ -185,7 +204,7 @@ describe('OrderService', () => {
   })
 
   describe('updateOrder', () => {
-    it('should update the order status and return the updated order DTO', async () => {
+    it('should update the order status and return the updated order DTO P0', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.outForDelivery
@@ -206,7 +225,7 @@ describe('OrderService', () => {
       expect(result).toEqual(orderDTO)
     })
 
-    it('should throw a BadRequestError if the order status cannot be changed', async () => {
+    it('should throw a BadRequestError if the order status cannot be changed P1', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.delivered
@@ -231,7 +250,7 @@ describe('OrderService', () => {
       ).rejects.toThrow(BadRequestError)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const status = OrderStatus.outForDelivery
@@ -250,7 +269,7 @@ describe('OrderService', () => {
   })
 
   describe('cancelOrder', () => {
-    it('should cancel the order and return true if the order is processed', async () => {
+    it('should cancel the order and return true if the order is processed P0', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -272,7 +291,7 @@ describe('OrderService', () => {
       expect(result).toBe(true)
     })
 
-    it('should return false if the order is not processed', async () => {
+    it('should return false if the order is not processed P1', async () => {
       const id = 1
       const userId = 1
       const order = {
@@ -291,10 +310,11 @@ describe('OrderService', () => {
       expect(result).toBe(false)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const id = 1
       const userId = 1
       const err = new Error('Database error')
+
       ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.cancelOrder(id, userId)).rejects.toThrow(
