@@ -26,7 +26,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError('Failed to create category')
     }
   }
 
@@ -52,7 +52,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError('updating category failed')
     }
   }
 
@@ -67,7 +67,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError("Couldn't find category")
     }
   }
 
@@ -81,7 +81,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError('Failed to get All categories')
     }
   }
   async findByName(name: string): Promise<Category | null> {
@@ -94,7 +94,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError('failed to get category by name')
     }
   }
 
@@ -109,7 +109,7 @@ export default class CategoryService {
         message: error.message,
         stack: error?.stack,
       })
-      throw new InternalServerError('an error occurred, please try again later')
+      throw new InternalServerError('failed to delete category')
     }
 
     return false
