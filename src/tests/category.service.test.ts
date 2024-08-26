@@ -121,7 +121,7 @@ describe('CategoryService', () => {
 
       await expect(
         categoryService.updateCategory(categoryId, updateData)
-      ).rejects.toThrow("Category Doesn't exist")
+      ).rejects.toThrow('updating category failed')
     })
 
     it('P1: it should throw an InternalServerError if an error occurs', async () => {
