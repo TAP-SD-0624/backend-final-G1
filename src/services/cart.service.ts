@@ -1,71 +1,36 @@
-import { Cart } from '../models'
+import { Cart, Product } from '../models'
 import { cartRepository, productRepository } from '../data-access'
-import { CartDTO } from '../Types/DTO/cartDto'
+import { CartDTO, CartProductDTO } from '../Types/DTO/cartDto'
+import { InternalServerError } from '../Errors/InternalServerError'
+import { NotFoundError } from '../Errors/NotFoundError'
+import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { GetProductDTO } from '../Types/DTO/productDto'
+import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 
 export default class CartService {
-  async createCart(
-    cartData: CartDTO,
-    products: { productId: number; quantity: number }[]
-  ): Promise<Cart> {
+  async GetCartByUserId(userId: number): Promise<CartDTO | null> {
     try {
-      // Step 1: Create a new cart instance and set the userId
-      const newCart = new Cart()
-      newCart.userId = cartData.userId
-
-      // Step 2: Save the cart to the database
-      const savedCart = await cartRepository.create(newCart)
-      if (!savedCart) {
-        throw new Error('Failed to create cart')
-      }
-
-      // Step 3: Loop through products and add them to the cart
-      for (const { productId, quantity } of products) {
-        await this.ensureProductExists(productId)
-        const productAdded = await this.addProductToCart(
-          savedCart.id,
-          productId,
-          quantity
-        )
-        if (!productAdded) {
-          throw new Error(`Failed to add product with ID ${productId} to cart`)
-        }
-      }
-
-      return savedCart
-    } catch (error: any) {
-      throw new Error(
-        `Error creating cart and adding products: ${error.message}`
-      )
-    }
-  }
-
-  async getCartByUserId(userId: number): Promise<Cart[]> {
-    try {
-      const cart = await cartRepository.findCartByUserId(userId)
+      let cart = await cartRepository.findCartByUserId(userId)
       if (!cart) {
-        throw new Error(`No cart found for user ID ${userId}`)
+        let newCart = new Cart()
+        newCart.userId = userId
+        cart = await cartRepository.create(newCart)
       }
-      return cart
+
+      let products: GetProductDTO[] = []
+
+      cart.products.forEach((item) => {
+        products.push(ProductToProductDTO(item))
+      })
+      const cartDto: CartDTO = { id: cart.id, products, userId: cart.userId }
+      return cartDto
     } catch (error: any) {
-      throw new Error(`Error retrieving cart: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
-  async updateCart(cartId: number, cartData: CartDTO): Promise<Cart | null> {
-    try {
-      const cart = await cartRepository.findById(cartId)
-      if (!cart) {
-        throw new Error('Cart not found')
-      }
-
-      cart.userId = cartData.userId
-      return await cartRepository.updateCart(cartId, cart)
-    } catch (error: any) {
-      throw new Error(`Error updating cart: ${error.message}`)
-    }
-  }
-
-  async deleteCart(cartId: number): Promise<void> {
+  async DeleteCart(cartId: number): Promise<void> {
     try {
       const deleted = await cartRepository.deleteCart(cartId)
       if (!deleted) {
@@ -76,42 +41,70 @@ export default class CartService {
     }
   }
 
-  async addProductToCart(
-    cartId: number,
-    productId: number,
-    quantity: number
-  ): Promise<boolean> {
+  async ClearCart(userId: number) {
     try {
-      return await cartRepository.addProductToCart(cartId, productId, quantity)
-    } catch (error: any) {
-      throw new Error(`Error adding product to cart: ${error.message}`)
+      let cart = await cartRepository.findCartByUserId(userId)
+
+      if (!cart) {
+        let newCart = new Cart()
+        newCart.userId = userId
+        cart = await cartRepository.create(newCart)
+        return true
+      }
+      await cartRepository.ClearCart(cart.id)
+      return true
+    } catch (ex) {
+      console.log(ex)
+      throw new InternalServerError()
     }
   }
 
-  async removeProductFromCart(
-    cartId: number,
-    productId: number
-  ): Promise<boolean> {
+  async AddProductToCart(userId: number, productId: number, quantity: number) {
+    let product
+    let cart
     try {
-      return await cartRepository.removeProductFromCart(cartId, productId)
+      cart = await cartRepository.findCartByUserId(userId)
+      if (!cart) {
+        let newCart = new Cart()
+        newCart.userId = userId
+        cart = await cartRepository.create(newCart)
+      }
+      product = await productRepository.findById(productId)
     } catch (error: any) {
-      throw new Error(`Error removing product from cart: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
-  }
 
-  async updateProductQuantity(
-    cartId: number,
-    productId: number,
-    quantity: number
-  ): Promise<boolean> {
+    //Ensure product exists
+    if (!product)
+      throw new NotFoundError('product with the specified id is not found')
+
+    if (product.stock < 0 || product.stock < quantity)
+      throw new InsufficientStockError(
+        'Product either out of stock or does not satisfy the requested amount'
+      )
     try {
-      return await cartRepository.updateProductQuantity(
-        cartId,
+      return await cartRepository.SetProductInCart(
+        cart?.id,
         productId,
         quantity
       )
     } catch (error: any) {
-      throw new Error(`Error updating product quantity: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
+    }
+  }
+
+  async removeProductFromCart(
+    userId: number,
+    productId: number
+  ): Promise<void> {
+    try {
+      const cart = await cartRepository.findCartByUserId(userId)
+      return await cartRepository.RemoveProductFromCart(cart?.id, productId)
+    } catch (error: any) {
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
@@ -124,36 +117,6 @@ export default class CartService {
       return cart
     } catch (error: any) {
       throw new Error(`Error retrieving cart product: ${error.message}`)
-    }
-  }
-
-  async getCartByID(cartId: number): Promise<Cart> {
-    try {
-      const cart = await cartRepository.findById(cartId)
-      if (!cart) {
-        throw new Error('Cart not found')
-      }
-
-      const cartWithProducts = await cartRepository.findCartProductById(cartId)
-      if (!cartWithProducts) {
-        throw new Error('Failed to retrieve cart products')
-      }
-
-      return cartWithProducts
-    } catch (error: any) {
-      throw new Error(`Error retrieving cart: ${error.message}`)
-    }
-  }
-
-  /**
-   * Helper method to ensure a product exists by ID.
-   * @param {number} productId - The ID of the product.
-   * @throws {Error} If the product does not exist.
-   */
-  private async ensureProductExists(productId: number): Promise<void> {
-    const productData = await productRepository.GetProduct(productId)
-    if (!productData) {
-      throw new Error(`Product with ID ${productId} not found`)
     }
   }
 }

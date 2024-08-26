@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 import { User } from '../models'
 import { isTokenBlacklisted } from '../helpers/tokenBlacklist'
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
-import { CustomError } from '../Errors/CustomError '
+import { CustomError } from '../Errors/CustomError'
 
 const authAndRoleMiddleware = (allowedRoles: string[]) => {
   return async (

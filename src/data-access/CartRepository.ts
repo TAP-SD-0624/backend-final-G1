@@ -1,7 +1,16 @@
-import { Cart, CartProduct, Product } from '../models'
+import {
+  Brand,
+  Cart,
+  CartProduct,
+  Category,
+  Discount,
+  Comment,
+  Product,
+  UserRating,
+  Image,
+} from '../models'
 import { ICartRepository } from './Interfaces/ICartRepository'
 import { RepositoryBase } from './RepositoryBase'
-import sequelize from '../config/db'
 
 export class CartRepository
   extends RepositoryBase<Cart>
@@ -13,13 +22,24 @@ export class CartRepository
    * @returns {Promise<Cart[]>} Returns the cart identified with the userId, if not found returns an empty array.
    * @throws {Error} Throws an error when it fails to retrieve from or connect with the database.
    */
-  async findCartByUserId(userId: number): Promise<Cart[]> {
-    try {
-      return await this.model.findAll({ where: { userId } })
-    } catch (error) {
-      console.error(`Failed to find cart by userId ${userId}:`, error)
-      throw new Error('Error retrieving cart from the database.')
-    }
+
+  async findCartByUserId(userId: number): Promise<Cart | null> {
+    return await this.model.findOne({
+      where: { userId },
+      include: [
+        {
+          model: Product,
+          include: [
+            { model: Category, through: { attributes: [] } },
+            { model: Discount },
+            { model: Comment },
+            { model: UserRating },
+            { model: Brand },
+            { model: Image },
+          ],
+        },
+      ],
+    })
   }
 
   /**
@@ -80,75 +100,38 @@ export class CartRepository
    * @param {number} cartId - The ID of the cart.
    * @param {number} productId - The ID of the product.
    * @param {number} quantity - The quantity of the product to add.
-   * @returns {Promise<boolean>} Returns true if the product is added successfully, otherwise false.
-   * @throws {Error} Throws an error if the cart or product is not found, if the product is already in the cart, or if the requested quantity exceeds available stock.
+
+   * @throws {Error} - Throws an error if the cart or product is not found, if the product is already in the cart, or if the requested quantity exceeds available stock.
    */
-  async addProductToCart(
-    cartId: number,
-    productId: number,
-    quantity: number
-  ): Promise<boolean> {
-    return await sequelize.transaction(async (transaction) => {
-      const cart = await this.findCartById(cartId, transaction)
-      const productData = await this.findProductById(productId, transaction)
-
-      if (productData.stock < 1) {
-        throw new Error(`Product with ID ${productId} is out of stock`)
-      }
-
-      const productInCart = await cart.$has('products', productId, {
-        transaction,
-      })
-      if (productInCart) {
-        throw new Error(`Product with ID ${productId} is already in the cart`)
-      }
-
-      if (productData.stock < quantity) {
-        throw new Error(
-          `Requested quantity ${quantity} exceeds available stock of ${productData.stock}`
-        )
-      }
-
-      productData.stock -= quantity
-      await productData.save({ transaction })
-
-      await cart.$add('products', productId, {
-        through: { quantity },
-        transaction,
-      })
-
-      return true
+  async SetProductInCart(cartId: number, productId: number, quantity: number) {
+    let product = await CartProduct.findOne({
+      where: { cartId, productId },
+      paranoid: false,
     })
+
+    if (!product) {
+      const CT = new CartProduct()
+      CT.productId = productId
+      CT.cartId = cartId
+      CT.quantity = quantity
+      console.log(CT)
+      product = await CartProduct.create(CT.dataValues)
+    } else {
+      await product.restore()
+      product.set('quantity', quantity)
+      await product.save()
+    }
+    return product
   }
 
   /**
-   * Remove a product from a cart.
-   * @param {number} cartId - The ID of the cart.
-   * @param {number} productId - The ID of the product to remove.
-   * @returns {Promise<boolean>} Returns true if the product is removed successfully, otherwise false.
-   * @throws {Error} Throws an error if the cart or product is not found.
+
+   * remove a product from a cart
+   * @params {number, number} cartId, productId
+   * @throws {Error} when it fails to retrieve from or connect with the database.
    */
-  async removeProductFromCart(
-    cartId: number,
-    productId: number
-  ): Promise<boolean> {
-    return await sequelize.transaction(async (transaction) => {
-      const cart = await this.findCartById(cartId, transaction)
-      const productInCart = await cart.$has('products', productId, {
-        transaction,
-      })
-      if (!productInCart) {
-        throw new Error('Product not found in cart')
-      }
-
-      await cart.$remove('products', productId, { transaction })
-
-      const productData = await this.findProductById(productId, transaction)
-      productData.stock += 1
-      await productData.save({ transaction })
-
-      return true
-    })
+  async RemoveProductFromCart(cartId: number, productId: number) {
+    await CartProduct.destroy({ where: { cartId, productId } })
   }
 
   /**
@@ -271,5 +254,10 @@ export class CartRepository
       throw new Error(`Product with ID ${productId} not found`)
     }
     return product
+  }
+
+  async ClearCart(cartId: number) {
+    const cart = await this.model.findByPk(cartId)
+    cart?.$set('products', [])
   }
 }

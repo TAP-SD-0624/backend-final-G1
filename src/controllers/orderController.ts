@@ -34,7 +34,7 @@ export class OrderController {
         isPaid,
         productIds
       )
-      const newCart = await this.cartService.deleteCart(cart[0].dataValues.id)
+      const newCart = await this.cartService.DeleteCart(cart[0].dataValues.id)
       res.status(201).json(order)
       return order
     } catch (error: any) {

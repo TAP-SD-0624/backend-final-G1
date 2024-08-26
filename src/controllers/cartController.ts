@@ -1,202 +1,96 @@
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import CartService from '../services/cart.service'
-import { CartDTO } from '../Types/DTO'
-import { Cart } from '../models'
+
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
+import { NotFoundError } from '../Errors/NotFoundError'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export class CartController {
   constructor(@inject(CartService) private cartService: CartService) {}
 
-  async createCart(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async GetCartByUserId(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id
-      const products = req.body.products
-
-      if (!userId) {
-        res.status(400).json({ error: 'User ID is required' })
-        return
-      }
-
-      const cartData: CartDTO = {
-        userId,
-        products: [],
-      }
-
-      const cart = await this.cartService.createCart(cartData, products)
-
-      res.status(201).json({
-        message: 'Cart created and products added successfully',
+      const cart = await this.cartService.GetCartByUserId(userId)
+      return res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Cart Retrieved successfully',
         cart,
       })
     } catch (error: any) {
-      res.status(500).json({ error: `Error creating cart: ${error.message}` })
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
     }
   }
 
-  async getCartByUserId(req: Request, res: Response): Promise<Cart[] | null> {
+  async ClearCart(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.id, 10)
-      const cart = await this.cartService.getCartByUserId(userId)
-      if (!cart || cart.length === 0) {
-        res.status(404).json({ error: 'Cart not found' })
-        return null
-      }
-      res.json(cart)
-      return cart
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      return null
-    }
-  }
-
-  async updateCart(req: Request, res: Response): Promise<Cart | null> {
-    try {
-      const cartId = parseInt(req.params.id, 10)
-      const cartData: CartDTO = req.body
-      const cart = await this.cartService.updateCart(cartId, cartData)
-      if (!cart) {
-        res.status(404).json({ error: 'Cart not found' })
-        return null
-      }
-      res.json(cart)
-      return cart
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      return null
-    }
-  }
-
-  async deleteCart(req: Request, res: Response): Promise<void> {
-    try {
-      const cartId = parseInt(req.params.id, 10)
-      await this.cartService.deleteCart(cartId)
+      await this.cartService.ClearCart(req.user?.id)
       res.status(204).send()
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error',
+      })
+      throw error
     }
   }
 
-  async updateProductQuantity(req: Request, res: Response): Promise<void> {
+  // add product to cart
+  async SetProductToCart(req: AuthenticatedRequest, res: Response) {
     try {
-      const cartId = parseInt(req.params.cartId, 10)
-      const productId = parseInt(req.params.productId, 10)
-      const { quantity } = req.body
+      const { quantity, productId } = req.body
 
-      const success = await this.cartService.updateProductQuantity(
-        cartId,
+      const product = await this.cartService.AddProductToCart(
+        req.user?.id,
         productId,
         quantity
       )
 
-      if (success) {
-        res
-          .status(200)
-          .json({ message: 'Product quantity updated successfully' })
-      } else {
-        res.status(400).json({ error: 'Failed to update product quantity' })
+      return res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Item were added successfully',
+        product,
+      })
+    } catch (error) {
+      // console.log(error)
+      if (error instanceof NotFoundError) {
+        return res.status(404).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: error.message,
+        })
       }
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      if (error instanceof InsufficientStockError) {
+        return res.status(400).json({
+          ResponseCode: ResponseCodes.Insufficient,
+          Message: error.message,
+        })
+      }
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error, try again later',
+      })
     }
   }
-
-  async addProductToCart(req: Request, res: Response): Promise<void> {
+  // remove product from cart
+  async RemoveProductFromCart(req: AuthenticatedRequest, res: Response) {
     try {
-      const cartId = parseInt(req.params.cartId, 10)
-      const productId = parseInt(req.params.productId, 10)
-      const { quantity } = req.body
-
-      const success = await this.cartService.addProductToCart(
-        cartId,
-        productId,
-        quantity
-      )
-
-      if (success) {
-        res.status(200).json({ message: 'Product added to cart successfully' })
-      } else {
-        res.status(400).json({ error: 'Failed to add product to cart' })
-      }
+      const productId = parseInt(req.params.id, 10)
+      await this.cartService.removeProductFromCart(req.user?.id, productId)
+      return res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Deleted successfully',
+      })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-    }
-  }
-
-  async removeProductFromCart(req: Request, res: Response): Promise<void> {
-    try {
-      const cartId = parseInt(req.params.cartId, 10)
-      const productId = parseInt(req.params.productId, 10)
-
-      const success = await this.cartService.removeProductFromCart(
-        cartId,
-        productId
-      )
-
-      if (success) {
-        res
-          .status(200)
-          .json({ message: 'Product removed from cart successfully' })
-      } else {
-        res.status(400).json({ error: 'Failed to remove product from cart' })
-      }
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-    }
-  }
-
-  async getCartProductsByUserId(
-    req: AuthenticatedRequest,
-    res: Response
-  ): Promise<Cart[] | null> {
-    try {
-      const userId = parseInt(req.params.userId, 10)
-
-      if (req.user?.id !== userId && req.user?.role !== 'admin') {
-        res
-          .status(403)
-          .json({ error: 'Access forbidden: You do not own this cart' })
-        return null
-      }
-
-      const cart = await this.cartService.getCartProductByUserId(userId)
-
-      if (!cart || cart.length === 0) {
-        res.status(404).json({ error: 'Cart not found' })
-      } else {
-        res.status(200).json(cart)
-      }
-
-      return cart
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      return null
-    }
-  }
-
-  async getCartById(req: AuthenticatedRequest, res: Response): Promise<void> {
-    try {
-      const cartId = parseInt(req.params.cartId, 10)
-      const userId = req.user?.id
-      const userRole = req.user?.role
-
-      const cart = await this.cartService.getCartByID(cartId)
-      if (!cart) {
-        res.status(404).json({ error: 'Cart not found' })
-        return
-      }
-
-      if (cart.userId !== userId && userRole !== 'admin') {
-        res
-          .status(403)
-          .json({ error: 'Access forbidden: You do not own this cart' })
-        return
-      }
-
-      res.json(cart)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error, try again later.',
+      })
     }
   }
 }

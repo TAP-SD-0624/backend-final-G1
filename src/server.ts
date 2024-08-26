@@ -38,6 +38,11 @@ app.use('/api/discounts', discountRouter)
 app.use('/api/brands', brandRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/address', addressRouter)
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK')
+})
+
 const startServer = async () => {
   try {
     await sequelize.authenticate()

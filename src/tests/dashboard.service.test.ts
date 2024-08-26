@@ -17,7 +17,7 @@ describe('DashboardService', () => {
   })
 
   describe('getMostBoughtProductsOverTime', () => {
-    it('should return a list of products', async () => {
+    it('should return a list of products - P0', async () => {
       const startTime = new Date()
       const endTime = new Date()
       const products: GetProductDashboardDTO[] = [
@@ -39,7 +39,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P0', async () => {
       const startTime = new Date()
       const endTime = new Date()
 
@@ -55,7 +55,7 @@ describe('DashboardService', () => {
   })
 
   describe('getProductsNotBought', () => {
-    it('should return a list of products not bought', async () => {
+    it('should return a list of products not bought - P1', async () => {
       const startTime = new Date()
       const endTime = new Date()
       const products: GetProductDashboardDTO[] = [
@@ -78,7 +78,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const startTime = new Date()
       const endTime = new Date()
 
@@ -94,7 +94,7 @@ describe('DashboardService', () => {
   })
 
   describe('DropItemsFromList', () => {
-    it('should return true if items are dropped successfully', async () => {
+    it('should return true if items are dropped successfully - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockResolvedValue(
@@ -107,7 +107,7 @@ describe('DashboardService', () => {
       expect(result).toBe(true)
     })
 
-    it('should return false if no items are dropped', async () => {
+    it('should return false if no items are dropped - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockResolvedValue(
@@ -119,7 +119,7 @@ describe('DashboardService', () => {
       expect(result).toBe(false)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockRejectedValue(
@@ -134,7 +134,7 @@ describe('DashboardService', () => {
   })
 
   describe('getProductsPerState', () => {
-    it('should return a list of products for the given state', async () => {
+    it('should return a list of products for the given state - P1', async () => {
       const state = 'New York'
       const products: GetProductDashboardDTO[] = [
         { id: 3, name: 'Product 3', price: 30, stock: 15 },
@@ -152,7 +152,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const state = 'New York'
 
       ;(dashboardRepository.getProductsPerState as jest.Mock).mockRejectedValue(

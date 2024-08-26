@@ -8,7 +8,10 @@
     "watch": "nodemon src/server.ts",
     "start": "node dist/server.js",
     "test": "jest --coverage",
-    "format": "prettier --write \"src/**/*.{ts,js}\""
+    "format": "prettier --write \"src/**/*.{ts,js}\"",
+    "P0": "jest -t P0",
+    "P1": "jest -t P1",
+    "testLoad":"artillery run asciiart-load-test.yml"
   },
   "repository": {
     "type": "git",
@@ -56,6 +59,7 @@
     "@types/node": "^22.1.0",
     "@types/sequelize": "^4.28.20",
     "@types/swagger-ui-express": "^4.1.6",
+    "artillery": "^2.0.20",
     "babel-jest": "^29.7.0",
     "eslint": "^9.8.0",
     "i": "^0.3.7",
