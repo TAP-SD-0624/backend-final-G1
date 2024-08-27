@@ -18,10 +18,7 @@ export class AddressRepository
   }
   async deleteAddress(id: number, userId: number): Promise<boolean> {
     const number = await this.model.destroy({ where: { id, userId } })
-    if (!number) {
-      return false
-    }
-    return true
+    return number > 0
   }
   async updateAddress(
     id: number,
