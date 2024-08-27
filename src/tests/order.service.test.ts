@@ -1,6 +1,11 @@
 import 'reflect-metadata'
 import OrderService from '../services/order.service'
-import { addressRepository, cartRepository, orderRepository, productRepository } from '../data-access'
+import {
+  addressRepository,
+  cartRepository,
+  orderRepository,
+  productRepository,
+} from '../data-access'
 import { OrderDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { BadRequestError } from '../Errors/BadRequestError'
@@ -17,9 +22,9 @@ jest.mock('../config/db.ts', () => {
     transaction: jest.fn(() => {
       return {
         commit: jest.fn(),
-        rollback: jest.fn()
+        rollback: jest.fn(),
       }
-    })
+    }),
   }
 })
 jest.mock('../helpers/logger')
@@ -64,23 +69,29 @@ describe('OrderService', () => {
           return { id: 1, isPaid, status: 'processed', userId, products }
         },
       } as any
-      const orderDTO:OrderDTO = {
+      const orderDTO: OrderDTO = {
         id: 1,
         isPaid,
         status: OrderStatus.processed,
         products,
-      };
-        (cartRepository.findCartByUserId as jest.Mock).mockResolvedValue({products});
-        (productRepository.DecreaseProductCount as jest.Mock).mockResolvedValueOnce({id:1}).mockResolvedValueOnce({id:2});
-         (orderRepository.createOrder as jest.Mock).mockResolvedValue(order);
-         (addressRepository.getAddressByIdAndUserId as jest.Mock).mockResolvedValue({id:1});
+      }
+      ;(cartRepository.findCartByUserId as jest.Mock).mockResolvedValue({
+        products,
+      })
+      ;(productRepository.DecreaseProductCount as jest.Mock)
+        .mockResolvedValueOnce({ id: 1 })
+        .mockResolvedValueOnce({ id: 2 })
+      ;(orderRepository.createOrder as jest.Mock).mockResolvedValue(order)
+      ;(
+        addressRepository.getAddressByIdAndUserId as jest.Mock
+      ).mockResolvedValue({ id: 1 })
 
-      const result = await orderService.createOrder(userId, isPaid,1)
+      const result = await orderService.createOrder(userId, isPaid, 1)
 
       expect(orderRepository.createOrder).toHaveBeenCalledWith(
         expect.any(Object),
         products,
-        {commit:expect.any(Function), rollback:expect.any(Function)}
+        { commit: expect.any(Function), rollback: expect.any(Function) }
       )
       expect(result).toEqual(orderDTO)
     })
@@ -93,12 +104,11 @@ describe('OrderService', () => {
         { dataValues: { id: 2 } },
       ] as any
       const err = new Error('Database error')
-        ; (cartRepository.findCartByUserId as jest.Mock).mockRejectedValue(err)
+      ;(cartRepository.findCartByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.createOrder(userId, isPaid, products)
       ).rejects.toThrow(InternalServerError)
-
     })
   })
 
@@ -124,7 +134,7 @@ describe('OrderService', () => {
         products: [],
       }
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.getOrderById(id, userId)
 
@@ -136,7 +146,7 @@ describe('OrderService', () => {
       const id = 1
       const userId = 1
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(null)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(null)
 
       const result = await orderService.getOrderById(id, userId)
 
@@ -147,7 +157,7 @@ describe('OrderService', () => {
       const id = 1
       const userId = 1
       const err = new Error('Database error')
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrderById(id, userId)).rejects.toThrow(
         InternalServerError
@@ -180,7 +190,7 @@ describe('OrderService', () => {
         { id: 1, status: OrderStatus.processed, isPaid: true, products: [] },
       ]
 
-        ; (orderRepository.findByUserId as jest.Mock).mockResolvedValue(orders)
+      ;(orderRepository.findByUserId as jest.Mock).mockResolvedValue(orders)
 
       const result = await orderService.getOrders(userId)
 
@@ -191,7 +201,7 @@ describe('OrderService', () => {
     it('should return null if no orders are found P1', async () => {
       const userId = 1
 
-        ; (orderRepository.findByUserId as jest.Mock).mockResolvedValue(null)
+      ;(orderRepository.findByUserId as jest.Mock).mockResolvedValue(null)
 
       const result = await orderService.getOrders(userId)
 
@@ -203,7 +213,7 @@ describe('OrderService', () => {
 
       const err = new Error('Database error')
 
-        ; (orderRepository.findByUserId as jest.Mock).mockRejectedValue(err)
+      ;(orderRepository.findByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.getOrders(userId)).rejects.toThrow(
         InternalServerError
@@ -228,8 +238,8 @@ describe('OrderService', () => {
       } as any
       const orderDTO: OrderDTO = { id, status, isPaid: true, products: [] }
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
-        ; (orderRepository.update as jest.Mock).mockResolvedValue(order)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+      ;(orderRepository.update as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.updateOrder(id, userId, status, true)
 
@@ -254,9 +264,9 @@ describe('OrderService', () => {
         },
       } as any
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(
-          oldOrder
-        )
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(
+        oldOrder
+      )
 
       await expect(
         orderService.updateOrder(id, userId, status, true)
@@ -268,7 +278,7 @@ describe('OrderService', () => {
       const userId = 1
       const status = OrderStatus.outForDelivery
       const err = new Error('Database error')
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.updateOrder(id, userId, status, true)
@@ -294,8 +304,8 @@ describe('OrderService', () => {
         },
       } as any
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
-        ; (orderRepository.delete as jest.Mock).mockResolvedValue(true)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+      ;(orderRepository.delete as jest.Mock).mockResolvedValue(true)
 
       const result = await orderService.cancelOrder(id, userId)
 
@@ -316,7 +326,7 @@ describe('OrderService', () => {
         },
       } as any
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockResolvedValue(order)
 
       const result = await orderService.cancelOrder(id, userId)
 
@@ -328,7 +338,7 @@ describe('OrderService', () => {
       const userId = 1
       const err = new Error('Database error')
 
-        ; (orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
+      ;(orderRepository.findByIdAndUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(orderService.cancelOrder(id, userId)).rejects.toThrow(
         InternalServerError
