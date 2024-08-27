@@ -53,6 +53,9 @@ export class Product extends Model<Product> {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
+    validate: {
+      min: 0,
+    },
   })
   stock!: number
 
@@ -70,6 +73,7 @@ export class Product extends Model<Product> {
 
   averageRating!: number
   ratingCount!: number
+  CartProduct!: CartProduct
   //Prodcut-Comment relationshop.
 
   @HasMany(() => Comment)

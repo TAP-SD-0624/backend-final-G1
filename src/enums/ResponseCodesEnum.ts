@@ -4,4 +4,8 @@ export enum ResponseCodes {
   Insufficient = '2',
   ValidationError = '3',
   InternalServerError = '4',
+  Forbidden = '5',
+  Unauthorized = '6',
+  BadRequest = '7',
+  EmptyCart = '8',
 }

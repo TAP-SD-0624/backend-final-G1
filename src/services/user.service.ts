@@ -2,6 +2,9 @@ import { User } from '../models'
 import { userRepository } from '../data-access'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
+import { InternalServerError } from '../Errors/InternalServerError'
+import { NotFoundError } from '../Errors/NotFoundError'
+import { BadRequestError } from '../Errors/BadRequestError'
 
 export default class UserService {
   async createUser(userData: UserDTO): Promise<User> {
@@ -9,26 +12,31 @@ export default class UserService {
       const newUser = new User()
       newUser.name = userData.name
       newUser.email = userData.email
-      newUser.password = userData.password
+      newUser.password = await bcrypt.hash(userData.password, 10)
       newUser.address = userData.address
       newUser.role = userData.role
 
       const user = await userRepository.create(newUser)
       if (!user) {
-        throw new Error('Failed to create user')
+        throw new InternalServerError('Failed to create user')
       }
       return user
     } catch (error: any) {
-      throw new Error(`Error creating user: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
   async getUserById(userId: number): Promise<User | null> {
     try {
       const user = await userRepository.findById(userId)
+      if (!user) {
+        throw new NotFoundError('User not found')
+      }
       return user
-    } catch (error) {
-      throw new Error(`Error retrieving user: ${error}`)
+    } catch (error: any) {
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
@@ -36,12 +44,12 @@ export default class UserService {
     try {
       const user = await userRepository.findByEmail(email)
       if (!user) {
-        console.warn(`No user found with email: ${email}`)
+        throw new NotFoundError(`No user found with email: ${email}`)
       }
       return user
     } catch (error: any) {
       console.error(`Error retrieving user by email: ${email}`, error)
-      throw new Error(`Error retrieving user: ${error.message}`)
+      throw new InternalServerError()
     }
   }
 
@@ -49,8 +57,9 @@ export default class UserService {
     try {
       const users = await userRepository.findAll()
       return users
-    } catch (error) {
-      throw new Error(`Error retrieving users: ${error}`)
+    } catch (error: any) {
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
@@ -58,7 +67,7 @@ export default class UserService {
     try {
       const user = await userRepository.findById(userId)
       if (!user) {
-        throw new Error('User not found')
+        throw new NotFoundError('User not found')
       }
 
       const isDataChanged = this.isUserDataChanged(user, userData)
@@ -78,9 +87,13 @@ export default class UserService {
       }
 
       const updatedUser = await userRepository.updateUser(userId, partialUser)
+      if (!updatedUser) {
+        throw new InternalServerError('Failed to update user')
+      }
       return updatedUser
     } catch (error: any) {
-      throw new Error(`Error updating user: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
@@ -105,7 +118,7 @@ export default class UserService {
     try {
       const user = await userRepository.findById(userId)
       if (!user) {
-        throw new Error('User not found')
+        throw new NotFoundError('User not found')
       }
 
       const isOldPasswordMatch = await bcrypt.compare(
@@ -113,18 +126,20 @@ export default class UserService {
         user.password
       )
       if (!isOldPasswordMatch) {
-        throw new Error('Old password is incorrect')
+        throw new BadRequestError('Old password is incorrect')
       }
 
       if (oldPassword === newPassword) {
-        throw new Error('New password must be different from the old password')
+        throw new BadRequestError(
+          'New password must be different from the old password'
+        )
       }
 
       const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
       // Check if the new hashed password is actually different
       if (user.password === hashedNewPassword) {
-        throw new Error(
+        throw new BadRequestError(
           'New password cannot be the same as the old password after hashing'
         )
       }
@@ -133,31 +148,47 @@ export default class UserService {
       await user.save()
       return 'Password updated successfully'
     } catch (error: any) {
-      throw new Error(`Error editing user password: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
   async deleteUser(userId: number): Promise<void> {
     try {
-      await userRepository.deleteUser(userId)
-    } catch (error) {
-      throw new Error(`Error deleting user: ${error}`)
+      const deleted = await userRepository.deleteUser(userId)
+      if (!deleted) {
+        throw new InternalServerError('Failed to delete user')
+      }
+    } catch (error: any) {
+      console.log(error)
+      throw new InternalServerError()
     }
   }
 
   // Function to change the role of a user
   async changeRole(userId: number, role: string): Promise<User | null> {
     try {
-      return await userRepository.changeRole(userId, role)
+      const updatedUser = await userRepository.changeRole(userId, role)
+      if (!updatedUser) {
+        throw new InternalServerError('Failed to change user role')
+      }
+      return updatedUser
     } catch (error: any) {
-      throw new Error(`Error changing user role: ${error.message}`)
+      console.log(error)
+      throw new InternalServerError()
     }
   }
+
   async getUser(id: number): Promise<User> {
-    const user = await userRepository.findOne({ where: { id } })
-    if (!user) {
-      throw new Error(`User not found with id: ${id}`)
+    try {
+      const user = await userRepository.findOne({ where: { id } })
+      if (!user) {
+        throw new NotFoundError(`User not found with id: ${id}`)
+      }
+      return user
+    } catch (error: any) {
+      console.log(error)
+      throw new InternalServerError()
     }
-    return user
   }
 }

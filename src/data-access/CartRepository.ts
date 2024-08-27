@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize'
 import {
   Brand,
   Cart,
@@ -256,8 +257,8 @@ export class CartRepository
     return product
   }
 
-  async ClearCart(cartId: number) {
+  async ClearCart(cartId: number, t?: Transaction) {
     const cart = await this.model.findByPk(cartId)
-    cart?.$set('products', [])
+    await cart?.$set('products', [], { transaction: t })
   }
 }

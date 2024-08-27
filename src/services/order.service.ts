@@ -1,37 +1,121 @@
-import { Order, Product } from '../models'
+import { Address, Cart, Order } from '../models'
 import { OrderDTO } from '../Types/DTO'
 import { injectable } from 'tsyringe'
-import { orderRepository } from '../data-access'
+import {
+  orderRepository,
+  cartRepository,
+  productRepository,
+  addressRepository,
+} from '../data-access'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import {
   ordersToOrdersDTO,
   orderToOrderDTO,
 } from '../helpers/orders/orderToOrderDTO'
-import { InternalServerError } from '../Errors/InternalServerError'
 import logger from '../helpers/logger'
-import { BadRequestError } from '../Errors/BadRequestError'
 import { ValidationError as VE } from 'sequelize'
-import { ValidationError } from '../Errors/ValidationError'
+import sequelize from '../config/db'
+import {
+  InternalServerError,
+  BadRequestError,
+  ValidationError,
+  EmptyCartError,
+} from '../Errors'
+import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export default class OrderService {
   public async createOrder(
     userId: number,
     isPaid: boolean,
-    product: Product[]
+    addressId?: number
   ): Promise<OrderDTO> {
-    const newOrder = new Order()
-    newOrder.isPaid = isPaid
-    newOrder.status = OrderStatus.processed
-    newOrder.userId = userId
-    const productIds: number[] = product.map((product) => product.dataValues.id)
+    console.log('creating order')
+    //lets make sure we have items in our cart.
+    let cart: Cart | null = {} as Cart
     try {
-      const order = await orderRepository.createOrder(newOrder, productIds)
+      cart = await cartRepository.findCartByUserId(userId)
+    } catch (ex: any) {
+      throw new InternalServerError()
+    }
+    //throw badrequest when the cart does not exist, this means the user is new and never added any item to the cart,"empty cart"
+    if (!cart) {
+      throw new EmptyCartError(
+        'Can not create an order with an empty cart, please add available products to your cart first'
+      )
+    }
+    //throw badreqeust when the cart is empty.
+    if (cart.products.length < 1) {
+      throw new EmptyCartError(
+        'Can not create an order with an empty cart, please add available products to your cart first'
+      )
+    }
+
+    const t = await sequelize.transaction()
+
+    try {
+      //make sure all items exists with enough amount in our database.
+      await Promise.all(
+        cart.products.map(async (item) => {
+          const updatedProduct = await productRepository.DecreaseProductCount(
+            item.id,
+            (item as any).CartProduct?.quantity,
+            t
+          )
+          //if not enough, we will throw an error and roll back all our database changes.
+          if (!updatedProduct) {
+            throw new InsufficientStockError(
+              `product with the name ${item.name} does not have enough in the stock, please update your cart to match the correct number`
+            )
+          }
+        })
+      )
+      //we made sure all our items exists, lets now create our order
+
+      //get our address and add it to the order
+      let address: Address | null = {} as Address
+      if (addressId) {
+        address = await addressRepository.getAddressByIdAndUserId(
+          addressId,
+          userId
+        )
+        if (!address)
+          throw new BadRequestError(
+            'prodvided address does not exist for this user, please use a valid address'
+          )
+      } else {
+        const addresses = await addressRepository.getAddressesByUserId(userId)
+        if (addresses.length < 1)
+          throw new BadRequestError(
+            'this user does not have and addresses, please add a new address to this user'
+          )
+        else address = addresses[0]
+      }
+
+      const newOrder = new Order()
+      newOrder.isPaid = isPaid ?? false
+      newOrder.status = OrderStatus.processed
+      newOrder.userId = userId
+      newOrder.addressId = address.id
+      console.log('creating order')
+      const order = await orderRepository.createOrder(
+        newOrder,
+        cart.products,
+        t
+      )
+
+      await cartRepository.ClearCart(cart.id, t)
+      await t.commit()
+      console.log(order.toJSON())
       return orderToOrderDTO(order)
     } catch (error: any) {
+      console.log(error)
+      await t.rollback()
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
+      if (error instanceof InsufficientStockError) throw error
+      console.log(error)
       logger.error({
         name: error.name,
         message: error.message,

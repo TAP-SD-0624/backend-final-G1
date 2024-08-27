@@ -8,7 +8,7 @@ const orderRouter = Router()
 const orderController = container.resolve(OrderController)
 
 orderRouter.post(
-  '/',
+  '/create',
   authAndRoleMiddleware(['user']),
   createOrderValidator,
   orderController.createOrder.bind(orderController)
