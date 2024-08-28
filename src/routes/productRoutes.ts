@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { ProductController } from '../controllers/ProductController'
+import { ProductController } from '../controllers'
 import { container } from 'tsyringe'
 import { uploadMiddleware } from '../middleware/UploadMiddleware'
 import {

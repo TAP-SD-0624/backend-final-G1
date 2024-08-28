@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import AuthController from '../controllers/authController'
+import { AuthController } from '../controllers'
 import { validateLogin, validateRegister, validateLogout } from '../validations'
 
 const authRouter = Router()
