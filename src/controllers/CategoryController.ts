@@ -9,24 +9,21 @@ export class CategoryController {
     @inject(CategoryService) private categoryService: CategoryService
   ) {}
 
-  public async getAllCategories(
-    req: Request,
-    res: Response
-  ): Promise<Category[]> {
+  public async getAllCategories(req: Request, res: Response) {
     try {
       const Categories = await this.categoryService.getAllCategories()
-
-      res.json(Categories)
-      return Categories
+      if (!Categories) {
+        return res.status(404).json({ error: 'could not find categories' })
+      }
+      return res.status(200).json(Categories)
     } catch (error: any) {
       res
         .status(500)
-        .json({ error: 'Internal server error, please try again alter' })
-      throw new Error(error.message)
+        .json({ error: 'Internal server error, please try again later' })
     }
   }
 
-  public async getCategoryByID(req: Request, res: Response): Promise<void> {
+  public async getCategoryByID(req: Request, res: Response) {
     try {
       const categoryId = parseInt(req.params.id, 10)
       if (!categoryId) {
@@ -36,13 +33,13 @@ export class CategoryController {
       if (!category) {
         res.status(400).json({ error: 'Category not found' })
       }
-      res.status(201).json(category)
+      return res.status(201).json(category)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }
   }
 
-  public async createCategory(req: Request, res: Response): Promise<void> {
+  public async createCategory(req: Request, res: Response) {
     try {
       const category: CategoryDTO = req.body
       if (!category) {
@@ -52,14 +49,13 @@ export class CategoryController {
       if (!newCategory) {
         res.status(400).json({ error: 'error while creating new Category' })
       }
-      res.status(201).json(newCategory)
+      return res.status(201).json(newCategory)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 
-  public async updateCategory(req: Request, res: Response): Promise<void> {
+  public async updateCategory(req: Request, res: Response) {
     try {
       const newCategory: CategoryDTO = req.body
       const categoryId = parseInt(req.params.id)
@@ -76,27 +72,25 @@ export class CategoryController {
       res.status(201).json(updatedCategory)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 
   //delete controller
-  public async deleteCategory(req: Request, res: Response): Promise<void> {
+  public async deleteCategory(req: Request, res: Response) {
     try {
       const deletedId = parseInt(req.params.id, 10)
       if (!deletedId) {
         res.status(500).json({ error: 'Required Data is Unavailable' })
       }
       await this.categoryService.deleteCategory(deletedId)
-      res.status(201)
+      return res.status(202)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 
   //findByName
-  public async findByName(req: Request, res: Response): Promise<void> {
+  public async findByName(req: Request, res: Response) {
     try {
       const { name } = req.body
       if (!name) {
@@ -106,10 +100,9 @@ export class CategoryController {
       if (!category) {
         res.status(404).json({ error: 'Category not found' })
       }
-      res.status(201).json(category)
+      return res.status(201).json(category)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
-      throw new Error(error.message)
     }
   }
 }
