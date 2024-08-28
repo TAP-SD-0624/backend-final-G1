@@ -4,8 +4,9 @@ import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
 import { InternalServerError, NotFoundError, BadRequestError } from '../Errors'
 import { ILogger } from '../helpers/Logger/ILogger'
-import { inject } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 
+@injectable()
 export default class UserService {
   constructor(@inject('ILogger') private logger: ILogger) {}
 

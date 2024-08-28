@@ -1,4 +1,4 @@
-import { UserRatingService } from '../services/userRating.service'
+import { UserRatingService } from '../services'
 import { UserRatingDTO } from '../Types/DTO'
 import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'

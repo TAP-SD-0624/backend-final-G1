@@ -6,8 +6,9 @@ import { InsufficientStockError } from '../Errors/InsufficientStockError'
 import { GetProductDTO } from '../Types/DTO/productDto'
 import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 import { ILogger } from '../helpers/Logger/ILogger'
-import { inject } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 
+@injectable()
 export default class CartService {
   constructor(@inject('ILogger') private logger: ILogger) {}
 
