@@ -2,11 +2,13 @@ import { User } from '../models'
 import { userRepository } from '../data-access'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
-import { InternalServerError } from '../Errors/InternalServerError'
-import { NotFoundError } from '../Errors/NotFoundError'
-import { BadRequestError } from '../Errors/BadRequestError'
+import { InternalServerError, NotFoundError, BadRequestError } from '../Errors'
+import { ILogger } from '../helpers/Logger/ILogger'
+import { inject } from 'tsyringe'
 
 export default class UserService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   async createUser(userData: UserDTO): Promise<User> {
     try {
       const newUser = new User()
@@ -22,7 +24,7 @@ export default class UserService {
       }
       return user
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -35,7 +37,7 @@ export default class UserService {
       }
       return user
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -48,7 +50,7 @@ export default class UserService {
       }
       return user
     } catch (error: any) {
-      console.error(`Error retrieving user by email: ${email}`, error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -58,7 +60,7 @@ export default class UserService {
       const users = await userRepository.findAll()
       return users
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
