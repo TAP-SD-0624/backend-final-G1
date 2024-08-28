@@ -32,7 +32,6 @@ export default class OrderService {
     isPaid: boolean,
     addressId?: number
   ): Promise<OrderDTO> {
-    console.log('creating order')
     //lets make sure we have items in our cart.
     let cart: Cart | null = {} as Cart
     try {
@@ -99,7 +98,6 @@ export default class OrderService {
       newOrder.status = OrderStatus.processed
       newOrder.userId = userId
       newOrder.addressId = address.id
-      console.log('creating order')
       const order = await orderRepository.createOrder(
         newOrder,
         cart.products,
@@ -108,7 +106,6 @@ export default class OrderService {
 
       await cartRepository.ClearCart(cart.id, t)
       await t.commit()
-      console.log(order.toJSON())
       return orderToOrderDTO(order)
     } catch (error: any) {
       this.logger.error(error)
