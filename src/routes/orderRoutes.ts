@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import { OrderController } from '../controllers/orderController'
+import { OrderController } from '../controllers'
 import authAndRoleMiddleware from '../middleware/authMiddleware'
 import { createOrderValidator, updateOrderValidator } from '../validations'
 

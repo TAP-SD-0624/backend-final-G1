@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { inject, injectable } from 'tsyringe'
 import { BrandService } from '../services'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class BrandController {
@@ -16,10 +17,7 @@ export class BrandController {
         brands,
       })
     } catch (ex) {
-      return res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }

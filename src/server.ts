@@ -1,3 +1,8 @@
+import 'reflect-metadata'
+import { container } from 'tsyringe'
+import { WinstonLogger } from './helpers/Logger/WinstonLogger'
+import { ILogger } from './helpers/Logger/ILogger'
+container.register<ILogger>('ILogger', { useClass: WinstonLogger })
 import express from 'express'
 import dotenv from 'dotenv'
 import sequelize from './config/db'
@@ -19,10 +24,14 @@ import {
   orderRouter,
 } from './routes'
 import cors from 'cors'
+
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+
+const Logger = container.resolve<ILogger>('ILogger')
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -48,14 +57,15 @@ app.get('/health', (req, res) => {
 const startServer = async () => {
   try {
     await sequelize.authenticate()
-    console.log('Database connected!')
+    Logger.log('Database connected!')
     // await sequelize.sync({ alter: true })
-    // console.log('Database synchronized!')
+    // Logger.log('Database synchronized!')
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`)
+      Logger.log(`Server is running on http://localhost:${PORT}`)
     })
-  } catch (error) {
-    console.error('Unable to connect to the database:', error)
+  } catch (error: any) {
+    Logger.log('Unable to connect to the database:')
+    Logger.error(error)
   }
 }
 

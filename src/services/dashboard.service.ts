@@ -1,12 +1,13 @@
-import { Product } from '../models'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { dashboardRepository } from '../data-access'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { GetProductDashboardDTO } from '../Types/DTO'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class DashboardService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   public async getMostBoughtProductsOverTime(
     startTime: Date,
     endTime: Date
@@ -17,14 +18,8 @@ export default class DashboardService {
         endTime
       )
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError(
-        'An error occurred, please try again later.'
-      )
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 
@@ -35,14 +30,8 @@ export default class DashboardService {
     try {
       return await dashboardRepository.getProductsNotBought(startTime, endTime)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError(
-        'An error occurred, please try again later.'
-      )
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 
@@ -50,14 +39,8 @@ export default class DashboardService {
     try {
       return await dashboardRepository.DropItemsFromList(ids)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError(
-        'An error occurred, please try again later.'
-      )
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 
@@ -67,14 +50,8 @@ export default class DashboardService {
     try {
       return await dashboardRepository.getProductsPerState(state)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError(
-        'An error occurred, please try again later.'
-      )
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 }

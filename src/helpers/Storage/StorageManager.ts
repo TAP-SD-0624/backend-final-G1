@@ -1,4 +1,9 @@
+import { container } from 'tsyringe'
 import { supbaseClient } from '../../config/Storage'
+import { ILogger } from '../Logger/ILogger'
+
+const Logger = container.resolve<ILogger>('ILogger')
+
 export const WriteAllImages = async (id: number, image: any) => {
   const imagesUrl: string[] = []
   try {
@@ -16,26 +21,8 @@ export const WriteAllImages = async (id: number, image: any) => {
       }
     }
     return imagesUrl
-
-    // const data = supbaseClient.storage
-    // .from('Storage')
-    // .getPublicUrl('images/imageee.png')
-
-    // console.log(data.data.publicUrl)
-  } catch (ex) {
-    console.log(ex)
+  } catch (ex: any) {
+    Logger.error(ex)
   }
   return imagesUrl
 }
-
-// export const ReadAllImage = async (id: number) => {
-//   try {
-//     const data = await supbaseClient.storage
-//       .from('Storage')
-//       .list(`images/${id}`)
-
-//     return data
-//   } catch (ex) {
-//     console.log(ex)
-//   }
-// }

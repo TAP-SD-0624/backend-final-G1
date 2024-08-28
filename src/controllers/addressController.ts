@@ -6,6 +6,7 @@ import { ValidationError } from 'sequelize'
 import { StatusCodes } from 'http-status-codes'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class AddressController {
@@ -31,10 +32,7 @@ export class AddressController {
         address,
       })
     } catch (error) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -48,10 +46,7 @@ export class AddressController {
         Addresses,
       })
     } catch (error) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'internal server error, try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -75,10 +70,7 @@ export class AddressController {
           Message: 'Failed to create an address with the provided data',
         })
       }
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -104,10 +96,7 @@ export class AddressController {
         Address,
       })
     } catch (error) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'internal server error, try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -131,10 +120,7 @@ export class AddressController {
         Address,
       })
     } catch (error) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'internal server error, try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }
