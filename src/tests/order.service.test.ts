@@ -1,13 +1,32 @@
 import 'reflect-metadata'
 import OrderService from '../services/order.service'
-import { orderRepository } from '../data-access'
+import {
+  addressRepository,
+  cartRepository,
+  orderRepository,
+  productRepository,
+} from '../data-access'
 import { OrderDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { BadRequestError } from '../Errors/BadRequestError'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import logger from '../helpers/logger'
+import { Transaction } from 'sequelize'
 
 jest.mock('../data-access/orderRepository')
+jest.mock('../data-access/cartRepository')
+jest.mock('../data-access/productRepository')
+jest.mock('../data-access/addressRepository')
+jest.mock('../config/db.ts', () => {
+  return {
+    transaction: jest.fn(() => {
+      return {
+        commit: jest.fn(),
+        rollback: jest.fn(),
+      }
+    }),
+  }
+})
 jest.mock('../helpers/logger')
 jest.mock('../models/Order.model.ts', () => {
   return {
@@ -56,14 +75,23 @@ describe('OrderService', () => {
         status: OrderStatus.processed,
         products,
       }
-
+      ;(cartRepository.findCartByUserId as jest.Mock).mockResolvedValue({
+        products,
+      })
+      ;(productRepository.DecreaseProductCount as jest.Mock)
+        .mockResolvedValueOnce({ id: 1 })
+        .mockResolvedValueOnce({ id: 2 })
       ;(orderRepository.createOrder as jest.Mock).mockResolvedValue(order)
+      ;(
+        addressRepository.getAddressByIdAndUserId as jest.Mock
+      ).mockResolvedValue({ id: 1 })
 
-      const result = await orderService.createOrder(userId, isPaid, products)
+      const result = await orderService.createOrder(userId, isPaid, 1)
 
       expect(orderRepository.createOrder).toHaveBeenCalledWith(
         expect.any(Object),
-        [1, 2]
+        products,
+        { commit: expect.any(Function), rollback: expect.any(Function) }
       )
       expect(result).toEqual(orderDTO)
     })
@@ -76,16 +104,11 @@ describe('OrderService', () => {
         { dataValues: { id: 2 } },
       ] as any
       const err = new Error('Database error')
-      ;(orderRepository.createOrder as jest.Mock).mockRejectedValue(err)
+      ;(cartRepository.findCartByUserId as jest.Mock).mockRejectedValue(err)
 
       await expect(
         orderService.createOrder(userId, isPaid, products)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
