@@ -111,14 +111,12 @@ export default class OrderService {
       console.log(order.toJSON())
       return orderToOrderDTO(order)
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       await t.rollback()
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
       if (error instanceof InsufficientStockError) throw error
-      console.log(error)
-      this.logger.error(error)
       throw new InternalServerError()
     }
   }
