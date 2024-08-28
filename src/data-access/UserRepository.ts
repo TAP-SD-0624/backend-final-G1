@@ -8,11 +8,7 @@ export class UserRepository
   implements IUserRepository
 {
   async findByEmail(email: string): Promise<User | null> {
-    console.log('Finding user with email:', email)
     const user = await this.model.findOne({ where: { email } })
-    if (!user) {
-      console.warn(`User not found with email: ${email}`)
-    }
     return user
   }
 
@@ -38,7 +34,6 @@ export class UserRepository
     })
 
     if (affectedRows === 0) {
-      console.log('No rows affected, possibly due to identical data.')
       return null
     }
     const updatedUser = await this.model.findByPk(id)
@@ -80,7 +75,6 @@ export class UserRepository
     )
 
     if (affectedRows === 0) {
-      console.log('No rows affected, possibly due to identical data.')
       return null
     }
     const updatedUser = await this.model.findByPk(id)
