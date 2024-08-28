@@ -1,13 +1,14 @@
 import 'reflect-metadata'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { wishlistRepository } from '../data-access'
 import { WishlistDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
-import { NotFoundError } from '../Errors/NotFoundError'
-import logger from '../helpers/logger'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class WishlistService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   public async getWishlistByUserId(
     userId: number
   ): Promise<WishlistDTO | null> {
@@ -15,11 +16,7 @@ export default class WishlistService {
       const wishlist = await wishlistRepository.findByUserId(userId)
       return wishlist
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -33,11 +30,7 @@ export default class WishlistService {
     try {
       return await wishlistRepository.addProductToWishlist(userId, productId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -48,11 +41,7 @@ export default class WishlistService {
     try {
       return await wishlistRepository.clearWishList(id)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )
@@ -69,11 +58,7 @@ export default class WishlistService {
         productId
       )
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError(
         'an error occurred, please try again later.'
       )

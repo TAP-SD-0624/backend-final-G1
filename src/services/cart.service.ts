@@ -1,14 +1,19 @@
-import { Cart, Product } from '../models'
+import { Cart } from '../models'
 import { cartRepository, productRepository } from '../data-access'
-import { CartDTO, CartProductDTO } from '../Types/DTO/cartDto'
-import { InternalServerError } from '../Errors/InternalServerError'
-import { NotFoundError } from '../Errors/NotFoundError'
+import { CartDTO } from '../Types/DTO/cartDto'
+import { InternalServerError, NotFoundError } from '../Errors'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
 import { GetProductDTO } from '../Types/DTO/productDto'
 import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 
 export default class CartService {
-  async GetCartByUserId(userId: number): Promise<CartDTO | null> {
+  /**
+   *
+   * @param userId id for the user that we want the cart for.
+   * @throws Error when it fails to get the cart for the user.
+   * @returns CartDTO if a cart was found.
+   */
+  async GetCartByUserId(userId: number): Promise<CartDTO> {
     try {
       let cart = await cartRepository.findCartByUserId(userId)
       if (!cart) {

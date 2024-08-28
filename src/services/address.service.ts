@@ -1,13 +1,14 @@
 import { AddressDTO, updateAddressDTO } from '../Types/DTO'
-import { InternalServerError, ValidationError } from '../Errors'
+import { InternalServerError } from '../Errors'
 import { addressRepository } from '../data-access'
-import logger from '../helpers/logger'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Address } from '../models'
-import { ValidationError as VE } from 'sequelize'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class AddressService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   /**
    * @param {number} id id of the address
    * @param {number} userId id of the u user owning this address
@@ -24,11 +25,7 @@ export default class AddressService {
     try {
       return await addressRepository.getAddressByIdAndUserId(id, userId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -44,11 +41,7 @@ export default class AddressService {
     try {
       return await addressRepository.getAddressesByUserId(userId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -77,11 +70,7 @@ export default class AddressService {
       const data: AddressDTO = { ...addresss }
       return data
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -115,11 +104,7 @@ export default class AddressService {
       delete updatedAddressJSON.deletedAt
       return updatedAddressJSON
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -135,11 +120,7 @@ export default class AddressService {
     try {
       return await addressRepository.deleteAddress(id, userId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }

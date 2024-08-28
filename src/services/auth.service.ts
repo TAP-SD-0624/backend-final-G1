@@ -1,5 +1,3 @@
-// authService.ts
-
 import UserService from './user.service'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'

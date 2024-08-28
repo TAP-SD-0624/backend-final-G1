@@ -1,6 +1,6 @@
 import { Address, Cart, Order } from '../models'
 import { OrderDTO } from '../Types/DTO'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import {
   orderRepository,
   cartRepository,
@@ -12,7 +12,6 @@ import {
   ordersToOrdersDTO,
   orderToOrderDTO,
 } from '../helpers/orders/orderToOrderDTO'
-import logger from '../helpers/logger'
 import { ValidationError as VE } from 'sequelize'
 import sequelize from '../config/db'
 import {
@@ -22,9 +21,12 @@ import {
   EmptyCartError,
 } from '../Errors'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class OrderService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   public async createOrder(
     userId: number,
     isPaid: boolean,
@@ -116,11 +118,7 @@ export default class OrderService {
       }
       if (error instanceof InsufficientStockError) throw error
       console.log(error)
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -136,11 +134,7 @@ export default class OrderService {
       }
       return orderToOrderDTO(order)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -153,11 +147,7 @@ export default class OrderService {
       }
       return ordersToOrdersDTO(orders)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -208,11 +198,7 @@ export default class OrderService {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -229,11 +215,7 @@ export default class OrderService {
       }
       return await orderRepository.delete(id)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }

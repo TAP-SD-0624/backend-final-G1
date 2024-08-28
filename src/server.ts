@@ -1,3 +1,8 @@
+import 'reflect-metadata'
+import { container } from 'tsyringe'
+import { WinstonLogger } from './helpers/Logger/WinstonLogger'
+import { ILogger } from './helpers/Logger/ILogger'
+container.register<ILogger>('ILogger', { useClass: WinstonLogger })
 import express from 'express'
 import dotenv from 'dotenv'
 import sequelize from './config/db'
@@ -19,10 +24,12 @@ import {
   orderRouter,
 } from './routes'
 import cors from 'cors'
+
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
