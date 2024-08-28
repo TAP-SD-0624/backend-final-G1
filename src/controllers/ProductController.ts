@@ -4,6 +4,9 @@ import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
 import { UpdateProductDTO } from '../Types/DTO/productDto'
 import { GetProductOptions } from '../Types/GetProductOptions'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
+import { StatusCodes } from 'http-status-codes'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
 @injectable()
 export class ProductController {
   constructor(@inject(ProductService) private productService: ProductService) {}
@@ -37,11 +40,13 @@ export class ProductController {
         parseInt(pageSize as string),
         options
       )
-      res.status(200).json({ products })
+      res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        products,
+      })
     } catch (ex) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -49,13 +54,15 @@ export class ProductController {
     try {
       const product: ProductDTO = req.body
       product.images = req.files as Express.Multer.File[]
-      const newProduct = await this.productService.createProduct(product)
+      const Product = await this.productService.createProduct(product)
 
-      return res.status(201).json(newProduct)
+      return res.status(StatusCodes.CREATED).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'success',
+        Product,
+      })
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -63,36 +70,46 @@ export class ProductController {
     try {
       const updatedData: UpdateProductDTO = req.body
 
-      const updatedProduct = await this.productService.FindAndUpdateProduct(
+      const Product = await this.productService.FindAndUpdateProduct(
         updatedData.id,
         updatedData
       )
 
-      if (!updatedProduct) {
-        return res
-          .status(404)
-          .json({ error: 'could not find the product with the specified Id' })
+      if (!Product) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'could not find the product with the specified Id',
+        })
       }
 
-      return res.status(201).json(updatedProduct)
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Product,
+      })
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
   public async deleteProduct(req: Request, res: Response) {
     try {
-      const productId = parseInt(req.params.id)
+      const { id } = req.params
 
-      const status = await this.productService.DeleteProduct(productId)
-      if (status) return res.status(204).json({})
-      return res.status(404).json({})
+      const status = await this.productService.DeleteProduct(
+        id as unknown as number
+      )
+      if (status)
+        return res.status(StatusCodes.NO_CONTENT).json({
+          ResponseCode: ResponseCodes.Success,
+          Message: 'Successfully deleted the product.',
+        })
+      return res.status(StatusCodes.NOT_FOUND).json({
+        ResponseCode: ResponseCodes.NotFound,
+        Message: 'Could not find the specified product.',
+      })
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -100,24 +117,35 @@ export class ProductController {
     try {
       const { id } = req.params
 
-      const product = await this.productService.GetProduct(parseInt(id))
+      const product = await this.productService.GetProduct(
+        id as unknown as number
+      )
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' })
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Could not find the specified product.',
+        })
       }
-      return res.status(200).json({ product })
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Successfully deleted the product.',
+        product,
+      })
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
-  async getAllProducts(req: Request, res: Response): Promise<void> {
+  async getAllProducts(req: Request, res: Response) {
     try {
       const products = await this.productService.GetProducts()
-      res.status(200).json(products)
+      res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        products,
+      })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      return InternalServerErrorResponse(res)
     }
   }
 }

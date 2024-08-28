@@ -5,6 +5,7 @@ import { Request, Response } from 'express'
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 import { StatusCodes } from 'http-status-codes'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class CommentController {
@@ -31,10 +32,7 @@ export class CommentController {
         Comment,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -60,10 +58,7 @@ export class CommentController {
         Comment: commentData,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -86,10 +81,7 @@ export class CommentController {
         Message: 'Successfully deleted the comment',
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }

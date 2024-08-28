@@ -4,6 +4,7 @@ import CategoryService from '../services/category.service'
 import { CategoryDTO } from '../Types/DTO'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
 import { StatusCodes } from 'http-status-codes'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 @injectable()
 export class CategoryController {
   constructor(
@@ -20,10 +21,7 @@ export class CategoryController {
         Categories,
       })
     } catch (error: any) {
-      return res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -46,10 +44,7 @@ export class CategoryController {
         Category,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -64,10 +59,7 @@ export class CategoryController {
         Category,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -92,10 +84,7 @@ export class CategoryController {
         Category,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -109,10 +98,7 @@ export class CategoryController {
         .status(StatusCodes.OK)
         .json({ ResponseCode: ResponseCodes.Success, Message: 'Success' })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -133,10 +119,7 @@ export class CategoryController {
         Category,
       })
     } catch (error: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }

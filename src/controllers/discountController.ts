@@ -3,6 +3,7 @@ import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class DiscountController {
@@ -25,10 +26,7 @@ export class DiscountController {
         Discount,
       })
     } catch (ex) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }

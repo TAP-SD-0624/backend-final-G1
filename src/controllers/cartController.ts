@@ -1,11 +1,12 @@
 import { Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import CartService from '../services/cart.service'
-
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 import { NotFoundError } from '../Errors/NotFoundError'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
+import { StatusCodes } from 'http-status-codes'
 
 @injectable()
 export class CartController {
@@ -28,16 +29,12 @@ export class CartController {
     }
   }
 
-  async ClearCart(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async ClearCart(req: AuthenticatedRequest, res: Response) {
     try {
       await this.cartService.ClearCart(req.user?.id)
-      res.status(204).send()
+      res.status(StatusCodes.OK).send()
     } catch (error: any) {
-      res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
-      throw error
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -71,10 +68,7 @@ export class CartController {
           Message: error.message,
         })
       }
-      return res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
   // remove product from cart
@@ -87,10 +81,7 @@ export class CartController {
         Message: 'Deleted successfully',
       })
     } catch (error: any) {
-      return res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later.',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 }

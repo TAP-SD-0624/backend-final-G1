@@ -12,10 +12,7 @@ import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export class OrderController {
-  constructor(
-    @inject(OrderService) private orderService: OrderService,
-    @inject(CartService) private cartService: CartService
-  ) {}
+  constructor(@inject(OrderService) private orderService: OrderService) {}
 
   async createOrder(req: AuthenticatedRequest, res: Response) {
     try {
