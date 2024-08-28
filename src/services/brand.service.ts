@@ -6,10 +6,13 @@ import logger from '../helpers/logger'
 
 @injectable()
 export default class BrandService {
+  /**
+   * @throws {Error} error when it fails to retrieve the brands.
+   * @returns {Brand[]} List of brands exist in the database.
+   */
   public async ListBrands(): Promise<Brand[]> {
     try {
-      const brands = await brandRepository.findAll()
-      return brands
+      return await brandRepository.findAll()
     } catch (error: any) {
       logger.error({
         name: error.name,

@@ -5,6 +5,10 @@ import CartService from '../services/cart.service'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import { BadRequestError } from '../Errors/BadRequestError'
 import { OrderDTO } from '../Types/DTO'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
+import { EmptyCartError } from '../Errors'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export class OrderController {
@@ -13,33 +17,41 @@ export class OrderController {
     @inject(CartService) private cartService: CartService
   ) {}
 
-  async createOrder(req: Request, res: Response) {
+  async createOrder(req: AuthenticatedRequest, res: Response) {
     try {
-      const isPaid: boolean = req.body.isPaid
-      const userId = (req as any).user.id
-      const cart = await this.cartService.getCartProductByUserId(userId)
-      if (!cart) {
-        res.status(400).json({ error: 'There is nothing in the cart.' })
-        return
-      }
+      const { isPaid, addressId } = req.body
 
-      if (isPaid && Math.random() < 0.5) {
-        return res
-          .status(400)
-          .json({ error: 'Payment failed, Not Enough Credit.' })
-      }
-      const productIds = cart[0].toJSON().products
+      const userId = req.user?.id
+
       const order: OrderDTO = await this.orderService.createOrder(
         userId,
         isPaid,
-        productIds
+        addressId
       )
-      const newCart = await this.cartService.DeleteCart(cart[0].dataValues.id)
       res.status(201).json(order)
-      return order
     } catch (error: any) {
-      res.status(400).json({ error: error.message })
-      throw error
+      if (error instanceof EmptyCartError) {
+        return res.status(400).json({
+          ResponseCode: ResponseCodes.EmptyCart,
+          Message: error.message,
+        })
+      }
+      if (error instanceof BadRequestError) {
+        return res.status(400).json({
+          ResponseCode: ResponseCodes.BadRequest,
+          Message: error.message,
+        })
+      }
+      if (error instanceof InsufficientStockError) {
+        return res.status(400).json({
+          ResponseCode: ResponseCodes.BadRequest,
+          Message: error.message,
+        })
+      }
+      return res.status(500).json({
+        Responsecode: ResponseCodes.InternalServerError,
+        Message: 'Internal server error, please try again later',
+      })
     }
   }
 

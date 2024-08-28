@@ -1,4 +1,5 @@
 export type AddressDTO = {
+  id?: string
   state: string
   city: string
   street: string

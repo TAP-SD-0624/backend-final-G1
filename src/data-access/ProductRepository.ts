@@ -18,6 +18,7 @@ import {
   Op,
   literal,
   where as sequelizeWhere,
+  Transaction,
 } from 'sequelize'
 import { UpdateProductDTO } from '../Types/DTO/productDto'
 
@@ -117,7 +118,6 @@ export class ProductRepository
         },
       })
     }
-    console.log(array)
 
     const opts: FindOptions<Product> = {
       // subQuery: false,
@@ -166,7 +166,6 @@ export class ProductRepository
         },
       ],
     }
-    console.log(opts)
     return await this.model.findAll(opts)
   }
 
@@ -207,5 +206,22 @@ export class ProductRepository
       returning: true,
     })
     return updatedEntity
+  }
+
+  async DecreaseProductCount(productId: number, count: number, t: Transaction) {
+    const [affectProduct, affectedNumber] = await this.model.increment(
+      'stock',
+      {
+        transaction: t,
+        by: -count,
+        where: {
+          id: productId,
+          stock: {
+            [Op.gte]: count,
+          },
+        },
+      }
+    )
+    return affectProduct
   }
 }
