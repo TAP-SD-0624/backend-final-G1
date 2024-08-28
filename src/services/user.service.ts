@@ -94,7 +94,7 @@ export default class UserService {
       }
       return updatedUser
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -150,7 +150,7 @@ export default class UserService {
       await user.save()
       return 'Password updated successfully'
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -162,7 +162,7 @@ export default class UserService {
         throw new InternalServerError('Failed to delete user')
       }
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -176,7 +176,7 @@ export default class UserService {
       }
       return updatedUser
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -189,7 +189,7 @@ export default class UserService {
       }
       return user
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
