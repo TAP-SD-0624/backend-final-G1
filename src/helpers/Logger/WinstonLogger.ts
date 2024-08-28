@@ -38,7 +38,10 @@ export class WinstonLogger implements ILogger {
       stack: error?.stack,
     })
   }
-  log(level: string, message: string, ...meta: any[]): void {
-    throw new Error('Method not implemented.')
+  log(message: string, ...meta: any[]): void {
+    this.logger.log({
+      message,
+      level: 'info',
+    })
   }
 }

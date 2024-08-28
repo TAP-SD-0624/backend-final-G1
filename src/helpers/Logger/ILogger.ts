@@ -3,5 +3,5 @@ export interface ILogger {
   info(message: string, ...meta: any[]): void
   warn(message: string, ...meta: any[]): void
   error(error: Error): void
-  log(level: string, message: string, ...meta: any[]): void
+  log(message: string, ...meta: any[]): void
 }

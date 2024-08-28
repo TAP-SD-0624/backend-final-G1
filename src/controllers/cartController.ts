@@ -55,7 +55,6 @@ export class CartController {
         product,
       })
     } catch (error) {
-      // console.log(error)
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           ResponseCode: ResponseCodes.NotFound,
