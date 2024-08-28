@@ -9,44 +9,47 @@ import {
   UserAlreadyExistsError,
 } from '../Errors/AuthenticationErrors'
 import { InternalServerError } from '../Errors/InternalServerError'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class AuthService {
-  constructor(@inject(UserService) private userService: UserService) {}
+  constructor(
+    @inject(UserService) private userService: UserService,
+    @inject('ILogger') private logger: ILogger
+  ) {}
 
   public async login(email: string, password: string): Promise<string> {
     try {
-      const user = await this.userService.getUserByEmail(email);
-  
+      const user = await this.userService.getUserByEmail(email)
+
       if (!user) {
-        throw new InvalidCredentialsError('Invalid email or password');
+        throw new InvalidCredentialsError('Invalid email or password')
       }
-  
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      const isPasswordValid = await bcrypt.compare(password, user.password)
       if (!isPasswordValid) {
-        throw new InvalidCredentialsError('Invalid email or password');
+        throw new InvalidCredentialsError('Invalid email or password')
       }
-  
+
       if (!process.env.JWT_SECRET) {
-        throw new Error('JWT secret is not defined');
+        throw new Error('JWT secret is not defined')
       }
-  
+
       const token = jwt.sign(
         { id: user.id, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
-      );
-  
-      return token;
-    } catch (error: any) { 
-      console.error('Login error:', error.message);
+      )
+
+      return token
+    } catch (error: any) {
+      this.logger.error(error)
       if (error instanceof InvalidCredentialsError) {
-        throw error; // Re-throw known errors
+        throw error // Re-throw known errors
       }
-      throw new InternalServerError('An error occurred during login');
+      throw new InternalServerError('An error occurred during login')
     }
   }
-  
 
   public async register(
     name: string,
@@ -69,7 +72,7 @@ export default class AuthService {
       }
       return await this.userService.createUser(newUser)
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
@@ -80,7 +83,7 @@ export default class AuthService {
         addToBlacklist(token)
       }
     } catch (error: any) {
-      console.log(error)
+      this.logger.error(error)
       throw new InternalServerError()
     }
   }
