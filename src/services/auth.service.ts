@@ -16,29 +16,37 @@ export default class AuthService {
 
   public async login(email: string, password: string): Promise<string> {
     try {
-      const user = await this.userService.getUserByEmail(email)
-
+      const user = await this.userService.getUserByEmail(email);
+  
       if (!user) {
-        throw new InvalidCredentialsError()
+        throw new InvalidCredentialsError('Invalid email or password');
       }
-
-      const isPasswordValid = await bcrypt.compare(password, user.password)
+  
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        throw new InvalidCredentialsError()
+        throw new InvalidCredentialsError('Invalid email or password');
       }
-
+  
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT secret is not defined');
+      }
+  
       const token = jwt.sign(
         { id: user.id, role: user.role },
-        process.env.JWT_SECRET || '',
+        process.env.JWT_SECRET,
         { expiresIn: '7d' }
-      )
-
-      return token
-    } catch (error: any) {
-      console.log(error)
-      throw new InternalServerError()
+      );
+  
+      return token;
+    } catch (error: any) { 
+      console.error('Login error:', error.message);
+      if (error instanceof InvalidCredentialsError) {
+        throw error; // Re-throw known errors
+      }
+      throw new InternalServerError('An error occurred during login');
     }
   }
+  
 
   public async register(
     name: string,
