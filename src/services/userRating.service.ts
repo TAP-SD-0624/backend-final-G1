@@ -6,7 +6,7 @@ import { InternalServerError } from '../Errors/InternalServerError'
 import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
-export class UserRatingService {
+export default class UserRatingService {
   constructor(@inject('ILogger') private logger: ILogger) {}
 
   public async createUserRating(
