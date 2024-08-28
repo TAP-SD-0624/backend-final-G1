@@ -1,14 +1,23 @@
 import { AddressDTO, updateAddressDTO } from '../Types/DTO'
-import { InternalServerError } from '../Errors/InternalServerError'
+import { InternalServerError } from '../Errors'
 import { addressRepository } from '../data-access'
-import logger from '../helpers/logger'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Address } from '../models'
-import { ValidationError as VE } from 'sequelize'
-import { ValidationError } from '../Errors/ValidationError'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class AddressService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
+  /**
+   * @param {number} id id of the address
+   * @param {number} userId id of the u user owning this address
+   * @returns {AddressDTO} AddressDTO when it finds the address
+   * @returns {null} null when it didn't find the address for this user.
+   * @throws {InternalServerError} InternalServerError when it fails to get the address.
+   * @returns
+   */
+
   public async getAddressByIdAndUserId(
     id: number,
     userId: number
@@ -16,32 +25,33 @@ export default class AddressService {
     try {
       return await addressRepository.getAddressByIdAndUserId(id, userId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
+
+  /**
+   *
+   * @param {number} userId id of the user having the addresses
+   * @throws {InternalServerError} InternalServerError when it fails to retrieve the list of addresses
+   * @returns {AddressDTO[]} list of AddressDTO containing all addressing owned by this user.
+   */
 
   public async getAddressesByUserId(userId: number): Promise<AddressDTO[]> {
     try {
-      const addresses = await addressRepository.getAddressesByUserId(userId)
-      return addresses
+      return await addressRepository.getAddressesByUserId(userId)
     } catch (error: any) {
-      if (error instanceof VE) {
-        throw new ValidationError(error.message)
-      }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError('an error occurred, please try again later')
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
-
+  /**
+   *
+   * @param userId id of the user will own the address.
+   * @param {AddressDTO} data data related with the address.
+   *@throws {InternalServerError} when it fails to create a new address
+   * @returns {AddressDTO} Address that was created
+   */
   public async createAddress(
     userId: number,
     data: AddressDTO
@@ -56,21 +66,23 @@ export default class AddressService {
     address.state = data.state
     address.userId = userId
     try {
-      await addressRepository.create(address)
+      const addresss = await addressRepository.create(address)
+      const data: AddressDTO = { ...addresss }
       return data
     } catch (error: any) {
-      if (error instanceof VE) {
-        throw new ValidationError(error.message)
-      }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError('an error occurred, please try again later')
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 
+  /**
+   *
+   * @param  {number} id id of the address to update.
+   * @param {number} userId id of the user owning this address.
+   * @param {updateAddressDTO} data different data related to the address wanting to be updated.
+   * @throws {InternalServerError} InternalServerError when it fails to update the address.
+   * @returns {AddressDTO | null} returns addressDTO if an associate address were found, otherwise, returns null.
+   */
   public async updateAddress(
     id: number,
     userId: number,
@@ -92,28 +104,24 @@ export default class AddressService {
       delete updatedAddressJSON.deletedAt
       return updatedAddressJSON
     } catch (error: any) {
-      if (error instanceof VE) {
-        throw new ValidationError(error.message)
-      }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError('an error occurred, please try again later')
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 
+  /**
+   *
+   * @param {number} id id of the address being deleted.
+   * @param {number} userId id of the user owning this address.
+   * @throws {InternalServerError} InternalServerErrorr when it fails to delete the address.
+   * @returns {boolean} true if the deletion were successful, otherwise, returns false.
+   */
   public async deleteAddress(id: number, userId: number): Promise<boolean> {
     try {
       return await addressRepository.deleteAddress(id, userId)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
-      throw new InternalServerError('an error occurred, please try again later')
+      this.logger.error(error)
+      throw new InternalServerError()
     }
   }
 }

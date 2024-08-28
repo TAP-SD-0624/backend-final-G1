@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { Category, Image, Product, ProductCategory } from '../models'
-import { CategoryDTO, CommentDTO, ProductDTO } from '../Types/DTO'
+import { Category, Image, Product } from '../models'
+import { ProductDTO } from '../Types/DTO'
 import { GetProductOptions } from '../Types/GetProductOptions'
 import {
   productRepository,
@@ -13,7 +13,6 @@ import { ValidationError as VE } from 'sequelize'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { GetProductDTO, UpdateProductDTO } from '../Types/DTO/productDto'
 import { WriteAllImages } from '../helpers/Storage/StorageManager'
-import { ratingDto } from '../Types/DTO/ratingDto'
 import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
 @injectable()
 export default class ProductService {

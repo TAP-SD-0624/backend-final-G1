@@ -1,4 +1,3 @@
-import logger from '../helpers/logger'
 import { Brand, Product, Wishlist, WishlistProduct } from '../models'
 import { IWishlistRepository as IWishlistRepository } from './Interfaces/IWishListRepository'
 import { RepositoryBase } from './RepositoryBase'
@@ -21,7 +20,6 @@ export class WishlistRepository
       where: { wishlistId: wishlist!.id, productId },
     })
     if (!product) {
-      logger.error(`Product #${productId} doesn't exist in this wishlist`)
       return false
     }
     await wishlist!.$remove('products', productId)
@@ -39,7 +37,6 @@ export class WishlistRepository
       paranoid: false,
     })
     if (!product) {
-      logger.error(`Product #${productId} doesn't exist`)
       return false
     }
     if (existedProduct) {

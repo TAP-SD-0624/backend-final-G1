@@ -1,3 +1,8 @@
+import 'reflect-metadata'
+import { container } from 'tsyringe'
+import { WinstonLogger } from './helpers/Logger/WinstonLogger'
+import { ILogger } from './helpers/Logger/ILogger'
+container.register<ILogger>('ILogger', { useClass: WinstonLogger })
 import express from 'express'
 import dotenv from 'dotenv'
 import sequelize from './config/db'
@@ -16,12 +21,15 @@ import {
   userRatingRouter,
   dashboardRouter,
   addressRouter,
+  orderRouter,
 } from './routes'
 import cors from 'cors'
+
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -38,6 +46,7 @@ app.use('/api/discounts', discountRouter)
 app.use('/api/brands', brandRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/address', addressRouter)
+app.use('/api/orders', orderRouter)
 
 app.get('/health', (req, res) => {
   res.status(200).send('OK')
@@ -48,7 +57,7 @@ const startServer = async () => {
     await sequelize.authenticate()
     console.log('Database connected!')
     // await sequelize.sync({ alter: true })
-    // console.log("Database synchronized!");
+    // console.log('Database synchronized!')
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`)
     })

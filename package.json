@@ -7,11 +7,11 @@
     "build": "tsc",
     "watch": "nodemon src/server.ts",
     "start": "node dist/server.js",
-    "test": "jest --coverage",
+    "test": "jest --coverage ",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "P0": "jest -t P0",
     "P1": "jest -t P1",
-    "testLoad":"artillery run asciiart-load-test.yml"
+    "testLoad": "artillery run asciiart-load-test.yml"
   },
   "repository": {
     "type": "git",
@@ -34,6 +34,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
+    "http-status-codes": "^2.3.0",
     "jest-mock-extended": "^3.0.7",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",

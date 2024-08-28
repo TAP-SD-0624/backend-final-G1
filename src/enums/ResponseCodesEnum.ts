@@ -7,4 +7,5 @@ export enum ResponseCodes {
   Forbidden = '5',
   Unauthorized = '6',
   BadRequest = '7',
+  EmptyCart = '8',
 }

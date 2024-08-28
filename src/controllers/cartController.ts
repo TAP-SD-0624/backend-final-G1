@@ -23,7 +23,7 @@ export class CartController {
     } catch (error: any) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error',
+        Message: 'Internal server error, please try again later.',
       })
     }
   }
@@ -35,7 +35,7 @@ export class CartController {
     } catch (error: any) {
       res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error',
+        Message: 'Internal server error, please try again later.',
       })
       throw error
     }
@@ -73,7 +73,7 @@ export class CartController {
       }
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, try again later',
+        Message: 'Internal server error, please try again later',
       })
     }
   }
@@ -89,7 +89,7 @@ export class CartController {
     } catch (error: any) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, try again later.',
+        Message: 'Internal server error, please try again later.',
       })
     }
   }

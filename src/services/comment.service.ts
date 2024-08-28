@@ -1,13 +1,15 @@
 import { Comment } from '../models'
 import { CommentDTO } from '../Types/DTO/commentDto'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { commentRepository, productRepository } from '../data-access'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { ValidationError as VE } from 'sequelize'
 import { ValidationError } from '../Errors/ValidationError'
+import { ILogger } from '../helpers/Logger/ILogger'
 @injectable()
 export default class CommentService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   /**
    *
    * @param {number} userId Id of the user creating the comment.
@@ -37,11 +39,7 @@ export default class CommentService {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -58,11 +56,7 @@ export default class CommentService {
       const commentsDTO: CommentDTO[] = commentsJSON
       return commentsDTO
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -76,11 +70,7 @@ export default class CommentService {
       const comm: CommentDTO = comment.toJSON()
       return comm
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -105,11 +95,7 @@ export default class CommentService {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -122,11 +108,7 @@ export default class CommentService {
       }
       return await commentRepository.delete(id)
     } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
