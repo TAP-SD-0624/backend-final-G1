@@ -17,9 +17,7 @@ export default class WishlistService {
       return wishlist
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+      throw new InternalServerError()
     }
   }
 
@@ -31,9 +29,7 @@ export default class WishlistService {
       return await wishlistRepository.addProductToWishlist(userId, productId)
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+      throw new InternalServerError()
     }
   }
 
@@ -42,9 +38,7 @@ export default class WishlistService {
       return await wishlistRepository.clearWishList(id)
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+      throw new InternalServerError()
     }
   }
 
@@ -59,9 +53,7 @@ export default class WishlistService {
       )
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+      throw new InternalServerError()
     }
   }
 }
