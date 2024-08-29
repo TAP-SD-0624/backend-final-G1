@@ -3,11 +3,11 @@ import CategoryService from '../services/category.service'
 import { categoryRepository } from '../data-access'
 import { CategoryDTO } from '../Types/DTO/categoryDto'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
+import { ILogger } from '../helpers/Logger/ILogger'
 import { Category } from '../models'
 
 jest.mock('../data-access/categoryRepository')
-jest.mock('../helpers/logger')
+
 jest.mock('../models/Category.model.ts', () => {
   return {
     Category: jest.fn().mockImplementation(() => {
@@ -39,9 +39,17 @@ jest.mock('../models/Category.model.ts', () => {
 })
 describe('CategoryService', () => {
   let categoryService: CategoryService
+  let mockLogger: ILogger
 
   beforeEach(() => {
-    categoryService = new CategoryService()
+    mockLogger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+    }
+    categoryService = new CategoryService(mockLogger)
     jest.clearAllMocks()
   })
 
@@ -86,7 +94,7 @@ describe('CategoryService', () => {
       await expect(
         categoryService.createCategory(categoryData)
       ).rejects.toThrow('Failed to create category')
-      expect(logger.error).toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
@@ -121,7 +129,7 @@ describe('CategoryService', () => {
 
       await expect(
         categoryService.updateCategory(categoryId, updateData)
-      ).rejects.toThrow('updating category failed')
+      ).rejects.toThrow('Failed to update category')
     })
 
     it('P1: it should throw an InternalServerError if an error occurs', async () => {
@@ -134,8 +142,8 @@ describe('CategoryService', () => {
 
       await expect(
         categoryService.updateCategory(categoryId, updateData)
-      ).rejects.toThrow('updating category failed')
-      expect(logger.error).toHaveBeenCalled()
+      ).rejects.toThrow('Failed to update category')
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
@@ -175,7 +183,7 @@ describe('CategoryService', () => {
       await expect(categoryService.findById(categoryId)).rejects.toThrow(
         "Couldn't find category"
       )
-      expect(logger.error).toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
@@ -212,7 +220,7 @@ describe('CategoryService', () => {
       await expect(categoryService.getAllCategories()).rejects.toThrow(
         'Failed to get All categories'
       )
-      expect(logger.error).toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
@@ -252,7 +260,7 @@ describe('CategoryService', () => {
       await expect(categoryService.findByName(categoryName)).rejects.toThrow(
         'failed to get category by name'
       )
-      expect(logger.error).toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
@@ -288,7 +296,7 @@ describe('CategoryService', () => {
       await expect(categoryService.deleteCategory(categoryId)).rejects.toThrow(
         'failed to delete category'
       )
-      expect(logger.error).toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 })

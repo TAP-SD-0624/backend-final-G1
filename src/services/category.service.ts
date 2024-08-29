@@ -16,12 +16,12 @@ export default class CategoryService {
       const category = await categoryRepository.create(newCategory)
 
       if (!category) {
-        throw new Error('Failed to create category  `')
+        throw new Error('Failed to create category')
       }
       return category
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error('Failed to create category')
     }
   }
 
@@ -43,7 +43,7 @@ export default class CategoryService {
       return category
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error('Failed to update category')
     }
   }
 
@@ -54,7 +54,7 @@ export default class CategoryService {
       return category
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error("Couldn't find category")
     }
   }
 
@@ -64,7 +64,7 @@ export default class CategoryService {
       return categories
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error('Failed to get All categories')
     }
   }
   async findByName(name: string): Promise<Category | null> {
@@ -73,7 +73,7 @@ export default class CategoryService {
       return category
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error('failed to get category by name')
     }
   }
 
@@ -84,9 +84,7 @@ export default class CategoryService {
       return deletedCategory
     } catch (error: any) {
       this.logger.error(error)
-      throw new InternalServerError()
+      throw new Error('failed to delete category')
     }
-
-    return false
   }
 }

@@ -9,7 +9,7 @@ import {
 import { Cart, Product } from '../models'
 import { CartDTO, CartProductDTO } from '../Types/DTO/cartDto'
 import { GetProductDTO } from '../Types/DTO/productDto'
-
+import { ILogger } from '../helpers/Logger/ILogger'
 jest.mock('../data-access/cartRepository')
 jest.mock('../data-access/productRepository')
 jest.mock('../helpers/Products/ProductToProductDTO')
@@ -62,9 +62,17 @@ jest.mock('../models/Product.model.ts', () => {
 })
 describe('CartService', () => {
   let cartService: CartService
+  let mockLogger: ILogger
 
   beforeEach(() => {
-    cartService = new CartService()
+    mockLogger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+    }
+    cartService = new CartService(mockLogger)
     jest.clearAllMocks()
   })
 
