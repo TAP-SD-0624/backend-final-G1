@@ -233,14 +233,13 @@ export class ProductRepository
             name: { [Op.iLike]: `%${name}%` },
           },
           {
-            '$Brand.name$': { [Op.iLike]: `%${name}%` },
+            '$brand.name$': { [Op.iLike]: `%${name}%` },
           },
         ],
       },
       include: [
         {
           model: Brand,
-          attributes: [],
         },
       ],
     })
