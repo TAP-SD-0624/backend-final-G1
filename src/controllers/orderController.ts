@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import OrderService from '../services/order.service'
-import CartService from '../services/cart.service'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import { BadRequestError } from '../Errors/BadRequestError'
 import { OrderDTO } from '../Types/DTO'
@@ -9,6 +8,8 @@ import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 import { EmptyCartError } from '../Errors'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { StatusCodes } from 'http-status-codes'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class OrderController {
@@ -20,12 +21,16 @@ export class OrderController {
 
       const userId = req.user?.id
 
-      const order: OrderDTO = await this.orderService.createOrder(
+      const Order: OrderDTO = await this.orderService.createOrder(
         userId,
         isPaid,
         addressId
       )
-      res.status(201).json(order)
+      return res.status(StatusCodes.CREATED).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Created Successfully',
+        Order,
+      })
     } catch (error: any) {
       if (error instanceof EmptyCartError) {
         return res.status(400).json({
@@ -45,10 +50,7 @@ export class OrderController {
           Message: error.message,
         })
       }
-      return res.status(500).json({
-        Responsecode: ResponseCodes.InternalServerError,
-        Message: 'Internal server error, please try again later',
-      })
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -56,16 +58,20 @@ export class OrderController {
     try {
       const id = req.params.id as unknown as number
       const userId = (req as any).user.id
-      const order = await this.orderService.getOrderById(id, userId)
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' })
-        return null
+      const Order = await this.orderService.getOrderById(id, userId)
+      if (!Order) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Order not found',
+        })
       }
-      res.json(order)
-      return order
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Sucess',
+        Order,
+      })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -74,14 +80,11 @@ export class OrderController {
       const userId = (req as any).user.id
       const orders = await this.orderService.getOrders(userId)
       if (!orders) {
-        res.status(404).json({ error: 'No Orders found' })
-        return null
+        return res.status(404).json({ error: 'No Orders found' })
       }
-      res.json(orders)
-      return orders
+      return res.json(orders)
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return InternalServerErrorResponse(res)
     }
   }
   async updateOrder(req: Request, res: Response) {
@@ -92,28 +95,35 @@ export class OrderController {
       const isPaid = req.body.isPaid
 
       if (isPaid && Math.random() < 0.5) {
-        return res
-          .status(400)
-          .json({ error: 'Payment failed, Not Enough Credit.' })
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          ResponseCode: ResponseCodes.BadRequest,
+          Message: 'Payment failed, Not Enough Credit.',
+        })
       }
-      const order = await this.orderService.updateOrder(
+      const Order = await this.orderService.updateOrder(
         id,
         userId,
         newStatus,
         isPaid
       )
-      if (!order) {
-        res.status(404).json({ error: 'Order not found' })
-        return null
+      if (!Order) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Order not found',
+        })
       }
 
-      res.json(order)
-      return order
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Order,
+      })
     } catch (error: any) {
       if (error instanceof BadRequestError)
-        res.status(400).json({ error: error.message })
-      else res.status(500).json({ error: error.message })
-      throw error
+        return res.status(400).json({ error: error.message })
+      else {
+        return InternalServerErrorResponse(res)
+      }
     }
   }
 
@@ -123,16 +133,15 @@ export class OrderController {
       const userId = (req as any).user.id
       const canceled = await this.orderService.cancelOrder(id, userId)
       if (!canceled) {
-        res.status(400).json({
-          error:
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          ResponseCode: ResponseCodes.BadRequest,
+          Message:
             'Order can only be canceled if it is created by the user and status is processed',
         })
       }
-      res.status(204).send(canceled)
-      return canceled
+      return res.status(StatusCodes.NO_CONTENT).send()
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw error
+      return InternalServerErrorResponse(res)
     }
   }
 }
