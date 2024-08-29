@@ -114,6 +114,7 @@ export default class OrderService {
         throw new ValidationError(error.message)
       }
       if (error instanceof InsufficientStockError) throw error
+      if (error instanceof BadRequestError) throw error
       throw new InternalServerError()
     }
   }
