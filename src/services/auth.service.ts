@@ -72,6 +72,9 @@ export default class AuthService {
       }
       return await this.userService.createUser(newUser)
     } catch (error: unknown) {
+      if (error instanceof UserAlreadyExistsError) {
+        throw error
+      }
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
