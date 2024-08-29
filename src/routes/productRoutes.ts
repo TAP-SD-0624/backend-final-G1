@@ -20,6 +20,8 @@ router.get(
   GetProductsValidator,
   productController.GetProducts.bind(productController)
 )
+router.get('/search', productController.SearchProduct.bind(productController))
+
 router.get(
   '/:id',
   getProductValidator,
@@ -43,7 +45,5 @@ router.delete(
   deleteValidator,
   productController.deleteProduct.bind(productController)
 )
-
-router.get('/search', productController.SearchProduct.bind(productController))
 
 export default router
