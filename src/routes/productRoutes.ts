@@ -44,4 +44,6 @@ router.delete(
   productController.deleteProduct.bind(productController)
 )
 
+router.get('/search', productController.SearchProduct.bind(productController))
+
 export default router

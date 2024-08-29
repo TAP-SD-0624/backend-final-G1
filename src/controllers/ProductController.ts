@@ -148,4 +148,20 @@ export class ProductController {
       return InternalServerErrorResponse(res)
     }
   }
+
+  async SearchProduct(req: Request, res: Response) {
+    try {
+      const { name } = req.query as { name: string }
+      //const name = String(req.params.name)
+      console.log(name)
+      const products = await this.productService.SearchProduct(name)
+      res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        products,
+      })
+    } catch (error: any) {
+      return InternalServerErrorResponse(res)
+    }
+  }
 }
