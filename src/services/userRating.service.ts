@@ -29,8 +29,8 @@ export default class UserRatingService {
       await userRatingRepository.create(userRating)
 
       return data
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -48,8 +48,8 @@ export default class UserRatingService {
           0
         ) / userRatings.length
       return rating
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -71,8 +71,8 @@ export default class UserRatingService {
         productId,
       }
       return res
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -94,8 +94,8 @@ export default class UserRatingService {
         return null
       }
       return data
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

@@ -63,9 +63,9 @@ const startServer = async () => {
     app.listen(PORT, () => {
       Logger.log(`Server is running on http://localhost:${PORT}`)
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     Logger.log('Unable to connect to the database:')
-    Logger.error(error)
+    Logger.error(error as Error)
   }
 }
 

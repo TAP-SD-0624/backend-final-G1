@@ -16,7 +16,7 @@ class AuthController {
         Message: 'Login successful',
         token,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(401).json({
         ResponseCode: ResponseCodes.Unauthorized,
         Message: 'Invalid credentials',
@@ -66,7 +66,7 @@ class AuthController {
         ResponseCode: ResponseCodes.Success,
         Message: 'Logged out successfully',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'An error occurred while logging out',

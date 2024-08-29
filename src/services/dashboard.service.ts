@@ -17,8 +17,8 @@ export default class DashboardService {
         startTime,
         endTime
       )
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -29,8 +29,8 @@ export default class DashboardService {
   ): Promise<GetProductDashboardDTO[]> {
     try {
       return await dashboardRepository.getProductsNotBought(startTime, endTime)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -38,8 +38,8 @@ export default class DashboardService {
   public async DropItemsFromList(ids: number[]): Promise<Boolean> {
     try {
       return await dashboardRepository.DropItemsFromList(ids)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -49,8 +49,8 @@ export default class DashboardService {
   ): Promise<GetProductDashboardDTO[]> {
     try {
       return await dashboardRepository.getProductsPerState(state)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

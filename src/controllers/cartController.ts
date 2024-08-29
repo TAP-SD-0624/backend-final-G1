@@ -21,7 +21,7 @@ export class CartController {
         Message: 'Cart Retrieved successfully',
         cart,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error, please try again later.',
@@ -33,7 +33,7 @@ export class CartController {
     try {
       await this.cartService.ClearCart(req.user?.id)
       res.status(StatusCodes.OK).send()
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -79,7 +79,7 @@ export class CartController {
         ResponseCode: ResponseCodes.Success,
         Message: 'Deleted successfully',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }

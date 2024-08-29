@@ -19,8 +19,8 @@ export default class CategoryService {
         throw new Error('Failed to create category')
       }
       return category
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error('Failed to create category')
     }
   }
@@ -41,8 +41,8 @@ export default class CategoryService {
         throw new Error('Failed to update category')
       }
       return category
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error('Failed to update category')
     }
   }
@@ -52,8 +52,8 @@ export default class CategoryService {
     try {
       const category = await categoryRepository.findById(id)
       return category
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error("Couldn't find category")
     }
   }
@@ -62,8 +62,8 @@ export default class CategoryService {
     try {
       const categories = await categoryRepository.findAll()
       return categories
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error('Failed to get All categories')
     }
   }
@@ -71,8 +71,8 @@ export default class CategoryService {
     try {
       const category = await categoryRepository.findByName(name)
       return category
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error('failed to get category by name')
     }
   }
@@ -82,8 +82,8 @@ export default class CategoryService {
       const deletedCategory = await categoryRepository.delete(CategoryId)
 
       return deletedCategory
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new Error('failed to delete category')
     }
   }

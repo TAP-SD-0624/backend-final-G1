@@ -24,8 +24,8 @@ export default class AddressService {
   ): Promise<AddressDTO | null> {
     try {
       return await addressRepository.getAddressByIdAndUserId(id, userId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -40,8 +40,8 @@ export default class AddressService {
   public async getAddressesByUserId(userId: number): Promise<AddressDTO[]> {
     try {
       return await addressRepository.getAddressesByUserId(userId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -69,8 +69,8 @@ export default class AddressService {
       const addresss = await addressRepository.create(address)
       const data: AddressDTO = { ...addresss }
       return data
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -103,8 +103,8 @@ export default class AddressService {
       delete updatedAddressJSON.updatedAt
       delete updatedAddressJSON.deletedAt
       return updatedAddressJSON
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -119,8 +119,8 @@ export default class AddressService {
   public async deleteAddress(id: number, userId: number): Promise<boolean> {
     try {
       return await addressRepository.deleteAddress(id, userId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

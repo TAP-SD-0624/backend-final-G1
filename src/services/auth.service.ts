@@ -42,8 +42,8 @@ export default class AuthService {
       )
 
       return token
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       if (error instanceof InvalidCredentialsError) {
         throw error // Re-throw known errors
       }
@@ -71,8 +71,8 @@ export default class AuthService {
         role: 'user',
       }
       return await this.userService.createUser(newUser)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -82,8 +82,8 @@ export default class AuthService {
       if (!isTokenBlacklisted(token)) {
         addToBlacklist(token)
       }
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

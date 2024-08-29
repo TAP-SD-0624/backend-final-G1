@@ -107,8 +107,8 @@ export default class OrderService {
       await cartRepository.ClearCart(cart.id, t)
       await t.commit()
       return orderToOrderDTO(order)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       await t.rollback()
       if (error instanceof VE) {
         throw new ValidationError(error.message)
@@ -129,8 +129,8 @@ export default class OrderService {
         return null
       }
       return orderToOrderDTO(order)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -142,8 +142,8 @@ export default class OrderService {
         return null
       }
       return ordersToOrdersDTO(orders)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -187,14 +187,14 @@ export default class OrderService {
       updateOrder.isPaid = isPaid
       const order = await orderRepository.update(updateOrder)
       return orderToOrderDTO(order!)
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestError) {
         throw error
       }
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      this.logger.error(error)
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -210,8 +210,8 @@ export default class OrderService {
         return false
       }
       return await orderRepository.delete(id)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

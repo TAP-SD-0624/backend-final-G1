@@ -178,8 +178,8 @@ export default class ProductService {
   async DeleteProduct(productId: number): Promise<boolean> {
     try {
       return await productRepository.delete(productId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -187,8 +187,8 @@ export default class ProductService {
   async SearchProduct(name: string): Promise<Product[]> {
     try {
       return await productRepository.SearchProduct(name)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

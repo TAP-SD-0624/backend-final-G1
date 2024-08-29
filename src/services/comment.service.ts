@@ -35,11 +35,11 @@ export default class CommentService {
 
       await commentRepository.create(newComment)
       return data
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      this.logger.error(error)
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -55,8 +55,8 @@ export default class CommentService {
       const commentsJSON = comments.map((comment) => comment.toJSON())
       const commentsDTO: CommentDTO[] = commentsJSON
       return commentsDTO
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -69,8 +69,8 @@ export default class CommentService {
       }
       const comm: CommentDTO = comment.toJSON()
       return comm
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -91,11 +91,11 @@ export default class CommentService {
       }
       const commentJson = updatedComment.toJSON()
       return commentJson
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      this.logger.error(error)
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }
@@ -107,8 +107,8 @@ export default class CommentService {
         return false
       }
       return await commentRepository.delete(id)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError('an error occurred, please try again later')
     }
   }

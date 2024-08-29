@@ -31,7 +31,7 @@ export class CommentController {
         Message: 'Success',
         Comment,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -57,7 +57,7 @@ export class CommentController {
         Message: 'Success',
         Comment: commentData,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -80,7 +80,7 @@ export class CommentController {
         ResponseCode: ResponseCodes.Success,
         Message: 'Successfully deleted the comment',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }

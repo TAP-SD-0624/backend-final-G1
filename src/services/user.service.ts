@@ -24,8 +24,8 @@ export default class UserService {
         throw new InternalServerError('Failed to create user')
       }
       return user
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -37,8 +37,8 @@ export default class UserService {
         throw new NotFoundError('User not found')
       }
       return user
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -50,8 +50,8 @@ export default class UserService {
         throw new NotFoundError(`No user found with email: ${email}`)
       }
       return user
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -60,8 +60,8 @@ export default class UserService {
     try {
       const users = await userRepository.findAll()
       return users
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -94,8 +94,8 @@ export default class UserService {
         throw new InternalServerError('Failed to update user')
       }
       return updatedUser
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -150,8 +150,8 @@ export default class UserService {
       user.set('password', hashedNewPassword)
       await user.save()
       return 'Password updated successfully'
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -162,8 +162,8 @@ export default class UserService {
       if (!deleted) {
         throw new InternalServerError('Failed to delete user')
       }
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -176,8 +176,8 @@ export default class UserService {
         throw new InternalServerError('Failed to change user role')
       }
       return updatedUser
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -189,8 +189,8 @@ export default class UserService {
         throw new NotFoundError(`User not found with id: ${id}`)
       }
       return user
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

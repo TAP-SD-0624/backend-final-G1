@@ -20,7 +20,7 @@ export class CategoryController {
         Message: 'Success',
         Categories,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -43,7 +43,7 @@ export class CategoryController {
         Message: 'Success',
         Category,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -58,7 +58,7 @@ export class CategoryController {
         Message: 'Success',
         Category,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -83,7 +83,7 @@ export class CategoryController {
         Message: 'Success',
         Category,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -97,7 +97,7 @@ export class CategoryController {
       return res
         .status(StatusCodes.OK)
         .json({ ResponseCode: ResponseCodes.Success, Message: 'Success' })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -118,7 +118,7 @@ export class CategoryController {
         Message: 'Success',
         Category,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }

@@ -26,7 +26,7 @@ export class DashboardController {
         Message: 'Success',
         Products,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -45,7 +45,7 @@ export class DashboardController {
         Message: 'Success',
         Products,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -64,7 +64,7 @@ export class DashboardController {
         ResponseCode: ResponseCodes.Success,
         Message: 'Items dropped successfully',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -78,7 +78,7 @@ export class DashboardController {
         Message: 'Success',
         Products,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }

@@ -2,6 +2,9 @@ import { UserRatingService } from '../services'
 import { UserRatingDTO } from '../Types/DTO'
 import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class UserRatingController {
@@ -13,14 +16,17 @@ export class UserRatingController {
     try {
       const userRatingData: UserRatingDTO = req.body
       const userId = (req as any).user.id
-      const userRating = await this.userRatingService.createUserRating(
+      const Rating = await this.userRatingService.createUserRating(
         userId,
         userRatingData
       )
-      res.status(201).json(userRating)
-    } catch (error: any) {
-      res.status(500).send({ error: error.message })
-      throw error
+      res.status(StatusCodes.CREATED).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Created successfully',
+        Rating,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -28,17 +34,20 @@ export class UserRatingController {
     try {
       const userRatingData: UserRatingDTO = req.body
       const userId = (req as any).user.id
-      const userRating = await this.userRatingService.updateUserRating(
+      const Rating = await this.userRatingService.updateUserRating(
         userId,
         userRatingData
       )
-      if (!userRating) {
+      if (!Rating) {
         return res.status(404).send('User Rating not found')
       }
-      return res.status(200).json(userRating)
-    } catch (error: any) {
-      res.status(500)
-      throw error
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Updated successfully',
+        Rating,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -47,18 +56,26 @@ export class UserRatingController {
       const id = req.params.id as unknown as number
 
       const userId = (req as any).user.id
-      const userRating =
+      const Rating =
         await this.userRatingService.findUserRatingByUserIdAndProductId(
           id,
           userId
         )
-      if (!userRating) {
-        res.status(404).send('User Rating not found')
+      if (!Rating) {
+        res
+          .status(StatusCodes.NOT_FOUND)
+          .send({
+            ResponseCode: ResponseCodes.NotFound,
+            Message: 'could not find the rating for the user.',
+          })
       }
-      res.json(userRating)
-    } catch (error: any) {
-      res.status(500).send({ error: error.message })
-      throw error
+      res.json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Rating,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 }

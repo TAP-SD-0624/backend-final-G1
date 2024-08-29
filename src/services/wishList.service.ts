@@ -15,8 +15,8 @@ export default class WishlistService {
     try {
       const wishlist = await wishlistRepository.findByUserId(userId)
       return wishlist
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -27,8 +27,8 @@ export default class WishlistService {
   ): Promise<boolean> {
     try {
       return await wishlistRepository.addProductToWishlist(userId, productId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -36,8 +36,8 @@ export default class WishlistService {
   public async clearWishList(id: number): Promise<boolean> {
     try {
       return await wishlistRepository.clearWishList(id)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -51,8 +51,8 @@ export default class WishlistService {
         userId,
         productId
       )
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

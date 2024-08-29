@@ -34,8 +34,9 @@ export default class CartService {
       })
       const cartDto: CartDTO = { id: cart.id, products, userId: cart.userId }
       return cartDto
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+
       throw new InternalServerError()
     }
   }
@@ -46,9 +47,9 @@ export default class CartService {
       if (!deleted) {
         throw new Error('Failed to delete cart')
       }
-    } catch (error: any) {
-      this.logger.error(error)
-      throw new Error(`Error deleting cart: ${error.message}`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 
@@ -64,8 +65,8 @@ export default class CartService {
       }
       await cartRepository.ClearCart(cart.id)
       return true
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -81,8 +82,8 @@ export default class CartService {
         cart = await cartRepository.create(newCart)
       }
       product = await productRepository.findById(productId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
 
@@ -100,8 +101,8 @@ export default class CartService {
         productId,
         quantity
       )
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -113,8 +114,8 @@ export default class CartService {
     try {
       const cart = await cartRepository.findCartByUserId(userId)
       return await cartRepository.RemoveProductFromCart(cart?.id, productId)
-    } catch (error: any) {
-      this.logger.error(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -126,9 +127,9 @@ export default class CartService {
         throw new Error('Cart not found')
       }
       return cart
-    } catch (error: any) {
-      this.logger.error(error)
-      throw new Error(`Error retrieving cart product: ${error.message}`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 }

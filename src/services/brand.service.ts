@@ -15,9 +15,8 @@ export default class BrandService {
   public async ListBrands(): Promise<Brand[]> {
     try {
       return await brandRepository.findAll()
-    } catch (error: any) {
-      this.logger.error(error)
-
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

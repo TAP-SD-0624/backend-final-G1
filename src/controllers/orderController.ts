@@ -31,7 +31,7 @@ export class OrderController {
         Message: 'Created Successfully',
         Order,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof EmptyCartError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.EmptyCart,
@@ -70,7 +70,7 @@ export class OrderController {
         Message: 'Sucess',
         Order,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -83,7 +83,7 @@ export class OrderController {
         return res.status(404).json({ error: 'No Orders found' })
       }
       return res.json(orders)
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -118,7 +118,7 @@ export class OrderController {
         Message: 'Success',
         Order,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestError)
         return res.status(400).json({ error: error.message })
       else {
@@ -140,7 +140,7 @@ export class OrderController {
         })
       }
       return res.status(StatusCodes.NO_CONTENT).send()
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }

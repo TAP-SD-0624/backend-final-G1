@@ -61,7 +61,7 @@ export class ProductController {
         Message: 'success',
         Product,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -87,7 +87,7 @@ export class ProductController {
         Message: 'Success',
         Product,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -108,7 +108,7 @@ export class ProductController {
         ResponseCode: ResponseCodes.NotFound,
         Message: 'Could not find the specified product.',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -131,7 +131,7 @@ export class ProductController {
         Message: 'Successfully deleted the product.',
         product,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -144,7 +144,7 @@ export class ProductController {
         Message: 'Success',
         products,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
@@ -160,7 +160,7 @@ export class ProductController {
         Message: 'Success',
         products,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return InternalServerErrorResponse(res)
     }
   }
