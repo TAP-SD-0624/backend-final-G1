@@ -9,7 +9,7 @@ export class WinstonLogger implements ILogger {
     ),
     transports: [
       new winston.transports.Console({
-        level: 'error',
+        level: 'info',
         format: winston.format.combine(
           winston.format.colorize(),
           winston.format.simple()
