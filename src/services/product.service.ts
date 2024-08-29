@@ -183,4 +183,13 @@ export default class ProductService {
       throw new InternalServerError()
     }
   }
+
+  async SearchProduct(name: string): Promise<Product[]> {
+    try {
+      return await productRepository.SearchProduct(name)
+    } catch (error: any) {
+      this.logger.error(error)
+      throw new InternalServerError()
+    }
+  }
 }
