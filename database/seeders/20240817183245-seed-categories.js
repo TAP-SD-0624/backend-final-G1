@@ -2,18 +2,27 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const categories = [];
-    for (let i = 1; i <= 20; i++) {
-      categories.push({
-        name: `Category ${i}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-    return queryInterface.bulkInsert('categories', categories, {});
+    // Define categories with appropriate names
+    const categories = [
+      { name: 'Shoes', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Shirts', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Watches', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Handbags', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Sunglasses', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Sportswear', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Bags', createdAt: new Date(), updatedAt: new Date() },
+      { name: 'Accessories', createdAt: new Date(), updatedAt: new Date() },
+    ];
+
+    // Insert categories into the database
+    await queryInterface.bulkInsert('categories', categories, {});
+
+   
   },
 
   down: async (queryInterface, Sequelize) => {
+    
+    // Delete categories
     return queryInterface.bulkDelete('categories', null, {});
   }
 };

@@ -2,62 +2,50 @@
 
 module.exports = {
   up: function (queryInterface) {
-    return queryInterface.sequelize.transaction(function (t) {
-      return queryInterface.sequelize.query('SELECT id FROM users;', { transaction: t })
-        .then(function ([users]) { 
-          if (!users || users.length === 0) {
-            throw new Error('No users found to create carts');
-          }
+    return queryInterface.sequelize.transaction(async function (t) {
+      const [users] = await queryInterface.sequelize.query('SELECT id FROM users;', { transaction: t });
+      if (!users || users.length < 10) {
+        throw new Error('Not enough users found to create carts');
+      }
 
-          return queryInterface.sequelize.query('SELECT id FROM products;', { transaction: t })
-            .then(function ([products]) { 
-              if (!products || products.length === 0) {
-                throw new Error('No products found to create carts');
-              }
+      const [products] = await queryInterface.sequelize.query('SELECT id FROM products;', { transaction: t });
+      if (!products || products.length === 0) {
+        throw new Error('No products found to create carts');
+      }
 
-              var now = new Date();
+      const now = new Date();
+      const cartData = users.slice(0, 10).map((user, index) => ({
+        userId: user.id,
+        createdAt: now,
+        updatedAt: now
+      }));
 
-              var cartData = [
-                {
-                  userId: users[0].id,
-                  createdAt: now,
-                  updatedAt: now
-                },
-                {
-                  userId: users[1].id,
-                  createdAt: now,
-                  updatedAt: now
-                }
-              ];
+      await queryInterface.bulkInsert('carts', cartData, { transaction: t });
 
-              return queryInterface.bulkInsert('carts', cartData, { transaction: t }).then(function () {
-                return queryInterface.sequelize.query('SELECT id FROM carts;', { transaction: t })
-                  .then(function ([carts]) { 
-                    if (!carts || carts.length === 0) {
-                      throw new Error('No carts found after insertion');
-                    }
+      const [carts] = await queryInterface.sequelize.query('SELECT id FROM carts;', { transaction: t });
+      if (!carts || carts.length === 0) {
+        throw new Error('No carts found after insertion');
+      }
 
-                    var cartProductData = [
-                      { cartId: carts[0].id, productId: products[0].id, quantity: 2, createdAt: now, updatedAt: now },
-                      { cartId: carts[0].id, productId: products[1].id, quantity: 3, createdAt: now, updatedAt: now },
-                      { cartId: carts[1].id, productId: products[2].id, quantity: 1, createdAt: now, updatedAt: now },
-                      { cartId: carts[1].id, productId: products[3].id, quantity: 4, createdAt: now, updatedAt: now },
-                    ];
+      const cartProductData = carts.map((cart, index) => {
+        const randomProductIds = products.sort(() => 0.5 - Math.random()).slice(0, 2);
+        return randomProductIds.map((product, productIndex) => ({
+          cartId: cart.id,
+          productId: product.id,
+          quantity: Math.floor(Math.random() * 5) + 1,
+          createdAt: now,
+          updatedAt: now
+        }));
+      }).flat();
 
-                    return queryInterface.bulkInsert('cartProduct', cartProductData, { transaction: t });
-                  });
-              });
-            });
-        });
+      return queryInterface.bulkInsert('cartProduct', cartProductData, { transaction: t });
     });
   },
 
   down: function (queryInterface) {
-    return queryInterface.sequelize.transaction(function (t) {
-      return queryInterface.bulkDelete('cartProduct', null, { truncate: true, transaction: t })
-        .then(function () {
-          return queryInterface.bulkDelete('carts', null, { truncate: true, transaction: t });
-        });
+    return queryInterface.sequelize.transaction(async function (t) {
+      await queryInterface.bulkDelete('cartProduct', null, { truncate: true, transaction: t });
+      await queryInterface.bulkDelete('carts', null, { truncate: true, transaction: t });
     });
   }
 };
