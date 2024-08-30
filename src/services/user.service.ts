@@ -30,11 +30,7 @@ export default class UserService {
 
   async getUserById(userId: number): Promise<User | null> {
     try {
-      const user = await userRepository.findById(userId)
-      if (!user) {
-        throw new NotFoundError('User not found')
-      }
-      return user
+      return await userRepository.findById(userId)
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
@@ -43,11 +39,7 @@ export default class UserService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     try {
-      const user = await userRepository.findByEmail(email)
-      if (!user) {
-        throw new NotFoundError(`No user found with email: ${email}`)
-      }
-      return user
+      return await userRepository.findByEmail(email)
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
@@ -56,8 +48,7 @@ export default class UserService {
 
   async getAllUsers(): Promise<User[]> {
     try {
-      const users = await userRepository.findAll()
-      return users
+      return await userRepository.findAll()
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
@@ -68,7 +59,7 @@ export default class UserService {
     try {
       const user = await userRepository.findById(userId)
       if (!user) {
-        throw new NotFoundError('User not found')
+        return null
       }
 
       const isDataChanged = this.isUserDataChanged(user, userData)
@@ -87,11 +78,7 @@ export default class UserService {
         role: userData.role,
       }
 
-      const updatedUser = await userRepository.updateUser(userId, partialUser)
-      if (!updatedUser) {
-        throw new InternalServerError('Failed to update user')
-      }
-      return updatedUser
+      return await userRepository.updateUser(userId, partialUser)
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
@@ -115,11 +102,11 @@ export default class UserService {
     userId: number,
     oldPassword: string,
     newPassword: string
-  ): Promise<string> {
+  ) {
     try {
       const user = await userRepository.findById(userId)
       if (!user) {
-        throw new NotFoundError('User not found')
+        return null
       }
 
       const isOldPasswordMatch = await bcrypt.compare(
@@ -138,28 +125,20 @@ export default class UserService {
 
       const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
-      // Check if the new hashed password is actually different
-      if (user.password === hashedNewPassword) {
-        throw new BadRequestError(
-          'New password cannot be the same as the old password after hashing'
-        )
-      }
-
       user.set('password', hashedNewPassword)
       await user.save()
-      return 'Password updated successfully'
     } catch (error: unknown) {
+      if (error instanceof BadRequestError) {
+        throw error
+      }
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
 
-  async deleteUser(userId: number): Promise<void> {
+  async deleteUser(userId: number) {
     try {
-      const deleted = await userRepository.deleteUser(userId)
-      if (!deleted) {
-        throw new InternalServerError('Failed to delete user')
-      }
+      return await userRepository.deleteUser(userId)
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
@@ -169,24 +148,16 @@ export default class UserService {
   // Function to change the role of a user
   async changeRole(userId: number, role: string): Promise<User | null> {
     try {
-      const updatedUser = await userRepository.changeRole(userId, role)
-      if (!updatedUser) {
-        throw new InternalServerError('Failed to change user role')
-      }
-      return updatedUser
+      return await userRepository.changeRole(userId, role)
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
 
-  async getUser(id: number): Promise<User> {
+  async getUser(id: number): Promise<User | null> {
     try {
-      const user = await userRepository.findOne({ where: { id } })
-      if (!user) {
-        throw new NotFoundError(`User not found with id: ${id}`)
-      }
-      return user
+      return await userRepository.findOne({ where: { id } })
     } catch (error: unknown) {
       this.logger.error(error as Error)
       throw new InternalServerError()

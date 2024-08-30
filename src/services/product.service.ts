@@ -65,8 +65,8 @@ export default class ProductService {
       })
 
       return prodcutsDto
-    } catch (ex: any) {
-      this.logger.error(ex)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -84,8 +84,8 @@ export default class ProductService {
       if (!product) return null
 
       return ProductToProductDTO(product)
-    } catch (ex: any) {
-      this.logger.error(ex)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -138,8 +138,8 @@ export default class ProductService {
         const data = await productRepository.GetProduct(product.id)
         return data?.toJSON() ?? null
       }
-    } catch (ex: any) {
-      this.logger.error(ex)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
     return null
@@ -163,8 +163,8 @@ export default class ProductService {
         productData
       )
       return product
-    } catch (ex: any) {
-      this.logger.error(ex)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
