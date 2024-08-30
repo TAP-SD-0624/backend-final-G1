@@ -2,9 +2,15 @@ import { User } from '../models'
 import { userRepository } from '../data-access'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
-import { InternalServerError, NotFoundError, BadRequestError } from '../Errors'
+import {
+  InternalServerError,
+  NotFoundError,
+  BadRequestError,
+  ValidationError,
+} from '../Errors'
 import { ILogger } from '../helpers/Logger/ILogger'
 import { inject, injectable } from 'tsyringe'
+import { ValidationError as VE } from 'sequelize'
 
 @injectable()
 export default class UserService {
@@ -23,6 +29,10 @@ export default class UserService {
 
       return user
     } catch (error: unknown) {
+      console.log(error)
+      if (error instanceof VE) {
+        throw new ValidationError(error.message)
+      }
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
@@ -32,6 +42,7 @@ export default class UserService {
     try {
       return await userRepository.findById(userId)
     } catch (error: unknown) {
+      console.log(error)
       this.logger.error(error as Error)
       throw new InternalServerError()
     }

@@ -1,11 +1,11 @@
 import 'reflect-metadata'
-import { AddressService } from '../services'
+import AddressService from '../services/address.service'
 import { addressRepository } from '../data-access'
 import { AddressDTO, updateAddressDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 jest.mock('../data-access/addressRepository')
-jest.mock('../helpers/logger')
+jest.mock('../helpers/Logger/WinstonLogger')
 jest.mock('../models/Address.model.ts', () => {
   return {
     Address: jest.fn().mockImplementation(() => {

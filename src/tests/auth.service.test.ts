@@ -1,196 +1,214 @@
+import 'reflect-metadata'
 import AuthService from '../services/auth.service'
-import UserService from '../services/user.service'
+import { User } from '../models'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { User } from '../models'
-import * as tokenBlacklist from '../helpers/tokenBlacklist'
-import { InternalServerError } from '../Errors'
-import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
+import {
+  InvalidCredentialsError,
+  UserAlreadyExistsError,
+} from '../Errors/AuthenticationErrors'
+import { InternalServerError } from '../Errors/InternalServerError'
+import { ILogger } from '../helpers/Logger/ILogger'
+import { userRepository } from '../data-access'
+import { addToBlacklist, isTokenBlacklisted } from '../helpers/tokenBlacklist'
+import UserService from '../services/user.service'
 
-jest.mock('../services/user.service')
 jest.mock('jsonwebtoken')
 jest.mock('bcrypt')
+jest.mock('../data-access/userRepository')
 jest.mock('../helpers/tokenBlacklist')
+jest.mock('../services/user.service')
+jest.mock('../helpers/Logger/WinstonLogger')
 
 describe('AuthService', () => {
   let authService: AuthService
-  let userService: UserService
+  let mockLogger: ILogger
+  let mockUserService: UserService
 
   beforeEach(() => {
-    userService = new UserService(new WinstonLogger())
-    authService = new AuthService(userService, new WinstonLogger())
+    mockLogger = { error: jest.fn() } as unknown as ILogger
+    mockUserService = { createUser: jest.fn() } as unknown as UserService
+    authService = new AuthService(mockUserService, mockLogger)
     jest.clearAllMocks()
   })
 
   describe('login', () => {
-    it('should return a token if credentials are valid', async () => {
-      const email = 'test@example.com'
+    it('should return a JWT token if credentials are valid P0', async () => {
+      const email = 'john.doe@example.com'
       const password = 'password123'
-      const user = {
-        id: 1,
-        email,
-        password: 'hashedPassword',
-        role: 'user',
-      }
+      const hashedPassword = await bcrypt.hash(password, 10)
+      const user = { id: 1, role: 'user', password: hashedPassword } as User
+      const secret = 'testsecret'
+      const token = 'jsonwebtoken.token'
 
-      jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(user as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          (
-            data: string | Buffer,
-            encrypted: string,
-            callback: (err: Error | undefined, same: boolean) => any
-          ) => {
-            callback(undefined, true) // Simulate a successful comparison
-          }
-        )
-
-      jest.spyOn(jwt, 'sign').mockReturnValue('token' as any)
+      process.env.JWT_SECRET = secret
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(jwt.sign as jest.Mock).mockReturnValue(token)
 
       const result = await authService.login(email, password)
 
-      expect(userService.getUserByEmail).toHaveBeenCalledWith(email)
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, user.password)
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(bcrypt.compare).toHaveBeenCalledWith(password, hashedPassword)
       expect(jwt.sign).toHaveBeenCalledWith(
         { id: user.id, role: user.role },
-        process.env.JWT_SECRET || 'jwt_secret',
+        secret,
         { expiresIn: '7d' }
       )
-      expect(result).toBe('token')
+      expect(result).toEqual(token)
     })
 
-    it('should throw an error if credentials are invalid', async () => {
-      const email = 'test@example.com'
+    it('should throw InvalidCredentialsError if user is not found P1', async () => {
+      const email = 'john.doe@example.com'
       const password = 'password123'
 
-      jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(null)
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(null)
 
       await expect(authService.login(email, password)).rejects.toThrow(
-        'Invalid credentials'
+        InvalidCredentialsError
       )
     })
 
-    it('should throw an error if the password is invalid', async () => {
-      const email = 'test@example.com'
-      const password = 'password123'
-      const user = {
-        id: 1,
-        email,
-        password: 'hashedPassword',
-        role: 'user',
-      }
+    it('should throw InvalidCredentialsError if password is incorrect P1', async () => {
+      const email = 'john.doe@example.com'
+      const password = 'wrongpassword'
+      const hashedPassword = await bcrypt.hash('password123', 10)
+      const user = { id: 1, role: 'user', password: hashedPassword } as User
 
-      jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(user as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          async (data: string | Buffer, encrypted: string) => {
-            return true
-          }
-        )
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
 
       await expect(authService.login(email, password)).rejects.toThrow(
-        'Invalid credentials'
+        InvalidCredentialsError
       )
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
-      const email = 'test@example.com'
+    it('should throw InternalServerError if JWT secret is not defined P1', async () => {
+      const email = 'john.doe@example.com'
       const password = 'password123'
+      const hashedPassword = await bcrypt.hash(password, 10)
+      const user = { id: 1, role: 'user', password: hashedPassword } as User
 
-      jest
-        .spyOn(userService, 'getUserByEmail')
-        .mockRejectedValue(new Error('Database error'))
+      delete process.env.JWT_SECRET
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
 
       await expect(authService.login(email, password)).rejects.toThrow(
         InternalServerError
       )
     })
+
+    it('should log error and throw InternalServerError on unexpected errors P1', async () => {
+      const email = 'john.doe@example.com'
+      const password = 'password123'
+
+      ;(userRepository.findByEmail as jest.Mock).mockRejectedValue(
+        new Error('Unexpected error')
+      )
+
+      await expect(authService.login(email, password)).rejects.toThrow(
+        InternalServerError
+      )
+      expect(mockLogger.error).toHaveBeenCalled()
+    })
   })
 
   describe('register', () => {
-    it('should create a new user and return it', async () => {
+    it('should register a new user and return the user P0', async () => {
       const name = 'John Doe'
-      const email = 'test@example.com'
+      const email = 'john.doe@example.com'
       const password = 'password123'
-      const hashedPassword = 'hashedPassword'
+      const hashedPassword = await bcrypt.hash(password, 10)
       const newUser = {
+        id: 1,
         name,
         email,
         password: hashedPassword,
         address: 'put address here',
         role: 'user',
-      }
-      const savedUser = { id: 1, ...newUser }
+      } as User
 
-      jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(null)
-      jest.spyOn(bcrypt, 'hash').mockImplementation(async () => hashedPassword)
-
-      jest.spyOn(userService, 'createUser').mockResolvedValue(savedUser as User)
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(null)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword)
+      ;(mockUserService.createUser as jest.Mock).mockResolvedValue(newUser)
 
       const result = await authService.register(name, email, password)
 
-      expect(userService.getUserByEmail).toHaveBeenCalledWith(email)
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
       expect(bcrypt.hash).toHaveBeenCalledWith(password, 10)
-      expect(userService.createUser).toHaveBeenCalledWith(newUser)
-      expect(result).toEqual(savedUser)
+      expect(mockUserService.createUser).toHaveBeenCalledWith({
+        name,
+        email,
+        password: hashedPassword,
+        address: 'put address here',
+        role: 'user',
+      })
+      expect(result).toEqual(newUser)
     })
 
-    it('should throw an error if the user already exists', async () => {
-      const email = 'test@example.com'
+    it('should throw UserAlreadyExistsError if the user already exists P1', async () => {
+      const name = 'John Doe'
+      const email = 'john.doe@example.com'
+      const password = 'password123'
 
-      jest.spyOn(userService, 'getUserByEmail').mockResolvedValue({} as User)
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue({} as User)
 
-      await expect(
-        authService.register('John Doe', email, 'password123')
-      ).rejects.toThrow('User already exists')
+      await expect(authService.register(name, email, password)).rejects.toThrow(
+        UserAlreadyExistsError
+      )
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
-      const email = 'test@example.com'
+    it('should log error and throw InternalServerError on unexpected errors P1', async () => {
+      const name = 'John Doe'
+      const email = 'john.doe@example.com'
+      const password = 'password123'
 
-      jest
-        .spyOn(userService, 'getUserByEmail')
-        .mockRejectedValue(new Error('Database error'))
+      ;(userRepository.findByEmail as jest.Mock).mockRejectedValue(
+        new Error('Unexpected error')
+      )
 
-      await expect(
-        authService.register('John Doe', email, 'password123')
-      ).rejects.toThrow(InternalServerError)
+      await expect(authService.register(name, email, password)).rejects.toThrow(
+        InternalServerError
+      )
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
   describe('logout', () => {
-    it('should add the token to the blacklist', async () => {
-      const token = 'someToken'
+    it('should add token to blacklist P0', async () => {
+      const token = 'some.jwt.token'
 
-      jest.spyOn(tokenBlacklist, 'addToBlacklist').mockImplementation(jest.fn())
-
-      await authService.logout(token)
-
-      expect(tokenBlacklist.addToBlacklist).toHaveBeenCalledWith(token)
-    })
-
-    it('should not add the token to the blacklist if it is already blacklisted', async () => {
-      const token = 'someToken'
-
-      jest.spyOn(tokenBlacklist, 'isTokenBlacklisted').mockReturnValue(true)
+      ;(isTokenBlacklisted as jest.Mock).mockReturnValue(false)
+      ;(addToBlacklist as jest.Mock).mockImplementation(() => {})
 
       await authService.logout(token)
 
-      expect(tokenBlacklist.addToBlacklist).not.toHaveBeenCalled()
+      expect(isTokenBlacklisted).toHaveBeenCalledWith(token)
+      expect(addToBlacklist).toHaveBeenCalledWith(token)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
-      const token = 'someToken'
+    it('should not add token to blacklist if it is already blacklisted P1', async () => {
+      const token = 'some.jwt.token'
 
-      jest.spyOn(tokenBlacklist, 'addToBlacklist').mockImplementation(() => {
-        throw new Error('Blacklist error')
+      ;(isTokenBlacklisted as jest.Mock).mockReturnValue(true)
+
+      await authService.logout(token)
+
+      expect(isTokenBlacklisted).toHaveBeenCalledWith(token)
+      expect(addToBlacklist).not.toHaveBeenCalled()
+    })
+
+    it('should log error and throw InternalServerError on unexpected errors P1', async () => {
+      const token = 'some.jwt.token'
+
+      ;(isTokenBlacklisted as jest.Mock).mockImplementation(() => {
+        throw new Error('Unexpected error')
       })
 
       await expect(authService.logout(token)).rejects.toThrow(
         InternalServerError
       )
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 })

@@ -8,7 +8,7 @@ import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/commentRepository')
 jest.mock('../data-access/productRepository')
-jest.mock('../helpers/logger')
+jest.mock('../helpers/Logger/WinstonLogger')
 jest.mock('../models/Comment.model.ts', () => {
   return {
     Comment: jest.fn().mockImplementation(() => {

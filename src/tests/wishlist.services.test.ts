@@ -6,7 +6,7 @@ import { InternalServerError } from '../Errors/InternalServerError'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/wishlistRepository')
-jest.mock('../helpers/logger')
+jest.mock('../helpers/Logger/WinstonLogger')
 
 describe('WishlistService', () => {
   let wishlistService: WishlistService

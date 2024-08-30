@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { UserRatingService } from '../services'
+import UserRatingService from '../services/userRating.service'
 import { userRatingRepository } from '../data-access'
 import { UserRatingDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
@@ -7,7 +7,7 @@ import { UserRating } from '../models'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/UserRatingRepository')
-jest.mock('../helpers/logger')
+jest.mock('../helpers/Logger/WinstonLogger')
 jest.mock('../models/UserRating.model.ts', () => {
   return {
     UserRating: jest.fn().mockImplementation(() => {
