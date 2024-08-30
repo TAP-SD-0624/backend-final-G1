@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import { CartController } from '../controllers/cartController'
+import { CartController } from '../controllers'
 import authAndRoleMiddleware from '../middleware/authMiddleware'
 import {
   addProductToCartValidator,

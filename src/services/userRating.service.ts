@@ -1,12 +1,14 @@
 import { UserRating } from '../models'
 import { UserRatingDTO } from '../Types/DTO'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { userRatingRepository } from '../data-access'
-import logger from '../helpers/logger'
 import { InternalServerError } from '../Errors/InternalServerError'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
-export class UserRatingService {
+export default class UserRatingService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   public async createUserRating(
     userId: number,
     data: UserRatingDTO
@@ -27,15 +29,9 @@ export class UserRatingService {
       await userRatingRepository.create(userRating)
 
       return data
-    } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      })
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 
@@ -52,11 +48,9 @@ export class UserRatingService {
           0
         ) / userRatings.length
       return rating
-    } catch (error: any) {
-      logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 
@@ -77,11 +71,9 @@ export class UserRatingService {
         productId,
       }
       return res
-    } catch (error: any) {
-      logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 
@@ -102,11 +94,9 @@ export class UserRatingService {
         return null
       }
       return data
-    } catch (error: any) {
-      logger.error(error)
-      throw new InternalServerError(
-        'an error occurred, please try again later.'
-      )
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 }

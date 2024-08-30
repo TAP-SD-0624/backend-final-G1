@@ -14,7 +14,7 @@ export async function checkWishlistExists(
       wishlist.userId = userId
       await wishlistRepository.create(wishlist)
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw error
   }
   next()

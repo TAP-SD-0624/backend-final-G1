@@ -2,108 +2,124 @@ import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
 import CategoryService from '../services/category.service'
 import { CategoryDTO } from '../Types/DTO'
-import { Category } from '../models'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { StatusCodes } from 'http-status-codes'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 @injectable()
 export class CategoryController {
   constructor(
     @inject(CategoryService) private categoryService: CategoryService
   ) {}
 
-  public async getAllCategories(
-    req: Request,
-    res: Response
-  ): Promise<Category[]> {
+  public async getAllCategories(req: Request, res: Response) {
     try {
       const Categories = await this.categoryService.getAllCategories()
 
-      res.json(Categories)
-      return Categories
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-      throw new Error(`Error retrieving categories`)
+      return res.json({
+        Responsecode: ResponseCodes.Success,
+        Message: 'Success',
+        Categories,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async getCategoryByID(req: Request, res: Response): Promise<void> {
+  public async getCategoryByID(req: Request, res: Response) {
     try {
-      const categoryId = parseInt(req.params.id, 10)
-      if (!categoryId) {
-        res.status(500).json({ error: 'Required Data is Unavailable' })
+      const { id } = req.params
+      const Category = await this.categoryService.findById(
+        id as unknown as number
+      )
+      if (!Category) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Could not find the category with the provided Id.',
+        })
       }
-      const category = await this.categoryService.findById(categoryId)
-      if (!category) {
-        res.status(400).json({ error: 'Category not found' })
-      }
-      res.status(201).json(category)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Category,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async createCategory(req: Request, res: Response): Promise<void> {
+  public async createCategory(req: Request, res: Response) {
     try {
-      const category: CategoryDTO = req.body
-      if (!category) {
-        res.status(500).json({ error: 'Required Data is Unavailable' })
-      }
-      const newCategory = await this.categoryService.createCategory(category)
-      if (!newCategory) {
-        res.status(400).json({ error: 'error while creating new Category' })
-      }
-      res.status(201).json(newCategory)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      const categoryDTO = req.body as CategoryDTO
+      const Category = await this.categoryService.createCategory(categoryDTO)
+
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Category,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async updateCategory(req: Request, res: Response): Promise<void> {
+  public async updateCategory(req: Request, res: Response) {
     try {
       const newCategory: CategoryDTO = req.body
-      const categoryId = parseInt(req.params.id)
-      if (!newCategory || !categoryId) {
-        res.status(500).json({ error: 'Required Data is Unavailable' })
-      }
-      const updatedCategory = await this.categoryService.updateCategory(
-        categoryId,
+      const { id } = req.params
+      const Category = await this.categoryService.updateCategory(
+        id as unknown as number,
         newCategory
       )
-      if (!updatedCategory) {
-        res.status(404).json({ error: 'Error while updating category' })
+
+      if (!Category) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Cound not find the category with the provided id.',
+        })
       }
-      res.status(201).json(updatedCategory)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Category,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
   //delete controller
-  public async deleteCategory(req: Request, res: Response): Promise<void> {
+  public async deleteCategory(req: Request, res: Response) {
     try {
-      const deletedId = parseInt(req.params.id, 10)
-      if (!deletedId) {
-        res.status(500).json({ error: 'Required Data is Unavailable' })
-      }
-      await this.categoryService.deleteCategory(deletedId)
-      res.status(201)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      const { id } = req.params
+
+      await this.categoryService.deleteCategory(id as unknown as number)
+      return res
+        .status(StatusCodes.OK)
+        .json({ ResponseCode: ResponseCodes.Success, Message: 'Success' })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
   //findByName
-  public async findByName(req: Request, res: Response): Promise<void> {
+  public async findByName(req: Request, res: Response) {
     try {
       const { name } = req.body
-      if (!name) {
-        res.status(500).json({ error: 'name is required' })
+      const Category = await this.categoryService.findByName(name)
+      if (!Category) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Could not find the category with the provided name.',
+        })
       }
-      const category = await this.categoryService.findByName(name)
-      if (!category) {
-        res.status(404).json({ error: 'Category not found' })
-      }
-      res.status(201).json(category)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Category,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 }

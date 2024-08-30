@@ -1,6 +1,6 @@
-import { injectable } from 'tsyringe'
-import { Category, Image, Product, ProductCategory } from '../models'
-import { CategoryDTO, CommentDTO, ProductDTO } from '../Types/DTO'
+import { inject, injectable } from 'tsyringe'
+import { Category, Image, Product } from '../models'
+import { ProductDTO } from '../Types/DTO'
 import { GetProductOptions } from '../Types/GetProductOptions'
 import {
   productRepository,
@@ -8,15 +8,15 @@ import {
   brandRepository,
   imageRepository,
 } from '../data-access'
-import { ValidationError } from '../Errors/ValidationError'
-import { ValidationError as VE } from 'sequelize'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { GetProductDTO, UpdateProductDTO } from '../Types/DTO/productDto'
 import { WriteAllImages } from '../helpers/Storage/StorageManager'
-import { ratingDto } from '../Types/DTO/ratingDto'
 import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
+import { ILogger } from '../helpers/Logger/ILogger'
 @injectable()
 export default class ProductService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   /**
    *
    * @param page this with pageSize will define how many products should be skipped,
@@ -26,10 +26,8 @@ export default class ProductService {
    * @param pageSize will determine the maximum number of products returned,
    * @default pageSize 10;
    * @param {GetProductOptions} [options] options that narrows the selection of the returned products.
-   * @returns returns a list of productDto that meets the params, returns empty array when there 
-    isn't any.
-   * @throws {ValidationError} ValidationError when the page or pagesize is less than 1
-   * or when the Validation on the Database fails.
+   * @returns returns a list of productDto that meets the params, returns empty array when there
+   * isn't any.
    * @throws {InternalServerError} InternalServerError when it fails to retrieve the data.
    */
   async GetProducts(
@@ -37,12 +35,6 @@ export default class ProductService {
     pageSize: number = 10,
     options?: GetProductOptions
   ): Promise<GetProductDTO[] | null> {
-    //validate the parameters.
-    if (page < 1)
-      throw new ValidationError('page should be more than or equal to 1')
-    if (pageSize < 1)
-      throw new ValidationError('pageSize should be more than or equal to 1')
-
     try {
       //fetch all products from the products repository.
       const products = await productRepository.GetProducts(
@@ -73,9 +65,8 @@ export default class ProductService {
       })
 
       return prodcutsDto
-    } catch (ex: unknown) {
-      console.log(ex)
-      if (ex instanceof VE) throw new ValidationError(ex.message)
+    } catch (ex: any) {
+      this.logger.error(ex)
       throw new InternalServerError()
     }
   }
@@ -93,8 +84,8 @@ export default class ProductService {
       if (!product) return null
 
       return ProductToProductDTO(product)
-    } catch (ex) {
-      console.log(ex)
+    } catch (ex: any) {
+      this.logger.error(ex)
       throw new InternalServerError()
     }
   }
@@ -147,8 +138,8 @@ export default class ProductService {
         const data = await productRepository.GetProduct(product.id)
         return data?.toJSON() ?? null
       }
-    } catch (ex) {
-      console.log(ex)
+    } catch (ex: any) {
+      this.logger.error(ex)
       throw new InternalServerError()
     }
     return null
@@ -172,8 +163,8 @@ export default class ProductService {
         productData
       )
       return product
-    } catch (ex) {
-      console.log(ex)
+    } catch (ex: any) {
+      this.logger.error(ex)
       throw new InternalServerError()
     }
   }
@@ -187,8 +178,17 @@ export default class ProductService {
   async DeleteProduct(productId: number): Promise<boolean> {
     try {
       return await productRepository.delete(productId)
-    } catch (error) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
+    }
+  }
+
+  async SearchProduct(name: string): Promise<Product[]> {
+    try {
+      return await productRepository.SearchProduct(name)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import AuthService from '../services/auth.service'
 import { inject, injectable } from 'tsyringe'
-import { UserDTO } from '../Types/DTO'
 import { BrandService } from '../services'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class BrandController {
@@ -11,9 +11,13 @@ export class BrandController {
   async ListBrands(req: Request, res: Response) {
     try {
       const brands = await this.brandService.ListBrands()
-      return res.status(200).json({ brands })
+      return res.status(200).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        brands,
+      })
     } catch (ex) {
-      return res.status(500).json({ error: 'internal server error' })
+      return InternalServerErrorResponse(res)
     }
   }
 }

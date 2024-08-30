@@ -1,14 +1,24 @@
-import { Cart, Product } from '../models'
+import { Cart } from '../models'
 import { cartRepository, productRepository } from '../data-access'
-import { CartDTO, CartProductDTO } from '../Types/DTO/cartDto'
-import { InternalServerError } from '../Errors/InternalServerError'
-import { NotFoundError } from '../Errors/NotFoundError'
+import { CartDTO } from '../Types/DTO/cartDto'
+import { InternalServerError, NotFoundError } from '../Errors'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
 import { GetProductDTO } from '../Types/DTO/productDto'
 import { ProductToProductDTO } from '../helpers/Products/ProductToProductDTO'
+import { ILogger } from '../helpers/Logger/ILogger'
+import { inject, injectable } from 'tsyringe'
 
+@injectable()
 export default class CartService {
-  async GetCartByUserId(userId: number): Promise<CartDTO | null> {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
+  /**
+   *
+   * @param userId id for the user that we want the cart for.
+   * @throws Error when it fails to get the cart for the user.
+   * @returns CartDTO if a cart was found.
+   */
+  async GetCartByUserId(userId: number): Promise<CartDTO> {
     try {
       let cart = await cartRepository.findCartByUserId(userId)
       if (!cart) {
@@ -24,8 +34,9 @@ export default class CartService {
       })
       const cartDto: CartDTO = { id: cart.id, products, userId: cart.userId }
       return cartDto
-    } catch (error: any) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+
       throw new InternalServerError()
     }
   }
@@ -36,8 +47,9 @@ export default class CartService {
       if (!deleted) {
         throw new Error('Failed to delete cart')
       }
-    } catch (error: any) {
-      throw new Error(`Error deleting cart: ${error.message}`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 
@@ -53,8 +65,8 @@ export default class CartService {
       }
       await cartRepository.ClearCart(cart.id)
       return true
-    } catch (ex) {
-      console.log(ex)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -70,8 +82,8 @@ export default class CartService {
         cart = await cartRepository.create(newCart)
       }
       product = await productRepository.findById(productId)
-    } catch (error: any) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
 
@@ -89,8 +101,8 @@ export default class CartService {
         productId,
         quantity
       )
-    } catch (error: any) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -102,8 +114,8 @@ export default class CartService {
     try {
       const cart = await cartRepository.findCartByUserId(userId)
       return await cartRepository.RemoveProductFromCart(cart?.id, productId)
-    } catch (error: any) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -115,8 +127,9 @@ export default class CartService {
         throw new Error('Cart not found')
       }
       return cart
-    } catch (error: any) {
-      throw new Error(`Error retrieving cart product: ${error.message}`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new InternalServerError()
     }
   }
 }

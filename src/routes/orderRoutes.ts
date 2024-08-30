@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import { OrderController } from '../controllers/orderController'
+import { OrderController } from '../controllers'
 import authAndRoleMiddleware from '../middleware/authMiddleware'
 import { createOrderValidator, updateOrderValidator } from '../validations'
 
@@ -8,7 +8,7 @@ const orderRouter = Router()
 const orderController = container.resolve(OrderController)
 
 orderRouter.post(
-  '/',
+  '/create',
   authAndRoleMiddleware(['user']),
   createOrderValidator,
   orderController.createOrder.bind(orderController)

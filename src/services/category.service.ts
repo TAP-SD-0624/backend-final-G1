@@ -1,8 +1,14 @@
 import { categoryRepository } from '../data-access'
 import { Category } from '../models'
 import { CategoryDTO } from '../Types/DTO'
-
+import { InternalServerError } from '../Errors/InternalServerError'
+import { ValidationError as VE } from 'sequelize'
+import { ValidationError } from '../Errors/ValidationError'
+import { ILogger } from '../helpers/Logger/ILogger'
+import { inject, injectable } from 'tsyringe'
+@injectable()
 export default class CategoryService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
   async createCategory(categoryData: CategoryDTO): Promise<Category> {
     try {
       const newCategory = new Category()
@@ -10,11 +16,12 @@ export default class CategoryService {
       const category = await categoryRepository.create(newCategory)
 
       if (!category) {
-        throw new Error('Failed to create category  `')
+        throw new Error('Failed to create category')
       }
       return category
-    } catch (error) {
-      throw new Error('Error creating category')
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error('Failed to create category')
     }
   }
 
@@ -34,8 +41,9 @@ export default class CategoryService {
         throw new Error('Failed to update category')
       }
       return category
-    } catch (error) {
-      throw new Error(`Error while updating category`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error('Failed to update category')
     }
   }
 
@@ -44,8 +52,9 @@ export default class CategoryService {
     try {
       const category = await categoryRepository.findById(id)
       return category
-    } catch (error) {
-      throw new Error('Error retrieving category')
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error("Couldn't find category")
     }
   }
 
@@ -53,16 +62,18 @@ export default class CategoryService {
     try {
       const categories = await categoryRepository.findAll()
       return categories
-    } catch (error) {
-      throw new Error('Error retrieving Categories')
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error('Failed to get All categories')
     }
   }
   async findByName(name: string): Promise<Category | null> {
     try {
       const category = await categoryRepository.findByName(name)
       return category
-    } catch (error) {
-      throw new Error('Error retrieving Category')
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error('failed to get category by name')
     }
   }
 
@@ -71,10 +82,9 @@ export default class CategoryService {
       const deletedCategory = await categoryRepository.delete(CategoryId)
 
       return deletedCategory
-    } catch (error) {
-      throw new Error(`Error while deleting category`)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
+      throw new Error('failed to delete category')
     }
-
-    return false
   }
 }

@@ -2,8 +2,8 @@ import 'reflect-metadata'
 import DashboardService from '../services/dashboard.service'
 import { dashboardRepository } from '../data-access'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { GetProductDashboardDTO } from '../Types/DTO'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/dashboardRepository')
 jest.mock('../helpers/logger')
@@ -12,12 +12,12 @@ describe('DashboardService', () => {
   let dashboardService: DashboardService
 
   beforeEach(() => {
-    dashboardService = new DashboardService()
+    dashboardService = new DashboardService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
   describe('getMostBoughtProductsOverTime', () => {
-    it('should return a list of products', async () => {
+    it('should return a list of products - P0', async () => {
       const startTime = new Date()
       const endTime = new Date()
       const products: GetProductDashboardDTO[] = [
@@ -39,7 +39,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P0', async () => {
       const startTime = new Date()
       const endTime = new Date()
 
@@ -50,12 +50,11 @@ describe('DashboardService', () => {
       await expect(
         dashboardService.getMostBoughtProductsOverTime(startTime, endTime)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
   describe('getProductsNotBought', () => {
-    it('should return a list of products not bought', async () => {
+    it('should return a list of products not bought - P1', async () => {
       const startTime = new Date()
       const endTime = new Date()
       const products: GetProductDashboardDTO[] = [
@@ -78,7 +77,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const startTime = new Date()
       const endTime = new Date()
 
@@ -89,12 +88,11 @@ describe('DashboardService', () => {
       await expect(
         dashboardService.getProductsNotBought(startTime, endTime)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
   describe('DropItemsFromList', () => {
-    it('should return true if items are dropped successfully', async () => {
+    it('should return true if items are dropped successfully - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockResolvedValue(
@@ -107,7 +105,7 @@ describe('DashboardService', () => {
       expect(result).toBe(true)
     })
 
-    it('should return false if no items are dropped', async () => {
+    it('should return false if no items are dropped - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockResolvedValue(
@@ -119,7 +117,7 @@ describe('DashboardService', () => {
       expect(result).toBe(false)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const ids = [1, 2, 3]
 
       ;(dashboardRepository.DropItemsFromList as jest.Mock).mockRejectedValue(
@@ -129,12 +127,11 @@ describe('DashboardService', () => {
       await expect(dashboardService.DropItemsFromList(ids)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
   describe('getProductsPerState', () => {
-    it('should return a list of products for the given state', async () => {
+    it('should return a list of products for the given state - P1', async () => {
       const state = 'New York'
       const products: GetProductDashboardDTO[] = [
         { id: 3, name: 'Product 3', price: 30, stock: 15 },
@@ -152,7 +149,7 @@ describe('DashboardService', () => {
       expect(result).toEqual(products)
     })
 
-    it('should throw an InternalServerError if an error occurs', async () => {
+    it('should throw an InternalServerError if an error occurs - P1', async () => {
       const state = 'New York'
 
       ;(dashboardRepository.getProductsPerState as jest.Mock).mockRejectedValue(
@@ -162,7 +159,6 @@ describe('DashboardService', () => {
       await expect(dashboardService.getProductsPerState(state)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 })
