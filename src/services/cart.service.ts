@@ -29,7 +29,7 @@ export default class CartService {
 
       let products: GetProductDTO[] = []
 
-      cart.products.forEach((item) => {
+      cart.products?.forEach((item) => {
         products.push(ProductToProductDTO(item))
       })
       const cartDto: CartDTO = { id: cart.id, products, userId: cart.userId }
