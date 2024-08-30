@@ -27,7 +27,6 @@ class AuthController {
   async register(req: Request, res: Response) {
     const { firstName, lastName, email, password } = req.body
     const name = `${firstName} ${lastName}`
-    console.log(name)
 
     try {
       await this.authService.register(name, email, password)

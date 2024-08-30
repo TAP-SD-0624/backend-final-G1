@@ -51,11 +51,9 @@ export class AddressController {
   }
 
   public async create(req: AuthenticatedRequest, res: Response) {
-    console.log('hi')
 
     const userId = req.user?.id
     const addressData = req.body
-    console.log('data: ', addressData)
 
     try {
       const Address = await this.addressService.createAddress(
