@@ -111,18 +111,38 @@ export default class OrderService {
 
       // Send order confirmation email
       const emailContent = `
-    <h1>Order Confirmation</h1>
-    <p>Thank you for your order!</p>
-    <p>Order ID: ${order.id}</p>
-    <p>Products:</p>
-    <ul>
-      ${cart.products.map((product) => `<li>${product.name} - Quantity: ${(product as any).CartProduct.quantity}</li>`).join('')}
-    </ul>
-    <p>Total: ${cart.products.reduce((total, product) => total + product.price * (product as any).CartProduct.quantity, 0)}</p>
-  `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h1 style="text-align: center; color: #4CAF50;">Order Confirmation</h1>
+        <p style="font-size: 16px; color: #333;">Thank you for your order! We are excited to inform you that your order has been successfully placed.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <h2 style="font-size: 18px; color: #4CAF50;">Order Details</h2>
+        <p style="font-size: 16px; color: #555;"><strong>Order ID:</strong> ${order.id}</p>
+    
+        <h3 style="font-size: 18px; color: #4CAF50;">Products:</h3>
+        <ul style="list-style: none; padding: 0;">
+          ${cart.products.map((product) => `
+            <li style="background: #f9f9f9; margin: 10px 0; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 16px; color: #333;">${product.name}</span>
+              <span style="font-size: 16px; color: #555;">Quantity: ${(product as any).CartProduct.quantity}</span>
+            </li>
+          `).join('')}
+        </ul>
+    
+        <p style="font-size: 16px; color: #555;"><strong>Total:</strong> $${cart.products.reduce((total, product) => total + product.price * (product as any).CartProduct.quantity, 0).toFixed(2)}</p>
+    
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+    
+        <p style="text-align: center; font-size: 14px; color: #777;">If you have any questions or concerns, please contact our customer support.</p>
+        <p style="text-align: center; font-size: 14px; color: #777;">Thank you for shopping with us!</p>
+      </div>
+    `;
+    
 
   // get user by id
   const user = await userRepository.findById(userId)
+  console.log("Email sent to: ", user?.email);
+  
       await sendEmail({
         to: user?.email as string,  
         subject: 'Order Confirmation',
