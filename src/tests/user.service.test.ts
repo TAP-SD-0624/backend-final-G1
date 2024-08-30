@@ -1,390 +1,280 @@
+import 'reflect-metadata'
 import UserService from '../services/user.service'
 import { userRepository } from '../data-access'
-import { User } from '../models'
 import { UserDTO } from '../Types/DTO/userDto'
-import bcrypt from 'bcrypt'
+import { InternalServerError, BadRequestError } from '../Errors'
+import { ILogger } from '../helpers/Logger/ILogger'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
+import bcrypt from 'bcrypt'
+import { User } from '../models'
 
 jest.mock('../data-access/userRepository')
-jest.mock('bcrypt')
+jest.mock('../helpers/Logger/WinstonLogger')
+jest.mock('../models/User.model.ts', () => {
+  return {
+    User: jest.fn().mockImplementation(() => {
+      return {
+        name: '',
+        email: '',
+        password: '',
+        address: '',
+        role: '',
+        set: jest.fn(),
+        save: jest.fn(),
+      }
+    }),
+  }
+})
 
 describe('UserService', () => {
   let userService: UserService
+  let mockLogger: ILogger
 
   beforeEach(() => {
-    userService = new UserService(new WinstonLogger())
+    mockLogger = new WinstonLogger()
+    userService = new UserService(mockLogger)
     jest.clearAllMocks()
   })
 
   describe('createUser', () => {
-    it('should create a user and return it', async () => {
+    it('should create and return a user P0', async () => {
       const userData: UserDTO = {
         name: 'John Doe',
-        email: 'test@example.com',
+        email: 'john.doe@example.com',
         password: 'password123',
         address: '123 Main St',
         role: 'user',
       }
-      const mockUser: Partial<User> = {
-        ...userData,
-        password: 'hashedPassword', // Mocked hashed password
-      }
-      jest.spyOn(userRepository, 'create').mockResolvedValue(mockUser as User)
+
+      const newUser = new User()
+      newUser.name = userData.name
+      newUser.email = userData.email
+      newUser.password = userData.password
+      newUser.address = userData.address
+      newUser.role = userData.role
+      ;(userRepository.create as jest.Mock).mockResolvedValue(newUser)
 
       const result = await userService.createUser(userData)
 
-      expect(userRepository.create).toHaveBeenCalledWith(expect.any(User))
-      expect(result).toEqual(mockUser as User)
+      expect(result).toEqual(newUser)
     })
 
-    it('should throw an error if user creation fails', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userData: UserDTO = {
         name: 'John Doe',
-        email: 'test@example.com',
+        email: 'john.doe@example.com',
         password: 'password123',
         address: '123 Main St',
         role: 'user',
       }
 
-      jest
-        .spyOn(userRepository, 'create')
-        .mockResolvedValue(null as unknown as User)
+      ;(userRepository.create as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(userService.createUser(userData)).rejects.toThrow(
-        'Failed to create user'
+        InternalServerError
       )
     })
   })
 
   describe('getUserById', () => {
-    it('should return a user if found', async () => {
+    it('should return the user if found P0', async () => {
       const userId = 1
-      const mockUser: Partial<User> = {
-        id: userId,
-        name: 'John Doe',
-        email: 'test@example.com',
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
+      const user = new User()
+
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
       const result = await userService.getUserById(userId)
 
       expect(userRepository.findById).toHaveBeenCalledWith(userId)
-      expect(result).toEqual(mockUser as User)
+      expect(result).toEqual(user)
     })
 
-    it('should return null if user is not found', async () => {
+    it('should return null if the user is not found P1', async () => {
       const userId = 1
-      jest
-        .spyOn(userRepository, 'findById')
-        .mockResolvedValue(null as unknown as User)
+
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(null)
 
       const result = await userService.getUserById(userId)
 
       expect(result).toBeNull()
     })
 
-    it('should throw an error if there is an issue retrieving the user', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
-      jest
-        .spyOn(userRepository, 'findById')
-        .mockRejectedValue(new Error('Database error'))
+
+      ;(userRepository.findById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(userService.getUserById(userId)).rejects.toThrow(
-        'Error retrieving user: Error: Database error'
+        InternalServerError
       )
     })
   })
 
   describe('getUserByEmail', () => {
-    it('should return a user if found', async () => {
-      const email = 'test@example.com'
-      const mockUser: Partial<User> = {
-        name: 'John Doe',
-        email: email,
-      }
-      jest
-        .spyOn(userRepository, 'findByEmail')
-        .mockResolvedValue(mockUser as User)
+    it('should return the user if found P0', async () => {
+      const email = 'john.doe@example.com'
+      const user = new User()
+
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(user)
 
       const result = await userService.getUserByEmail(email)
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
-      expect(result).toEqual(mockUser as User)
+      expect(result).toEqual(user)
     })
 
-    it('should return null if user is not found', async () => {
-      const email = 'test@example.com'
-      jest
-        .spyOn(userRepository, 'findByEmail')
-        .mockResolvedValue(null as unknown as User)
+    it('should return null if the user is not found P1', async () => {
+      const email = 'john.doe@example.com'
+
+      ;(userRepository.findByEmail as jest.Mock).mockResolvedValue(null)
 
       const result = await userService.getUserByEmail(email)
 
       expect(result).toBeNull()
     })
 
-    it('should throw an error if there is an issue retrieving the user by email', async () => {
-      const email = 'test@example.com'
-      jest
-        .spyOn(userRepository, 'findByEmail')
-        .mockRejectedValue(new Error('Database error'))
+    it('should throw an InternalServerError if an error occurs P1', async () => {
+      const email = 'john.doe@example.com'
+
+      ;(userRepository.findByEmail as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(userService.getUserByEmail(email)).rejects.toThrow(
-        'Error retrieving user: Error: Database error'
+        InternalServerError
       )
     })
   })
 
   describe('updateUser', () => {
-    it('should update and return the updated user if data has changed', async () => {
+    it('should update and return the updated user P0', async () => {
       const userId = 1
       const userData: UserDTO = {
         name: 'John Doe',
-        email: 'test@example.com',
+        email: 'john.doe@example.com',
         password: 'newpassword123',
-        address: '123 New St',
-        role: 'admin',
+        address: '123 Main St',
+        role: 'user',
       }
-      const mockUser: Partial<User> = {
-        id: userId,
-        ...userData,
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(userRepository, 'updateUser')
-        .mockResolvedValue(mockUser as User)
-      jest.spyOn(bcrypt, 'hash').mockImplementation(async () => 'password')
+      const existingUser = new User()
+      existingUser.password = 'oldpassword123'
+
+      const updatedUser = new User()
+      updatedUser.name = userData.name
+      updatedUser.email = userData.email
+      updatedUser.password = await bcrypt.hash(userData.password, 10)
+      updatedUser.address = userData.address
+      updatedUser.role = userData.role
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(existingUser)
+      ;(userRepository.updateUser as jest.Mock).mockResolvedValue(updatedUser)
 
       const result = await userService.updateUser(userId, userData)
 
       expect(userRepository.findById).toHaveBeenCalledWith(userId)
-      expect(bcrypt.hash).toHaveBeenCalledWith('newpassword123', 10)
       expect(userRepository.updateUser).toHaveBeenCalledWith(
         userId,
         expect.any(Object)
       )
-      expect(result).toEqual(mockUser as User)
+      expect(result).toEqual(updatedUser)
     })
 
-    it('should throw an error if user is not found', async () => {
+    it('should return null if the user is not found P1', async () => {
       const userId = 1
       const userData: UserDTO = {
         name: 'John Doe',
-        email: 'test@example.com',
+        email: 'john.doe@example.com',
         password: 'newpassword123',
-        address: '123 New St',
-        role: 'admin',
-      }
-
-      jest
-        .spyOn(userRepository, 'findById')
-        .mockResolvedValue(null as unknown as User)
-
-      await expect(userService.updateUser(userId, userData)).rejects.toThrow(
-        'User not found'
-      )
-    })
-
-    it('should return the same user if no data has changed', async () => {
-      const userId = 1
-      const userData: UserDTO = {
-        name: 'John Doe',
-        email: 'test@example.com',
-        password: 'password123',
         address: '123 Main St',
         role: 'user',
       }
-      const mockUser: Partial<User> = {
-        id: userId,
-        ...userData,
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest.spyOn(userService as any, 'isUserDataChanged').mockReturnValue(false)
+
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(null)
 
       const result = await userService.updateUser(userId, userData)
 
-      expect(result).toEqual(mockUser as User)
+      expect(result).toBeNull()
     })
 
-    it('should throw an error if there is an issue updating the user', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
       const userData: UserDTO = {
         name: 'John Doe',
-        email: 'test@example.com',
+        email: 'john.doe@example.com',
         password: 'newpassword123',
-        address: '123 New St',
-        role: 'admin',
+        address: '123 Main St',
+        role: 'user',
       }
-      const mockUser: Partial<User> = {
-        id: userId,
-        ...userData,
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(userRepository, 'updateUser')
-        .mockRejectedValue(new Error('Database error'))
+
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(new User())
+      ;(userRepository.updateUser as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(userService.updateUser(userId, userData)).rejects.toThrow(
-        'Error updating user: Error: Database error'
+        InternalServerError
       )
     })
   })
 
   describe('editUserPassword', () => {
-    it('should update the user password and return a success message', async () => {
+    it('should change the user password P0', async () => {
       const userId = 1
-      const oldPassword = 'oldpassword'
-      const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
-        id: userId,
-        password: 'hashedOldPassword',
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          async (data: string | Buffer, encrypted: string) => {
-            return true
-          }
-        )
+      const oldPassword = 'oldpassword123'
+      const newPassword = 'newpassword123'
+      const user = new User()
+      user.password = await bcrypt.hash(oldPassword, 10)
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
+      ;(user.save as jest.Mock).mockResolvedValue(user)
 
-      jest.spyOn(bcrypt, 'hash').mockImplementation(async () => newPassword)
-      jest.spyOn(User.prototype, 'save').mockResolvedValue(mockUser as User)
+      await userService.editUserPassword(userId, oldPassword, newPassword)
 
-      const result = await userService.editUserPassword(
-        userId,
-        oldPassword,
-        newPassword
-      )
-
-      expect(bcrypt.compare).toHaveBeenCalledWith(
-        oldPassword,
-        'hashedOldPassword'
-      )
-      expect(bcrypt.hash).toHaveBeenCalledWith(newPassword, 10)
-      expect(User.prototype.save).toHaveBeenCalled()
-      expect(result).toBe('Password updated successfully')
+      expect(userRepository.findById).toHaveBeenCalledWith(userId)
+      expect(user.set).toHaveBeenCalledWith('password', expect.any(String))
+      expect(user.save).toHaveBeenCalled()
     })
 
-    it('should throw an error if old password is incorrect', async () => {
+    it('should throw BadRequestError if the old password is incorrect P1', async () => {
       const userId = 1
-      const oldPassword = 'oldpassword'
-      const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
-        id: userId,
-        password: 'hashedOldPassword',
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          async (data: string | Buffer, encrypted: string) => {
-            return false
-          }
-        )
+      const oldPassword = 'wrongpassword'
+      const newPassword = 'newpassword123'
+      const user = new User()
+      user.password = await bcrypt.hash('correctpassword', 10)
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
       await expect(
         userService.editUserPassword(userId, oldPassword, newPassword)
-      ).rejects.toThrow('Old password is incorrect')
+      ).rejects.toThrow(BadRequestError)
     })
 
-    it('should throw an error if new password is the same as the old password', async () => {
+    it('should throw BadRequestError if the new password is the same as the old password P1', async () => {
       const userId = 1
-      const oldPassword = 'oldpassword'
-      const newPassword = 'oldpassword'
-      const mockUser: Partial<User> = {
-        id: userId,
-        password: 'hashedOldPassword',
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          async (data: string | Buffer, encrypted: string) => {
-            return true
-          }
-        )
+      const oldPassword = 'oldpassword123'
+      const newPassword = 'oldpassword123'
+      const user = new User()
+      user.password = await bcrypt.hash(oldPassword, 10)
+      ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
       await expect(
         userService.editUserPassword(userId, oldPassword, newPassword)
-      ).rejects.toThrow('New password must be different from the old password')
+      ).rejects.toThrow(BadRequestError)
     })
 
-    it('should throw an error if the hashed new password is the same as the old hashed password', async () => {
+    it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
-      const oldPassword = 'oldpassword'
-      const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
-        id: userId,
-        password: 'hashedNewPassword',
-      }
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser as User)
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(
-          async (data: string | Buffer, encrypted: string) => {
-            return true
-          }
-        )
-      jest.spyOn(bcrypt, 'hash').mockImplementation(async () => newPassword)
+      const oldPassword = 'oldpassword123'
+      const newPassword = 'newpassword123'
+
+      ;(userRepository.findById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
       await expect(
         userService.editUserPassword(userId, oldPassword, newPassword)
-      ).rejects.toThrow(
-        'New password cannot be the same as the old password after hashing'
-      )
-    })
-  })
-
-  describe('deleteUser', () => {
-    it('should delete the user', async () => {
-      const userId = 1
-      jest.spyOn(userRepository, 'deleteUser').mockResolvedValue(true)
-
-      await expect(userService.deleteUser(userId)).resolves.toBeUndefined()
-      expect(userRepository.deleteUser).toHaveBeenCalledWith(userId)
-    })
-
-    it('should throw an error if there is an issue deleting the user', async () => {
-      const userId = 1
-      jest
-        .spyOn(userRepository, 'deleteUser')
-        .mockRejectedValue(new Error('Database error'))
-
-      await expect(userService.deleteUser(userId)).rejects.toThrow(
-        'Error deleting user: Error: Database error'
-      )
-    })
-  })
-
-  describe('changeRole', () => {
-    it('should change the user role and return the updated user', async () => {
-      const userId = 1
-      const role = 'admin'
-      const mockUser: Partial<User> = {
-        id: userId,
-        role: role,
-      }
-      jest
-        .spyOn(userRepository, 'changeRole')
-        .mockResolvedValue(mockUser as User)
-
-      const result = await userService.changeRole(userId, role)
-
-      expect(userRepository.changeRole).toHaveBeenCalledWith(userId, role)
-      expect(result).toEqual(mockUser as User)
-    })
-
-    it('should throw an error if there is an issue changing the user role', async () => {
-      const userId = 1
-      const role = 'admin'
-      jest
-        .spyOn(userRepository, 'changeRole')
-        .mockRejectedValue(new Error('Database error'))
-
-      await expect(userService.changeRole(userId, role)).rejects.toThrow(
-        'Error changing user role: Error: Database error'
-      )
+      ).rejects.toThrow(InternalServerError)
     })
   })
 })

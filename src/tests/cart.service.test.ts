@@ -141,7 +141,7 @@ describe('CartService', () => {
       ;(cartRepository.deleteCart as jest.Mock).mockResolvedValue(false)
 
       await expect(cartService.DeleteCart(cartId)).rejects.toThrow(
-        'Failed to delete cart'
+        'internal server error, please try again later'
       )
     })
   })
