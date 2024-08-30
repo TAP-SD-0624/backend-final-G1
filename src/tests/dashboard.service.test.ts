@@ -6,7 +6,7 @@ import { GetProductDashboardDTO } from '../Types/DTO'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/dashboardRepository')
-jest.mock('../helpers/logger')
+jest.mock('../helpers/Logger/WinstonLogger')
 
 describe('DashboardService', () => {
   let dashboardService: DashboardService

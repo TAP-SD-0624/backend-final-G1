@@ -4,10 +4,12 @@ import UserService from '../services/user.service'
 import { UserDTO } from '../Types/DTO'
 import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { BadRequestError, ValidationError } from '../Errors'
+import { NotFoundError } from '../Errors'
 
 @injectable()
 export class UserController {
-  constructor(@inject(UserService) private userService: UserService) {}
+  constructor(@inject(UserService) private userService: UserService) { }
 
   async createUser(req: Request, res: Response) {
     try {
@@ -19,6 +21,12 @@ export class UserController {
         user,
       })
     } catch (error: unknown) {
+      if(error instanceof ValidationError){
+        return res.status(400).json({
+          ResponseCode:ResponseCodes.BadRequest,
+          Message: error.message
+        })
+      }
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -166,7 +174,19 @@ export class UserController {
         Message: 'User Password updated successfully',
         result,
       })
-    } catch (error: unknown) {
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        return res.status(404).json({
+          ResponseCode:ResponseCodes.NotFound,
+          Message:error.message
+        })
+      }
+      if (error instanceof BadRequestError) {
+        return res.status(400).json({
+          ResponseCode: ResponseCodes.BadRequest,
+          Message: error.message
+        })
+      }
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',

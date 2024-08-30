@@ -2,13 +2,14 @@ import { User } from '../models'
 import { userRepository } from '../data-access'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
-import { InternalServerError, NotFoundError, BadRequestError } from '../Errors'
+import { InternalServerError, NotFoundError, BadRequestError, ValidationError } from '../Errors'
 import { ILogger } from '../helpers/Logger/ILogger'
 import { inject, injectable } from 'tsyringe'
+import { ValidationError as VE } from 'sequelize'
 
 @injectable()
 export default class UserService {
-  constructor(@inject('ILogger') private logger: ILogger) {}
+  constructor(@inject('ILogger') private logger: ILogger) { }
 
   async createUser(userData: UserDTO): Promise<User> {
     try {
@@ -20,11 +21,12 @@ export default class UserService {
       newUser.role = userData.role
 
       const user = await userRepository.create(newUser)
-      if (!user) {
-        throw new InternalServerError('Failed to create user')
-      }
       return user
     } catch (error: unknown) {
+      console.log(error)
+      if (error instanceof VE) {
+        throw new ValidationError(error.message)
+      }
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
@@ -38,6 +40,7 @@ export default class UserService {
       }
       return user
     } catch (error: unknown) {
+      console.log(error)
       this.logger.error(error as Error)
       throw new InternalServerError()
     }
@@ -151,6 +154,9 @@ export default class UserService {
       await user.save()
       return 'Password updated successfully'
     } catch (error: unknown) {
+      if (error instanceof BadRequestError) {
+        throw error
+      }
       this.logger.error(error as Error)
       throw new InternalServerError()
     }

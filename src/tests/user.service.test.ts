@@ -6,6 +6,8 @@ import bcrypt from 'bcrypt'
 import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/userRepository')
+jest.mock('../models/User.model')
+jest.mock('../helpers/Logger/WinstonLogger')
 jest.mock('bcrypt')
 
 describe('UserService', () => {
@@ -25,7 +27,7 @@ describe('UserService', () => {
         address: '123 Main St',
         role: 'user',
       }
-      const mockUser: Partial<User> = {
+      const mockUser= {
         ...userData,
         password: 'hashedPassword', // Mocked hashed password
       }
@@ -48,10 +50,10 @@ describe('UserService', () => {
 
       jest
         .spyOn(userRepository, 'create')
-        .mockResolvedValue(null as unknown as User)
+        .mockRejectedValue(new Error ("internal server error, please try again later"))
 
       await expect(userService.createUser(userData)).rejects.toThrow(
-        'Failed to create user'
+        'internal server error, please try again later'
       )
     })
   })
@@ -59,8 +61,7 @@ describe('UserService', () => {
   describe('getUserById', () => {
     it('should return a user if found', async () => {
       const userId = 1
-      const mockUser: Partial<User> = {
-        id: userId,
+      const mockUser = {
         name: 'John Doe',
         email: 'test@example.com',
       }
@@ -76,11 +77,10 @@ describe('UserService', () => {
       const userId = 1
       jest
         .spyOn(userRepository, 'findById')
-        .mockResolvedValue(null as unknown as User)
+        .mockRejectedValue( new Error())
 
-      const result = await userService.getUserById(userId)
 
-      expect(result).toBeNull()
+      expect(userService.getUserById(userId)).toThrow("not found")
     })
 
     it('should throw an error if there is an issue retrieving the user', async () => {
@@ -90,7 +90,7 @@ describe('UserService', () => {
         .mockRejectedValue(new Error('Database error'))
 
       await expect(userService.getUserById(userId)).rejects.toThrow(
-        'Error retrieving user: Error: Database error'
+        'internal server error, please try again later'
       )
     })
   })
@@ -98,7 +98,7 @@ describe('UserService', () => {
   describe('getUserByEmail', () => {
     it('should return a user if found', async () => {
       const email = 'test@example.com'
-      const mockUser: Partial<User> = {
+      const mockUser= {
         name: 'John Doe',
         email: email,
       }
@@ -130,7 +130,7 @@ describe('UserService', () => {
         .mockRejectedValue(new Error('Database error'))
 
       await expect(userService.getUserByEmail(email)).rejects.toThrow(
-        'Error retrieving user: Error: Database error'
+        'internal server error, please try again later'
       )
     })
   })
@@ -145,7 +145,7 @@ describe('UserService', () => {
         address: '123 New St',
         role: 'admin',
       }
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         ...userData,
       }
@@ -178,7 +178,7 @@ describe('UserService', () => {
 
       jest
         .spyOn(userRepository, 'findById')
-        .mockResolvedValue(null as unknown as User)
+        .mockRejectedValue(new Error())
 
       await expect(userService.updateUser(userId, userData)).rejects.toThrow(
         'User not found'
@@ -194,7 +194,7 @@ describe('UserService', () => {
         address: '123 Main St',
         role: 'user',
       }
-      const mockUser: Partial<User> = {
+      const mockUser= {
         id: userId,
         ...userData,
       }
@@ -215,7 +215,7 @@ describe('UserService', () => {
         address: '123 New St',
         role: 'admin',
       }
-      const mockUser: Partial<User> = {
+      const mockUser= {
         id: userId,
         ...userData,
       }
@@ -225,7 +225,7 @@ describe('UserService', () => {
         .mockRejectedValue(new Error('Database error'))
 
       await expect(userService.updateUser(userId, userData)).rejects.toThrow(
-        'Error updating user: Error: Database error'
+        'internal server error, please try again later'
       )
     })
   })
@@ -235,7 +235,7 @@ describe('UserService', () => {
       const userId = 1
       const oldPassword = 'oldpassword'
       const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         password: 'hashedOldPassword',
       }
@@ -250,6 +250,9 @@ describe('UserService', () => {
 
       jest.spyOn(bcrypt, 'hash').mockImplementation(async () => newPassword)
       jest.spyOn(User.prototype, 'save').mockResolvedValue(mockUser as User)
+      jest.spyOn(User.prototype, 'set').mockImplementation((keys, options?)=>{
+        return mockUser as User;
+      })
 
       const result = await userService.editUserPassword(
         userId,
@@ -270,7 +273,7 @@ describe('UserService', () => {
       const userId = 1
       const oldPassword = 'oldpassword'
       const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         password: 'hashedOldPassword',
       }
@@ -292,7 +295,7 @@ describe('UserService', () => {
       const userId = 1
       const oldPassword = 'oldpassword'
       const newPassword = 'oldpassword'
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         password: 'hashedOldPassword',
       }
@@ -314,7 +317,7 @@ describe('UserService', () => {
       const userId = 1
       const oldPassword = 'oldpassword'
       const newPassword = 'newpassword'
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         password: 'hashedNewPassword',
       }
@@ -352,7 +355,7 @@ describe('UserService', () => {
         .mockRejectedValue(new Error('Database error'))
 
       await expect(userService.deleteUser(userId)).rejects.toThrow(
-        'Error deleting user: Error: Database error'
+        'internal server error, please try again later'
       )
     })
   })
@@ -361,7 +364,7 @@ describe('UserService', () => {
     it('should change the user role and return the updated user', async () => {
       const userId = 1
       const role = 'admin'
-      const mockUser: Partial<User> = {
+      const mockUser = {
         id: userId,
         role: role,
       }
@@ -383,7 +386,7 @@ describe('UserService', () => {
         .mockRejectedValue(new Error('Database error'))
 
       await expect(userService.changeRole(userId, role)).rejects.toThrow(
-        'Error changing user role: Error: Database error'
+        'internal server error, please try again later'
       )
     })
   })
