@@ -21,8 +21,8 @@ export const WriteAllImages = async (id: number, image: any) => {
       }
     }
     return imagesUrl
-  } catch (ex: any) {
-    Logger.error(ex)
+  } catch (ex: unknown) {
+    Logger.error(ex as Error)
   }
   return imagesUrl
 }
