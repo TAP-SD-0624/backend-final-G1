@@ -10,6 +10,7 @@ import {
 } from '../Errors/AuthenticationErrors'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { ILogger } from '../helpers/Logger/ILogger'
+import { userRepository } from '../data-access'
 
 @injectable()
 export default class AuthService {
@@ -20,7 +21,7 @@ export default class AuthService {
 
   public async login(email: string, password: string): Promise<string> {
     try {
-      const user = await this.userService.getUserByEmail(email)
+      const user = await userRepository.findByEmail(email)
 
       if (!user) {
         throw new InvalidCredentialsError('Invalid email or password')
@@ -47,6 +48,7 @@ export default class AuthService {
       if (error instanceof InvalidCredentialsError) {
         throw error // Re-throw known errors
       }
+
       throw new InternalServerError('An error occurred during login')
     }
   }
@@ -57,7 +59,7 @@ export default class AuthService {
     password: string
   ): Promise<User> {
     try {
-      const existingUser = await this.userService.getUserByEmail(email)
+      const existingUser = await userRepository.findByEmail(email)
       if (existingUser) {
         throw new UserAlreadyExistsError()
       }
