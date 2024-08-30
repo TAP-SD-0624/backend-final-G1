@@ -62,11 +62,10 @@ export default class AuthService {
         throw new UserAlreadyExistsError()
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10)
       const newUser = {
         name,
         email,
-        password: hashedPassword,
+        password,
         address: 'put address here',
         role: 'user',
       }

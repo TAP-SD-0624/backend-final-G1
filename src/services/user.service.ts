@@ -46,10 +46,7 @@ export default class UserService {
   async getUserByEmail(email: string): Promise<User | null> {
     try {
       const user = await userRepository.findByEmail(email)
-      if (!user) {
-        throw new NotFoundError(`No user found with email: ${email}`)
-      }
-      return user
+      return user || null
     } catch (error: any) {
       this.logger.error(error)
       throw new InternalServerError()
