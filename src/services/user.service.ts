@@ -15,7 +15,7 @@ export default class UserService {
       const newUser = new User()
       newUser.name = userData.name
       newUser.email = userData.email
-      newUser.password = await bcrypt.hash(userData.password, 10)
+      newUser.password = userData.password
       newUser.address = userData.address
       newUser.role = userData.role
 
