@@ -44,11 +44,10 @@ export default class AuthService {
 
       return token
     } catch (error: unknown) {
-      this.logger.error(error as Error)
       if (error instanceof InvalidCredentialsError) {
         throw error // Re-throw known errors
       }
-
+      this.logger.error(error as Error)
       throw new InternalServerError('An error occurred during login')
     }
   }
