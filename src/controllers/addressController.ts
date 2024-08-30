@@ -51,7 +51,6 @@ export class AddressController {
   }
 
   public async create(req: AuthenticatedRequest, res: Response) {
-
     const userId = req.user?.id
     const addressData = req.body
 
