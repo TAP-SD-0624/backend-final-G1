@@ -6,6 +6,7 @@ import {
   cartRepository,
   productRepository,
   addressRepository,
+  userRepository,
 } from '../data-access'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import {
@@ -120,8 +121,10 @@ export default class OrderService {
     <p>Total: ${cart.products.reduce((total, product) => total + product.price * (product as any).CartProduct.quantity, 0)}</p>
   `
 
+  // get user by id
+  const user = await userRepository.findById(userId)
       await sendEmail({
-        to: address.email, // Customer's email address
+        to: user?.email as string,  
         subject: 'Order Confirmation',
         html: emailContent,
       })
