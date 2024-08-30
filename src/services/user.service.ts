@@ -20,9 +20,7 @@ export default class UserService {
       newUser.role = userData.role
 
       const user = await userRepository.create(newUser)
-      if (!user) {
-        throw new InternalServerError('Failed to create user')
-      }
+
       return user
     } catch (error: unknown) {
       this.logger.error(error as Error)
