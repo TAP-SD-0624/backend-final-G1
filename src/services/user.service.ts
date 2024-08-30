@@ -21,6 +21,7 @@ export default class UserService {
       newUser.role = userData.role
 
       const user = await userRepository.create(newUser)
+
       return user
     } catch (error: unknown) {
       console.log(error)
