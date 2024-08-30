@@ -1,9 +1,10 @@
-import { Request, response, Response } from 'express'
+import { Request, Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import WishlistService from '../services/wishList.service'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
 import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 import { StatusCodes } from 'http-status-codes'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
 
 @injectable()
 export class WishlistController {
@@ -11,7 +12,7 @@ export class WishlistController {
     @inject(WishlistService) private wishlistService: WishlistService
   ) {}
 
-  async addOrRemoveProducts(req: Request, res: Response) {
+  async addOrRemoveProducts(req: AuthenticatedRequest, res: Response) {
     const mode = req.body.mode
     if (mode === 'add') {
       return this.addProductToWishlist(req, res)
@@ -19,9 +20,9 @@ export class WishlistController {
       return this.removeProductFromWishlist(req, res)
     }
   }
-  async getWishList(req: Request, res: Response) {
+  async getWishList(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const Wishlist = await this.wishlistService.getWishlistByUserId(userId)
       return res.json({
         ResponseCode: ResponseCodes.Success,
@@ -33,9 +34,9 @@ export class WishlistController {
     }
   }
 
-  private async addProductToWishlist(req: Request, res: Response) {
+  private async addProductToWishlist(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const productId = req.body.productId as unknown as number
       const added = await this.wishlistService.addProductToWishlist(
         userId,
@@ -55,9 +56,9 @@ export class WishlistController {
       return InternalServerErrorResponse(res)
     }
   }
-  async removeProductFromWishlist(req: Request, res: Response) {
+  async removeProductFromWishlist(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const productId: number = req.body.productId as unknown as number
       const removed = await this.wishlistService.removeProductFromWishList(
         userId,
@@ -77,9 +78,9 @@ export class WishlistController {
       return InternalServerErrorResponse(res)
     }
   }
-  async clearWishList(req: Request, res: Response) {
+  async clearWishList(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const cleared = await this.wishlistService.clearWishList(userId)
       return res.send({
         ResponseCode: ResponseCodes.Success,
