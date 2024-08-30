@@ -54,10 +54,10 @@ export class OrderController {
     }
   }
 
-  async getOrderByUserId(req: Request, res: Response) {
+  async getOrderByUserId(req: AuthenticatedRequest, res: Response) {
     try {
       const id = req.params.id as unknown as number
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const Order = await this.orderService.getOrderById(id, userId)
       if (!Order) {
         return res.status(StatusCodes.NOT_FOUND).json({
@@ -75,9 +75,9 @@ export class OrderController {
     }
   }
 
-  async getOrdersByUserId(req: Request, res: Response) {
+  async getOrdersByUserId(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const orders = await this.orderService.getOrders(userId)
       if (!orders) {
         return res.status(404).json({ error: 'No Orders found' })
@@ -87,10 +87,10 @@ export class OrderController {
       return InternalServerErrorResponse(res)
     }
   }
-  async updateOrder(req: Request, res: Response) {
+  async updateOrder(req: AuthenticatedRequest, res: Response) {
     try {
       const id = req.params.id as unknown as number
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const newStatus: OrderStatus = req.body.status
       const isPaid = req.body.isPaid
 
@@ -127,10 +127,10 @@ export class OrderController {
     }
   }
 
-  async deleteOrder(req: Request, res: Response) {
+  async deleteOrder(req: AuthenticatedRequest, res: Response) {
     try {
       const id = req.params.id as unknown as number
-      const userId = (req as any).user.id
+      const userId = req.user?.id
       const canceled = await this.orderService.cancelOrder(id, userId)
       if (!canceled) {
         return res.status(StatusCodes.BAD_REQUEST).json({
