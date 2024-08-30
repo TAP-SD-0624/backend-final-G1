@@ -145,7 +145,9 @@ export class ProductRepository
           model: Category,
           ...(options?.categories && {
             where: {
-              name: options.categories,
+              name: {
+                [Op.iLike]: options.categories,
+              },
             },
           }),
           through: { attributes: [] },
