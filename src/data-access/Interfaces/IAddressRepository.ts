@@ -1,7 +1,8 @@
 import { updateAddressDTO } from '../../Types/DTO'
 import { Address } from '../../models'
+import { IRepositoryBase } from './IRepositoryBase'
 
-export interface IAddressRepository {
+export interface IAddressRepository extends IRepositoryBase<Address> {
   getAddressesByUserId(userId: number): Promise<Address[]>
   updateAddress(
     id: number,

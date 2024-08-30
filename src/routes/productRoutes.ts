@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { ProductController } from '../controllers/ProductController'
+import { ProductController } from '../controllers'
 import { container } from 'tsyringe'
 import { uploadMiddleware } from '../middleware/UploadMiddleware'
 import {
@@ -20,6 +20,8 @@ router.get(
   GetProductsValidator,
   productController.GetProducts.bind(productController)
 )
+router.get('/search', productController.SearchProduct.bind(productController))
+
 router.get(
   '/:id',
   getProductValidator,

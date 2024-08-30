@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt'
 import { User } from '../models'
 import * as tokenBlacklist from '../helpers/tokenBlacklist'
 import { InternalServerError } from '../Errors'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../services/user.service')
 jest.mock('jsonwebtoken')
@@ -16,8 +17,8 @@ describe('AuthService', () => {
   let userService: UserService
 
   beforeEach(() => {
-    userService = new UserService()
-    authService = new AuthService(userService)
+    userService = new UserService(new WinstonLogger())
+    authService = new AuthService(userService, new WinstonLogger())
     jest.clearAllMocks()
   })
 

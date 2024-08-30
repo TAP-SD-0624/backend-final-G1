@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import { WishlistController } from '../controllers/wishlistController'
+import { WishlistController } from '../controllers'
 import authAndRoleMiddleware from '../middleware/authMiddleware'
 import { addAndRemoveProductToWishlist } from '../validations'
 import { checkWishlistExists } from '../middleware/checkWishlistExists'

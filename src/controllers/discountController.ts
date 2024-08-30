@@ -1,7 +1,9 @@
-import { CommentService, DiscountService } from '../services'
-import { CommentDTO } from '../Types/DTO'
+import { DiscountService } from '../services'
 import { injectable, inject } from 'tsyringe'
 import { Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class DiscountController {
@@ -13,15 +15,18 @@ export class DiscountController {
     try {
       const { productId, discountValue } = req.body
 
-      const result = await this.discountService.AddDiscount(
+      const Discount = await this.discountService.AddDiscount(
         productId,
         discountValue
       )
 
-      return res.status(201).json({ discount: result })
+      return res.status(StatusCodes.CREATED).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Successfully added the discount',
+        Discount,
+      })
     } catch (ex) {
-      console.log(ex)
-      return res.status(500).json({ error: 'internal server error' })
+      return InternalServerErrorResponse(res)
     }
   }
 }

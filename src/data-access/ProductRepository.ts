@@ -224,4 +224,29 @@ export class ProductRepository
     )
     return affectProduct
   }
+
+  async SearchProduct(name: string): Promise<Product[]> {
+    const products = await this.model.findAll({
+      where: {
+        [Op.or]: [
+          {
+            name: { [Op.iLike]: `%${name}%` },
+          },
+          {
+            '$brand.name$': { [Op.iLike]: `%${name}%` },
+          },
+        ],
+      },
+      include: [
+        {
+          model: Brand,
+        },
+      ],
+    })
+
+    if (!products || products.length === 0) {
+      return []
+    }
+    return products
+  }
 }

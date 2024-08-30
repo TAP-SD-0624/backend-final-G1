@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 import AuthService from '../services/auth.service'
 import { inject, injectable } from 'tsyringe'
 import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { UserAlreadyExistsError } from '../Errors/AuthenticationErrors'
+import { StatusCodes } from 'http-status-codes'
 
 @injectable()
 class AuthController {
@@ -16,7 +18,7 @@ class AuthController {
         Message: 'Login successful',
         token,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(401).json({
         ResponseCode: ResponseCodes.Unauthorized,
         Message: 'Invalid credentials',
@@ -33,10 +35,24 @@ class AuthController {
         ResponseCode: ResponseCodes.Success,
         Message: 'User created successfully',
       })
-    } catch (error: any) {
-      res.status(400).json({
+    } catch (error: unknown) {
+      if (error instanceof UserAlreadyExistsError) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          ResponseCode: ResponseCodes.ValidationError,
+          Message: 'Failed at one of the validations',
+          errors: [
+            {
+              type: 'field',
+              msg: 'email already exists',
+              path: 'email',
+              location: 'body',
+            },
+          ],
+        })
+      }
+      return res.status(400).json({
         ResponseCode: ResponseCodes.BadRequest,
-        Message: error.message,
+        Message: (error as Error).message,
       })
     }
   }
@@ -66,7 +82,7 @@ class AuthController {
         ResponseCode: ResponseCodes.Success,
         Message: 'Logged out successfully',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'An error occurred while logging out',

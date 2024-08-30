@@ -3,6 +3,7 @@ import { userRepository } from '../data-access'
 import { User } from '../models'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/userRepository')
 jest.mock('bcrypt')
@@ -11,7 +12,7 @@ describe('UserService', () => {
   let userService: UserService
 
   beforeEach(() => {
-    userService = new UserService()
+    userService = new UserService(new WinstonLogger())
     jest.clearAllMocks()
   })
 

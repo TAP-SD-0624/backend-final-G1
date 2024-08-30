@@ -1,7 +1,9 @@
-import { Request, Response } from 'express'
+import { Request, response, Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import WishlistService from '../services/wishList.service'
-import { WishlistDTO } from '../Types/DTO'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
+import { StatusCodes } from 'http-status-codes'
 
 @injectable()
 export class WishlistController {
@@ -20,10 +22,14 @@ export class WishlistController {
   async getWishList(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
-      const wishlist = await this.wishlistService.getWishlistByUserId(userId)
-      return res.json(wishlist)
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message })
+      const Wishlist = await this.wishlistService.getWishlistByUserId(userId)
+      return res.json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Wishlist,
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 
@@ -36,11 +42,17 @@ export class WishlistController {
         productId
       )
       if (!added) {
-        return res.status(404).json({ error: 'Product not found' })
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCodes: ResponseCodes.NotFound,
+          Message: 'Product not found',
+        })
       }
-      return res.send('Product has been added to wishlist')
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message })
+      return res.send({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Product has been added to wishlist',
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
   async removeProductFromWishlist(req: Request, res: Response) {
@@ -52,20 +64,29 @@ export class WishlistController {
         productId
       )
       if (!removed) {
-        return res.status(404).json({ error: 'Product not found' })
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Product not found',
+        })
       }
-      return res.send('Product has been removed from the wishlist')
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message })
+      return res.status(StatusCodes.NO_CONTENT).send({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Deleted successfully',
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
   async clearWishList(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id
       const cleared = await this.wishlistService.clearWishList(userId)
-      return res.send('Wishlist has been cleared')
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message })
+      return res.send({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Wishlist has been cleared',
+      })
+    } catch (error: unknown) {
+      return InternalServerErrorResponse(res)
     }
   }
 }

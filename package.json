@@ -7,7 +7,7 @@
     "build": "tsc",
     "watch": "nodemon src/server.ts",
     "start": "node dist/server.js",
-    "test": "jest --coverage",
+    "test": "jest --coverage ",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "P0": "jest -t P0",
     "P1": "jest -t P1",

@@ -1,103 +1,127 @@
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { AddressService } from '../services'
 import { inject, injectable } from 'tsyringe'
-import { AddressDTO, updateAddressDTO } from '../Types/DTO'
+import { updateAddressDTO } from '../Types/DTO'
 import { ValidationError } from 'sequelize'
+import { StatusCodes } from 'http-status-codes'
+import { ResponseCodes } from '../enums/ResponseCodesEnum'
+import { AuthenticatedRequest } from '../helpers/AuthenticatedRequest'
+import { InternalServerErrorResponse } from '../helpers/DefaultResponses/DefaultResponses'
 
 @injectable()
 export class AddressController {
   constructor(@inject(AddressService) private addressService: AddressService) {}
 
-  public async get(req: Request, res: Response) {
-    const userId = (req as any).user.id
-    const id = req.params.id as unknown as number
+  public async get(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params
     try {
       const address = await this.addressService.getAddressByIdAndUserId(
-        id,
-        userId
+        id as unknown as number,
+        req.user?.id
       )
       if (!address) {
-        return res.status(404).json({ error: 'Address not found' })
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Could not find the address with the specified Id',
+        })
       }
-      return res.status(200).json({ address })
+
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        address,
+      })
     } catch (error) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async getAll(req: Request, res: Response) {
-    const userId = (req as any).user.id
+  public async getAll(req: AuthenticatedRequest, res: Response) {
+    const userId = req.user?.id
     try {
-      const addresses = await this.addressService.getAddressesByUserId(userId)
-      if (addresses.length === 0) {
-        return res.status(404).json({ error: 'Addresses not found' })
-      }
-      return res.status(200).json({ addresses })
+      const Addresses = await this.addressService.getAddressesByUserId(userId)
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Addresses,
+      })
     } catch (error) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async create(req: Request, res: Response) {
-    const userId = (req as any).user.id
-    const addressData = req.body as AddressDTO
+  public async create(req: AuthenticatedRequest, res: Response) {
+    const userId = req.user?.id
+    const addressData = req.body
+
     try {
-      const address = await this.addressService.createAddress(
+      const Address = await this.addressService.createAddress(
         userId,
         addressData
       )
-      return res.status(201).json({ address })
+      return res.status(StatusCodes.CREATED).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Created Successfully',
+        Address,
+      })
     } catch (error) {
       if (error instanceof ValidationError) {
-        return res.status(400).json({ error: error.message })
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          ResponseCode: ResponseCodes.ValidationError,
+          Message: 'Failed to create an address with the provided data',
+        })
       }
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async update(req: Request, res: Response) {
-    const userId = (req as any).user.id
-    const id = req.params.id as unknown as number
+  public async update(req: AuthenticatedRequest, res: Response) {
+    const userId = req.user?.id
+    const { id } = req.params
     const addressData = req.body as updateAddressDTO
     try {
-      const address = await this.addressService.updateAddress(
-        id,
+      const Address = await this.addressService.updateAddress(
+        id as unknown as number,
         userId,
         addressData
       )
-      if (!address) {
-        return res.status(404).json({ error: 'Address not found' })
+      if (!Address) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Could not find an address with the provided Id',
+        })
       }
-      return res.status(200).json({ address })
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Address,
+      })
     } catch (error) {
-      if (error instanceof ValidationError) {
-        return res.status(400).json({ error: error.message })
-      }
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 
-  public async delete(req: Request, res: Response) {
-    const userId = (req as any).user.id
-    const id = req.params.id as unknown as number
+  public async delete(req: AuthenticatedRequest, res: Response) {
+    const userId = req.user?.id
+    const { id } = req.params
     try {
-      const address = await this.addressService.deleteAddress(id, userId)
-      if (!address) {
-        return res.status(404).json({ error: 'Address not found' })
+      const Address = await this.addressService.deleteAddress(
+        id as unknown as number,
+        userId
+      )
+      if (!Address) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          ResponseCode: ResponseCodes.NotFound,
+          Message: 'Address not found',
+        })
       }
-      return res.status(200).json({ address })
+      return res.status(StatusCodes.OK).json({
+        ResponseCode: ResponseCodes.Success,
+        Message: 'Success',
+        Address,
+      })
     } catch (error) {
-      return res
-        .status(500)
-        .json({ error: 'internal server error, try again later.' })
+      return InternalServerErrorResponse(res)
     }
   }
 }

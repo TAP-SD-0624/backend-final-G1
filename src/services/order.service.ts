@@ -1,6 +1,6 @@
 import { Address, Cart, Order } from '../models'
 import { OrderDTO } from '../Types/DTO'
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import {
   orderRepository,
   cartRepository,
@@ -12,7 +12,6 @@ import {
   ordersToOrdersDTO,
   orderToOrderDTO,
 } from '../helpers/orders/orderToOrderDTO'
-import logger from '../helpers/logger'
 import { ValidationError as VE } from 'sequelize'
 import sequelize from '../config/db'
 import {
@@ -22,15 +21,17 @@ import {
   EmptyCartError,
 } from '../Errors'
 import { InsufficientStockError } from '../Errors/InsufficientStockError'
+import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class OrderService {
+  constructor(@inject('ILogger') private logger: ILogger) {}
+
   public async createOrder(
     userId: number,
     isPaid: boolean,
     addressId?: number
   ): Promise<OrderDTO> {
-    console.log('creating order')
     //lets make sure we have items in our cart.
     let cart: Cart | null = {} as Cart
     try {
@@ -97,7 +98,6 @@ export default class OrderService {
       newOrder.status = OrderStatus.processed
       newOrder.userId = userId
       newOrder.addressId = address.id
-      console.log('creating order')
       const order = await orderRepository.createOrder(
         newOrder,
         cart.products,
@@ -106,21 +106,15 @@ export default class OrderService {
 
       await cartRepository.ClearCart(cart.id, t)
       await t.commit()
-      console.log(order.toJSON())
       return orderToOrderDTO(order)
-    } catch (error: any) {
-      console.log(error)
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       await t.rollback()
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
       if (error instanceof InsufficientStockError) throw error
-      console.log(error)
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      if (error instanceof BadRequestError) throw error
       throw new InternalServerError()
     }
   }
@@ -135,12 +129,8 @@ export default class OrderService {
         return null
       }
       return orderToOrderDTO(order)
-    } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -152,12 +142,8 @@ export default class OrderService {
         return null
       }
       return ordersToOrdersDTO(orders)
-    } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -201,18 +187,14 @@ export default class OrderService {
       updateOrder.isPaid = isPaid
       const order = await orderRepository.update(updateOrder)
       return orderToOrderDTO(order!)
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestError) {
         throw error
       }
       if (error instanceof VE) {
         throw new ValidationError(error.message)
       }
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }
@@ -228,12 +210,8 @@ export default class OrderService {
         return false
       }
       return await orderRepository.delete(id)
-    } catch (error: any) {
-      logger.error({
-        name: error.name,
-        message: error.message,
-        stack: error?.stack,
-      })
+    } catch (error: unknown) {
+      this.logger.error(error as Error)
       throw new InternalServerError()
     }
   }

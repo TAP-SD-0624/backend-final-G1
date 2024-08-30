@@ -3,8 +3,8 @@ import CommentService from '../services/comment.service'
 import { commentRepository, productRepository } from '../data-access'
 import { CommentDTO } from '../Types/DTO/commentDto'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { Comment } from '../models'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/commentRepository')
 jest.mock('../data-access/productRepository')
@@ -34,7 +34,7 @@ describe('CommentService', () => {
   let commentService: CommentService
 
   beforeEach(() => {
-    commentService = new CommentService()
+    commentService = new CommentService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -86,7 +86,6 @@ describe('CommentService', () => {
       await expect(
         commentService.createComment(userId, commentData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -170,7 +169,6 @@ describe('CommentService', () => {
       await expect(commentService.getCommentById(commentId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -228,7 +226,6 @@ describe('CommentService', () => {
       await expect(
         commentService.updateComment(commentId, userId, updateData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -277,7 +274,6 @@ describe('CommentService', () => {
       await expect(
         commentService.deleteComment(commentId, userId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 })

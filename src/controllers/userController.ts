@@ -18,7 +18,7 @@ export class UserController {
         Message: 'User Created successfully',
         user,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -45,7 +45,7 @@ export class UserController {
         user,
       })
       return user
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -72,7 +72,7 @@ export class UserController {
         user,
       })
       return user
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -96,7 +96,7 @@ export class UserController {
         Message: 'User Updated successfully',
         updatedUser,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -117,7 +117,7 @@ export class UserController {
       }
       await this.userService.deleteUser(userId)
       res.status(204).send()
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -136,7 +136,7 @@ export class UserController {
         Message: 'Users Retrieved successfully',
         users,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -166,7 +166,7 @@ export class UserController {
         Message: 'User Password updated successfully',
         result,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -202,7 +202,7 @@ export class UserController {
         Message: 'Role changed successfully',
         updatedUser,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',
@@ -210,7 +210,7 @@ export class UserController {
     }
   }
 
-  async getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<any> {
+  async getCurrentUser(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user) {
         return res.status(403).json({
@@ -232,7 +232,7 @@ export class UserController {
         Message: 'User  Retrieved successfully',
         user,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error',

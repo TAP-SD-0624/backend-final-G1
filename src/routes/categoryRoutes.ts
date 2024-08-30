@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { container } from 'tsyringe'
-import { CategoryController } from '../controllers/CategoryController'
+import { CategoryController } from '../controllers'
 import {
   getCategoryByIdValidator,
   createCategoryValidator,

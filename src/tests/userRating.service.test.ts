@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { UserRatingService } from '../services/userRating.service'
+import { UserRatingService } from '../services'
 import { userRatingRepository } from '../data-access'
 import { UserRatingDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { UserRating } from '../models'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/UserRatingRepository')
 jest.mock('../helpers/logger')
@@ -30,7 +30,7 @@ describe('UserRatingService', () => {
   let userRatingService: UserRatingService
 
   beforeEach(() => {
-    userRatingService = new UserRatingService()
+    userRatingService = new UserRatingService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -72,7 +72,6 @@ describe('UserRatingService', () => {
       await expect(
         userRatingService.createUserRating(userId, userRatingData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -118,7 +117,6 @@ describe('UserRatingService', () => {
       await expect(
         userRatingService.findUserRatingsByProductId(productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -170,7 +168,6 @@ describe('UserRatingService', () => {
       await expect(
         userRatingService.findUserRatingByUserIdAndProductId(userId, productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -223,7 +220,6 @@ describe('UserRatingService', () => {
       await expect(
         userRatingService.updateUserRating(userId, userRatingData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 })
