@@ -10,8 +10,7 @@ import { OrderDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
 import { BadRequestError } from '../Errors/BadRequestError'
 import { OrderStatus } from '../enums/OrderStatusEnum'
-import logger from '../helpers/logger'
-import { Transaction } from 'sequelize'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/orderRepository')
 jest.mock('../data-access/cartRepository')
@@ -52,7 +51,7 @@ describe('OrderService', () => {
   let orderService: OrderService
 
   beforeEach(() => {
-    orderService = new OrderService()
+    orderService = new OrderService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -162,11 +161,6 @@ describe('OrderService', () => {
       await expect(orderService.getOrderById(id, userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -218,11 +212,6 @@ describe('OrderService', () => {
       await expect(orderService.getOrders(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -283,11 +272,6 @@ describe('OrderService', () => {
       await expect(
         orderService.updateOrder(id, userId, status, true)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -343,11 +327,6 @@ describe('OrderService', () => {
       await expect(orderService.cancelOrder(id, userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 })

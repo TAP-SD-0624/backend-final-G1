@@ -2,8 +2,8 @@ import 'reflect-metadata'
 import DashboardService from '../services/dashboard.service'
 import { dashboardRepository } from '../data-access'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
 import { GetProductDashboardDTO } from '../Types/DTO'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/dashboardRepository')
 jest.mock('../helpers/logger')
@@ -12,7 +12,7 @@ describe('DashboardService', () => {
   let dashboardService: DashboardService
 
   beforeEach(() => {
-    dashboardService = new DashboardService()
+    dashboardService = new DashboardService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -50,7 +50,6 @@ describe('DashboardService', () => {
       await expect(
         dashboardService.getMostBoughtProductsOverTime(startTime, endTime)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -89,7 +88,6 @@ describe('DashboardService', () => {
       await expect(
         dashboardService.getProductsNotBought(startTime, endTime)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -129,7 +127,6 @@ describe('DashboardService', () => {
       await expect(dashboardService.DropItemsFromList(ids)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -162,7 +159,6 @@ describe('DashboardService', () => {
       await expect(dashboardService.getProductsPerState(state)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 })

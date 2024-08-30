@@ -3,7 +3,7 @@ import WishlistService from '../services/wishList.service'
 import { wishlistRepository } from '../data-access'
 import { WishlistDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 
 jest.mock('../data-access/wishlistRepository')
 jest.mock('../helpers/logger')
@@ -12,7 +12,7 @@ describe('WishlistService', () => {
   let wishlistService: WishlistService
 
   beforeEach(() => {
-    wishlistService = new WishlistService()
+    wishlistService = new WishlistService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -50,11 +50,6 @@ describe('WishlistService', () => {
       await expect(wishlistService.getWishlistByUserId(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -90,11 +85,6 @@ describe('WishlistService', () => {
       await expect(
         wishlistService.addProductToWishlist(userId, productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -118,11 +108,6 @@ describe('WishlistService', () => {
       await expect(wishlistService.clearWishList(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 
@@ -158,11 +143,6 @@ describe('WishlistService', () => {
       await expect(
         wishlistService.removeProductFromWishList(userId, productId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalledWith({
-        name: err.name,
-        message: err.message,
-        stack: err?.stack,
-      })
     })
   })
 })

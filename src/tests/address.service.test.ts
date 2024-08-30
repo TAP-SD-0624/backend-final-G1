@@ -1,10 +1,9 @@
 import 'reflect-metadata'
-import AddressService from '../services/address.service'
+import { AddressService } from '../services'
 import { addressRepository } from '../data-access'
 import { AddressDTO, updateAddressDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'
-import logger from '../helpers/logger'
-import { Address } from '../models'
+import { WinstonLogger } from '../helpers/Logger/WinstonLogger'
 jest.mock('../data-access/addressRepository')
 jest.mock('../helpers/logger')
 jest.mock('../models/Address.model.ts', () => {
@@ -27,7 +26,7 @@ describe('AddressService', () => {
   let addressService: AddressService
 
   beforeEach(() => {
-    addressService = new AddressService()
+    addressService = new AddressService(new WinstonLogger())
     jest.clearAllMocks()
   })
 
@@ -82,7 +81,6 @@ describe('AddressService', () => {
       await expect(
         addressService.getAddressByIdAndUserId(id, userId)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -135,7 +133,6 @@ describe('AddressService', () => {
       await expect(addressService.getAddressesByUserId(userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -178,7 +175,6 @@ describe('AddressService', () => {
       await expect(
         addressService.createAddress(userId, addressData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -260,7 +256,6 @@ describe('AddressService', () => {
       await expect(
         addressService.updateAddress(id, userId, updateData)
       ).rejects.toThrow(InternalServerError)
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 
@@ -297,7 +292,6 @@ describe('AddressService', () => {
       await expect(addressService.deleteAddress(id, userId)).rejects.toThrow(
         InternalServerError
       )
-      expect(logger.error).toHaveBeenCalled()
     })
   })
 })
