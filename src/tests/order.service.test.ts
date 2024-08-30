@@ -16,7 +16,7 @@ jest.mock('../data-access/orderRepository')
 jest.mock('../data-access/cartRepository')
 jest.mock('../data-access/productRepository')
 jest.mock('../data-access/addressRepository')
-jest.mock("../helpers/Logger/WinstonLogger")
+jest.mock('../helpers/Logger/WinstonLogger')
 jest.mock('../config/db.ts', () => {
   return {
     transaction: jest.fn(() => {

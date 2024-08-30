@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import  AddressService  from '../services/address.service'
+import AddressService from '../services/address.service'
 import { addressRepository } from '../data-access'
 import { AddressDTO, updateAddressDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'

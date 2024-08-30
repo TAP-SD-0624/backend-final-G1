@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import UserRatingService  from '../services/userRating.service'
+import UserRatingService from '../services/userRating.service'
 import { userRatingRepository } from '../data-access'
 import { UserRatingDTO } from '../Types/DTO'
 import { InternalServerError } from '../Errors/InternalServerError'

@@ -2,14 +2,19 @@ import { User } from '../models'
 import { userRepository } from '../data-access'
 import { UserDTO } from '../Types/DTO/userDto'
 import bcrypt from 'bcrypt'
-import { InternalServerError, NotFoundError, BadRequestError, ValidationError } from '../Errors'
+import {
+  InternalServerError,
+  NotFoundError,
+  BadRequestError,
+  ValidationError,
+} from '../Errors'
 import { ILogger } from '../helpers/Logger/ILogger'
 import { inject, injectable } from 'tsyringe'
 import { ValidationError as VE } from 'sequelize'
 
 @injectable()
 export default class UserService {
-  constructor(@inject('ILogger') private logger: ILogger) { }
+  constructor(@inject('ILogger') private logger: ILogger) {}
 
   async createUser(userData: UserDTO): Promise<User> {
     try {

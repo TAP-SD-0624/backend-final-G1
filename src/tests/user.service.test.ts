@@ -52,7 +52,6 @@ describe('UserService', () => {
       newUser.password = userData.password
       newUser.address = userData.address
       newUser.role = userData.role
-
       ;(userRepository.create as jest.Mock).mockResolvedValue(newUser)
 
       const result = await userService.createUser(userData)
@@ -69,9 +68,13 @@ describe('UserService', () => {
         role: 'user',
       }
 
-      ;(userRepository.create as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(userRepository.create as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      await expect(userService.createUser(userData)).rejects.toThrow(InternalServerError)
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        InternalServerError
+      )
     })
   })
 
@@ -101,9 +104,13 @@ describe('UserService', () => {
     it('should throw an InternalServerError if an error occurs P1', async () => {
       const userId = 1
 
-      ;(userRepository.findById as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(userRepository.findById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      await expect(userService.getUserById(userId)).rejects.toThrow(InternalServerError)
+      await expect(userService.getUserById(userId)).rejects.toThrow(
+        InternalServerError
+      )
     })
   })
 
@@ -133,9 +140,13 @@ describe('UserService', () => {
     it('should throw an InternalServerError if an error occurs P1', async () => {
       const email = 'john.doe@example.com'
 
-      ;(userRepository.findByEmail as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(userRepository.findByEmail as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      await expect(userService.getUserByEmail(email)).rejects.toThrow(InternalServerError)
+      await expect(userService.getUserByEmail(email)).rejects.toThrow(
+        InternalServerError
+      )
     })
   })
 
@@ -158,14 +169,16 @@ describe('UserService', () => {
       updatedUser.password = await bcrypt.hash(userData.password, 10)
       updatedUser.address = userData.address
       updatedUser.role = userData.role
-
       ;(userRepository.findById as jest.Mock).mockResolvedValue(existingUser)
       ;(userRepository.updateUser as jest.Mock).mockResolvedValue(updatedUser)
 
       const result = await userService.updateUser(userId, userData)
 
       expect(userRepository.findById).toHaveBeenCalledWith(userId)
-      expect(userRepository.updateUser).toHaveBeenCalledWith(userId, expect.any(Object))
+      expect(userRepository.updateUser).toHaveBeenCalledWith(
+        userId,
+        expect.any(Object)
+      )
       expect(result).toEqual(updatedUser)
     })
 
@@ -197,9 +210,13 @@ describe('UserService', () => {
       }
 
       ;(userRepository.findById as jest.Mock).mockResolvedValue(new User())
-      ;(userRepository.updateUser as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(userRepository.updateUser as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      await expect(userService.updateUser(userId, userData)).rejects.toThrow(InternalServerError)
+      await expect(userService.updateUser(userId, userData)).rejects.toThrow(
+        InternalServerError
+      )
     })
   })
 
@@ -210,7 +227,6 @@ describe('UserService', () => {
       const newPassword = 'newpassword123'
       const user = new User()
       user.password = await bcrypt.hash(oldPassword, 10)
-
       ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
       ;(user.save as jest.Mock).mockResolvedValue(user)
 
@@ -227,10 +243,11 @@ describe('UserService', () => {
       const newPassword = 'newpassword123'
       const user = new User()
       user.password = await bcrypt.hash('correctpassword', 10)
-
       ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
-      await expect(userService.editUserPassword(userId, oldPassword, newPassword)).rejects.toThrow(BadRequestError)
+      await expect(
+        userService.editUserPassword(userId, oldPassword, newPassword)
+      ).rejects.toThrow(BadRequestError)
     })
 
     it('should throw BadRequestError if the new password is the same as the old password P1', async () => {
@@ -239,10 +256,11 @@ describe('UserService', () => {
       const newPassword = 'oldpassword123'
       const user = new User()
       user.password = await bcrypt.hash(oldPassword, 10)
-
       ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
-      await expect(userService.editUserPassword(userId, oldPassword, newPassword)).rejects.toThrow(BadRequestError)
+      await expect(
+        userService.editUserPassword(userId, oldPassword, newPassword)
+      ).rejects.toThrow(BadRequestError)
     })
 
     it('should throw an InternalServerError if an error occurs P1', async () => {
@@ -250,9 +268,13 @@ describe('UserService', () => {
       const oldPassword = 'oldpassword123'
       const newPassword = 'newpassword123'
 
-      ;(userRepository.findById as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(userRepository.findById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      await expect(userService.editUserPassword(userId, oldPassword, newPassword)).rejects.toThrow(InternalServerError)
+      await expect(
+        userService.editUserPassword(userId, oldPassword, newPassword)
+      ).rejects.toThrow(InternalServerError)
     })
   })
 })
