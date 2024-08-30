@@ -108,8 +108,8 @@ export default class OrderService {
       await cartRepository.ClearCart(cart.id, t)
       await t.commit()
 
-         // Send order confirmation email
-    const emailContent = `
+      // Send order confirmation email
+      const emailContent = `
     <h1>Order Confirmation</h1>
     <p>Thank you for your order!</p>
     <p>Order ID: ${order.id}</p>
@@ -118,13 +118,13 @@ export default class OrderService {
       ${cart.products.map((product) => `<li>${product.name} - Quantity: ${(product as any).CartProduct.quantity}</li>`).join('')}
     </ul>
     <p>Total: ${cart.products.reduce((total, product) => total + product.price * (product as any).CartProduct.quantity, 0)}</p>
-  `;
-  
-  await sendEmail({
-    to: address.email, // Customer's email address
-    subject: 'Order Confirmation',
-    html: emailContent,
-  });
+  `
+
+      await sendEmail({
+        to: address.email, // Customer's email address
+        subject: 'Order Confirmation',
+        html: emailContent,
+      })
 
       return orderToOrderDTO(order)
     } catch (error: unknown) {

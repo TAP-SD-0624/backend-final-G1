@@ -11,51 +11,53 @@ import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export class OrderController {
-  constructor(@inject(OrderService) private orderService: OrderService,
-  ) { }
+  constructor(@inject(OrderService) private orderService: OrderService) {}
 
   async createOrder(req: AuthenticatedRequest, res: Response) {
     try {
-      const { isPaid, addressId } = req.body;
-      const userId = req.user?.id;
+      const { isPaid, addressId } = req.body
+      const userId = req.user?.id
 
-      const order: OrderDTO = await this.orderService.createOrder(userId, isPaid, addressId);
+      const order: OrderDTO = await this.orderService.createOrder(
+        userId,
+        isPaid,
+        addressId
+      )
 
-    // Ensure order is created successfully
-    if (!order) {
-      return res.status(500).json({
-        ResponseCode: ResponseCodes.InternalServerError,
-        Message: 'Order creation failed',
-      });
-    }
+      // Ensure order is created successfully
+      if (!order) {
+        return res.status(500).json({
+          ResponseCode: ResponseCodes.InternalServerError,
+          Message: 'Order creation failed',
+        })
+      }
 
-      res.status(201).json(order);
+      res.status(201).json(order)
     } catch (error: any) {
       if (error instanceof EmptyCartError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.EmptyCart,
           Message: error.message,
-        });
+        })
       }
       if (error instanceof BadRequestError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.BadRequest,
           Message: error.message,
-        });
+        })
       }
       if (error instanceof InsufficientStockError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.BadRequest,
           Message: error.message,
-        });
+        })
       }
       return res.status(500).json({
         ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error, please try again later',
-      });
+      })
     }
   }
-
 
   async getOrderByUserId(req: Request, res: Response) {
     try {

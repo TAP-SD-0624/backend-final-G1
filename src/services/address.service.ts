@@ -7,7 +7,7 @@ import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class AddressService {
-  constructor(@inject('ILogger') private logger: ILogger) { }
+  constructor(@inject('ILogger') private logger: ILogger) {}
 
   /**
    * @param {number} id id of the address

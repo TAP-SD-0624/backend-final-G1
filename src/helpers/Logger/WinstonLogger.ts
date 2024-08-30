@@ -37,8 +37,7 @@ export class WinstonLogger implements ILogger {
     //   message: error.message,
     //   stack: error?.stack,
     // })
-    console.log(error.message);
-
+    console.log(error.message)
   }
   log(message: string, ...meta: any[]): void {
     // this.logger.log({
