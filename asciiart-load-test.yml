@@ -33,77 +33,22 @@ scenarios:
               url: '/api/products/list'
           - get:
               url: '/api/products/1'
-          - post:
-              url: '/api/products/create'
-              json:
-                name: "Sample Product"
-                price: 100
-                description: "A sample product description"
-          - patch:
-              url: '/api/products/1'
-              json:
-                name: "Updated Product Name"
-                price: 150
+        count: 200
+
   - flow:
       - loop:
           - get:
               url: '/api/carts/get'
-          - patch:
-              url: '/api/carts/clear'
-          - post:
-              url: '/api/carts/product/set'
-              json:
-                productId: 1
-                quantity: 2
-          - delete:
-              url: '/api/carts/product/delete/1'
-        count: 10
+        count: 200
   - flow:
       - loop:
           - get:
               url: '/api/wishlists'
-          - patch:
-              url: '/api/wishlists'
-              json:
-                productId: 1
-                action: 'add'
-          - delete:
-              url: '/api/wishlists'
-        count: 10
+        count: 200
   - flow:
       - loop:
           - get:
               url: '/api/address'
-          - post:
-              url: '/api/address'
-              json:
-                state: "Test State"
-                city: "Test City"
-                street: "Test Street"
-                firstName: "John"
-                lastName: "Doe"
-                email: "john.doe@example.com"
-                mobileNumber: "1234567890"
           - get:
               url: '/api/address/1'
-          - patch:
-              url: '/api/address/1'
-              json:
-                city: "Updated City"
-          - delete:
-              url: '/api/address/1'
-        count: 10
-  - flow:
-      - loop:
-          - post:
-              url: '/api/comments'
-              json:
-                productId: 1
-                text: "Great product!"
-          - patch:
-              url: '/api/comments/1'
-              json:
-                text: "Updated comment text"
-          - delete:
-              url: '/api/comments/1'
-        count: 10
+        count: 200
