@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import { injectable, inject } from 'tsyringe'
 import OrderService from '../services/order.service'
-import CartService from '../services/cart.service'
 import { OrderStatus } from '../enums/OrderStatusEnum'
 import { BadRequestError } from '../Errors/BadRequestError'
 import { OrderDTO } from '../Types/DTO'
@@ -12,45 +11,51 @@ import { InsufficientStockError } from '../Errors/InsufficientStockError'
 
 @injectable()
 export class OrderController {
-  constructor(@inject(OrderService) private orderService: OrderService) {}
+  constructor(@inject(OrderService) private orderService: OrderService,
+  ) { }
 
   async createOrder(req: AuthenticatedRequest, res: Response) {
     try {
-      const { isPaid, addressId } = req.body
+      const { isPaid, addressId } = req.body;
+      const userId = req.user?.id;
 
-      const userId = req.user?.id
+      const order: OrderDTO = await this.orderService.createOrder(userId, isPaid, addressId);
 
-      const order: OrderDTO = await this.orderService.createOrder(
-        userId,
-        isPaid,
-        addressId
-      )
-      res.status(201).json(order)
+    // Ensure order is created successfully
+    if (!order) {
+      return res.status(500).json({
+        ResponseCode: ResponseCodes.InternalServerError,
+        Message: 'Order creation failed',
+      });
+    }
+
+      res.status(201).json(order);
     } catch (error: any) {
       if (error instanceof EmptyCartError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.EmptyCart,
           Message: error.message,
-        })
+        });
       }
       if (error instanceof BadRequestError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.BadRequest,
           Message: error.message,
-        })
+        });
       }
       if (error instanceof InsufficientStockError) {
         return res.status(400).json({
           ResponseCode: ResponseCodes.BadRequest,
           Message: error.message,
-        })
+        });
       }
       return res.status(500).json({
-        Responsecode: ResponseCodes.InternalServerError,
+        ResponseCode: ResponseCodes.InternalServerError,
         Message: 'Internal server error, please try again later',
-      })
+      });
     }
   }
+
 
   async getOrderByUserId(req: Request, res: Response) {
     try {

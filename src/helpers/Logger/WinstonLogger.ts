@@ -32,16 +32,19 @@ export class WinstonLogger implements ILogger {
     throw new Error('Method not implemented.')
   }
   error(error: Error): void {
-    this.logger.error({
-      name: error.name,
-      message: error.message,
-      stack: error?.stack,
-    })
+    // this.logger.error({
+    //   name: error.name,
+    //   message: error.message,
+    //   stack: error?.stack,
+    // })
+    console.log(error.message);
+
   }
   log(message: string, ...meta: any[]): void {
-    this.logger.log({
-      message,
-      level: 'info',
-    })
+    // this.logger.log({
+    //   message,
+    //   level: 'info',
+    // })
+    console.log(message)
   }
 }

@@ -211,6 +211,8 @@ export class UserController {
   }
 
   async getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<any> {
+    console.log("hi");
+    
     try {
       if (!req.user) {
         return res.status(403).json({

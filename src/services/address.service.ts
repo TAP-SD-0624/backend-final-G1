@@ -7,7 +7,7 @@ import { ILogger } from '../helpers/Logger/ILogger'
 
 @injectable()
 export default class AddressService {
-  constructor(@inject('ILogger') private logger: ILogger) {}
+  constructor(@inject('ILogger') private logger: ILogger) { }
 
   /**
    * @param {number} id id of the address
@@ -66,8 +66,9 @@ export default class AddressService {
     address.state = data.state
     address.userId = userId
     try {
-      const addresss = await addressRepository.create(address)
-      const data: AddressDTO = { ...addresss }
+      const newAddress = await addressRepository.create(address)
+      const data: AddressDTO = { ...newAddress }
+
       return data
     } catch (error: any) {
       this.logger.error(error)
